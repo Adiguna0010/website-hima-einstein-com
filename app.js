@@ -1,18 +1,19 @@
 /* ==========================================================================
-   KABINET PHÓTISMA WEBSITE ENGINE
+   KABINET PHÓTISMA WEBSITE ENGINE (SpaceX Snap-Scroll Engine)
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
   initNavbar();
-  initParticles();
-  initDivisions();
+  initScrollSpy();
 });
 
 /* ==========================================================================
-   NAVBAR LOGIC
+   NAVBAR & SCROLL SPY LOGIC
    ========================================================================== */
 function initNavbar() {
   const navbar = document.querySelector('.navbar');
+  const scrollContainer = document.documentElement; // html node
+  
   window.addEventListener('scroll', () => {
     if (window.scrollY > 50) {
       navbar.classList.add('scrolled');
@@ -22,97 +23,82 @@ function initNavbar() {
   });
 }
 
-/* ==========================================================================
-   PARTICLE CANVAS (Atomic/Electron style)
-   ========================================================================== */
-function initParticles() {
-  const canvas = document.getElementById('particle-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
+function initScrollSpy() {
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('.nav-links a');
   
-  let width = canvas.width = canvas.offsetWidth;
-  let height = canvas.height = canvas.offsetHeight;
-  
-  const particles = [];
-  const particleCount = 40;
-  const connectionDistance = 120;
-  
-  window.addEventListener('resize', () => {
-    width = canvas.width = canvas.offsetWidth;
-    height = canvas.height = canvas.offsetHeight;
-  });
+  const options = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.5 // trigger when 50% visible
+  };
 
-  class Particle {
-    constructor() {
-      this.x = Math.random() * width;
-      this.y = Math.random() * height;
-      this.vx = (Math.random() - 0.5) * 0.4;
-      this.vy = (Math.random() - 0.5) * 0.4;
-      this.radius = Math.random() * 1.5 + 0.5;
-    }
-
-    update() {
-      this.x += this.vx;
-      this.y += this.vy;
-
-      if (this.x < 0 || this.x > width) this.vx = -this.vx;
-      if (this.y < 0 || this.y > height) this.vy = -this.vy;
-    }
-
-    draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = '#00F0FF';
-      ctx.shadowBlur = 8;
-      ctx.shadowColor = '#00F0FF';
-      ctx.fill();
-      ctx.shadowBlur = 0; // Reset
-    }
-  }
-
-  for (let i = 0; i < particleCount; i++) {
-    particles.push(new Particle());
-  }
-
-  function animate() {
-    ctx.clearRect(0, 0, width, height);
-
-    particles.forEach(p => {
-      p.update();
-      p.draw();
-    });
-
-    // Draw connecting lines
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < connectionDistance) {
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(0, 240, 255, ${0.1 * (1 - dist / connectionDistance)})`;
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
-        }
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === `#${id}`) {
+            link.classList.add('active');
+          }
+        });
       }
-    }
+    });
+  }, options);
 
-    requestAnimationFrame(animate);
-  }
-
-  animate();
+  sections.forEach(section => observer.observe(section));
 }
 
 /* ==========================================================================
-   DIVISION STATE MANAGER & RENDERER
+   CONSOLE DRAWER CONTROL
+   ========================================================================== */
+window.openConsole = function(divisionId) {
+  const drawer = document.getElementById('console-drawer');
+  const content = document.getElementById('console-drawer-content');
+  const data = DIVISION_DATA[divisionId];
+
+  if (data && drawer && content) {
+    content.innerHTML = `
+      <h3 style="font-family: var(--font-header); font-size: 1.3rem; text-transform: uppercase; color: var(--accent-cyan); letter-spacing: 0.1em; border-bottom: 1px solid var(--color-border); padding-bottom: 20px; margin-bottom: 30px; display: flex; align-items: center; gap: 15px;">
+        <span>${data.icon}</span> ${data.title}
+      </h3>
+      <p style="color: var(--text-gray); font-size: 0.95rem; font-weight: 300; margin-bottom: 30px; line-height: 1.6;">${data.desc}</p>
+      <div class="drawer-body-area">
+        ${data.render()}
+      </div>
+    `;
+    
+    drawer.classList.add('open');
+
+    // If Danus, render cart
+    if (divisionId === 'danus') {
+      renderCart();
+    }
+  }
+};
+
+window.closeConsole = function() {
+  const drawer = document.getElementById('console-drawer');
+  if (drawer) {
+    drawer.classList.remove('open');
+  }
+};
+
+/* Close drawer on Escape key */
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeConsole();
+  }
+});
+
+/* ==========================================================================
+   DIVISION DATA & RENDERERS
    ========================================================================== */
 const DIVISION_DATA = {
   bph: {
-    title: 'Badan Pengurus Harian (BPH)',
-    desc: 'Kesekretariatan pusat, perumusan kebijakan anggaran, dan administrasi Himpunan.',
+    title: 'Badan Pengurus Harian',
+    desc: 'Pilar komando pusat, administrasi kesekretariatan, pengarsipan surat resmi, serta transparansi pengelolaan anggaran keuangan Himpunan.',
     icon: '⚡',
     render: () => `
       <div class="bph-chart">
@@ -141,25 +127,27 @@ const DIVISION_DATA = {
   },
   internal: {
     title: 'Internal',
-    desc: 'Menyelaraskan kekerabatan pengurus Himpunan dan merumuskan kegiatan bonding.',
+    desc: 'Fokus pada penyelarasan kekerabatan pengurus Himpunan, penampungan aspirasi internal, dan perumusan kegiatan kebersamaan.',
     icon: '🤝',
     render: () => `
-      <div class="hub-placeholder">
-        <div class="hub-placeholder-icon"><i class="fa-solid fa-terminal"></i></div>
-        <h3>Console Internal: Offline</h3>
-        <p>Detail program kerja dan fitur khusus divisi Internal sedang dirumuskan secara mendalam oleh tim pengurus.</p>
+      <div class="tactical-panel" style="text-align: center; padding: 40px 20px;">
+        <div class="panel-corner corner-tl"></div>
+        <div class="panel-corner corner-tr"></div>
+        <div class="panel-corner corner-bl"></div>
+        <div class="panel-corner corner-br"></div>
+        <div style="font-size: 2.5rem; color: var(--accent-cyan); margin-bottom: 20px;"><i class="fa-solid fa-terminal"></i></div>
+        <h4 style="font-family: var(--font-header); font-size: 0.85rem; letter-spacing: 0.15em; margin-bottom: 10px;">CONSOL SYSTEM ACTIVE</h4>
+        <p style="color: var(--text-gray); font-size: 0.85rem; font-weight: 300;">Rencana program kerja divisi Internal saat ini sedang dalam proses penyusunan bersama perwakilan anggota.</p>
       </div>
     `
   },
   external: {
-    title: 'External',
-    desc: 'Hub relasi luar, kemitraan industri, alumni, dan hubungan antar-himpunan.',
+    title: 'External Division',
+    desc: 'Menghubungkan HIMA EINSTEIN dengan alumni, korporasi industri nuklir/kesehatan, BRIN (Badan Riset dan Inovasi Nasional), serta himpunan mahasiswa luar.',
     icon: '🌐',
     render: () => `
-      <div class="ristek-vault">
-        <p style="color: var(--text-gray); margin-bottom: 24px; font-weight: 300;">Daftarkan instansi atau Himpunan Anda untuk pengajuan kerjasama, studi banding, maupun kemitraan strategis.</p>
-        
-        <form class="tactical-panel" style="padding: 30px;" onsubmit="alert('Formulir kemitraan berhasil terkirim!'); return false;">
+      <div>
+        <form class="tactical-panel" onsubmit="alert('Formulir kemitraan berhasil terkirim!'); return false;">
           <div class="panel-corner corner-tl"></div>
           <div class="panel-corner corner-tr"></div>
           <div class="panel-corner corner-bl"></div>
@@ -171,29 +159,29 @@ const DIVISION_DATA = {
               <input type="text" class="form-control" placeholder="Contoh: HMTC ITS" required>
             </div>
             <div class="form-group">
-              <label>Alamat Email Resmi</label>
+              <label>Email Kontak Resmi</label>
               <input type="email" class="form-control" placeholder="nama@domain.com" required>
             </div>
             <div class="form-group full-width">
-              <label>Tujuan Kemitraan / Kerjasama</label>
-              <textarea class="form-control" rows="3" placeholder="Deskripsikan rencana kolaborasi secara ringkas..." required></textarea>
+              <label>Rencana Kolaborasi / Kunjungan</label>
+              <textarea class="form-control" rows="3" placeholder="Jelaskan secara ringkas maksud kerjasama..." required></textarea>
             </div>
           </div>
-          <button type="submit" class="btn-ghost btn-cyan" style="margin-top: 30px;">Kirim Pengajuan</button>
+          <button type="submit" class="btn-ghost btn-cyan" style="margin-top: 24px; padding: 12px 24px; font-size: 0.65rem;">Kirim Pengajuan</button>
         </form>
       </div>
     `
   },
   ristek: {
-    title: 'Riset dan Teknologi (Ristek)',
-    desc: 'Pengembangan teknologi nuklir instrumentasi, modul pelajaran, dan kolaborasi proyek sains.',
+    title: 'Riset & Teknologi',
+    desc: 'Mendorong kecakapan mahasiswa di bidang instrumentasi nuklir melalui bank soal terintegrasi, pendaftaran tutor sebaya, dan kolaborasi proyek IoT otonom.',
     icon: '🔬',
     render: () => `
       <div class="ristek-container">
         <div class="ristek-tabs">
           <button class="ristek-tab-btn active" onclick="switchRistekTab('vault')">Einstein Vault</button>
           <button class="ristek-tab-btn" onclick="switchRistekTab('les')">Ristek Mengajar</button>
-          <button class="ristek-tab-btn" onclick="switchRistekTab('proyek')">Project Collaboration</button>
+          <button class="ristek-tab-btn" onclick="switchRistekTab('proyek')">Project Collab</button>
         </div>
 
         <!-- Einstein Vault -->
@@ -201,33 +189,24 @@ const DIVISION_DATA = {
           <div class="vault-list">
             <div class="vault-item">
               <div class="vault-info">
-                <h4>Bank Soal UTS: Mikroprosesor & Mikrokontroler</h4>
-                <p>Format: PDF | Ukuran: 2.4 MB | Kategori: Elektronika</p>
+                <h4>UTS: Mikroprosesor & Mikrokontroler</h4>
+                <p>Format: PDF | Ukuran: 2.4 MB | Kategori: Eleka</p>
               </div>
-              <a href="#" class="download-link" onclick="alert('Mengunduh Soal UTS...'); return false;">Unduh File <i class="fa-solid fa-download"></i></a>
+              <a href="#" class="download-link" onclick="alert('Mengunduh UTS...'); return false;">Unduh <i class="fa-solid fa-download"></i></a>
             </div>
             <div class="vault-item">
               <div class="vault-info">
-                <h4>Modul Praktikum: Sensor Radiasi & Detektor Nuklir</h4>
-                <p>Format: PDF | Ukuran: 4.8 MB | Kategori: Instrumentasi Nuklir</p>
+                <h4>Modul Praktikum: Detektor Radiasi Nuklir</h4>
+                <p>Format: PDF | Ukuran: 4.8 MB | Kategori: Nuklir</p>
               </div>
-              <a href="#" class="download-link" onclick="alert('Mengunduh Modul Detektor...'); return false;">Unduh File <i class="fa-solid fa-download"></i></a>
-            </div>
-            <div class="vault-item">
-              <div class="vault-info">
-                <h4>Catatan Kuliah: Elektronika Analog Lanjut</h4>
-                <p>Format: PDF | Ukuran: 12.1 MB | Kategori: Dasar Eleka</p>
-              </div>
-              <a href="#" class="download-link" onclick="alert('Mengunduh Catatan Elekan...'); return false;">Unduh File <i class="fa-solid fa-download"></i></a>
+              <a href="#" class="download-link" onclick="alert('Mengunduh Modul...'); return false;">Unduh <i class="fa-solid fa-download"></i></a>
             </div>
           </div>
         </div>
 
-        <!-- Ristek Mengajar / Guru Les -->
+        <!-- Ristek Mengajar -->
         <div id="tab-les" class="ristek-tab-content">
-          <p style="color: var(--text-gray); margin-bottom: 24px; font-weight: 300;">Daftarkan diri Anda sebagai tutor sebaya atau ajukan permohonan pendampingan belajar mata kuliah instrumentasi.</p>
-          
-          <form class="tactical-panel" style="padding: 30px;" onsubmit="alert('Pendaftaran Ristek Mengajar berhasil terkirim!'); return false;">
+          <form class="tactical-panel" onsubmit="alert('Form Ristek Mengajar terkirim!'); return false;">
             <div class="panel-corner corner-tl"></div>
             <div class="panel-corner corner-tr"></div>
             <div class="panel-corner corner-bl"></div>
@@ -239,39 +218,39 @@ const DIVISION_DATA = {
                 <input type="text" class="form-control" placeholder="Nama Anda" required>
               </div>
               <div class="form-group">
-                <label>Pilih Kategori Peran</label>
+                <label>Kategori Peran</label>
                 <select class="form-control" required style="background: var(--color-black);">
-                  <option value="murid">Saya Butuh Tutor (Murid)</option>
-                  <option value="tutor">Saya Bersedia Mengajar (Tutor)</option>
+                  <option value="murid">Butuh Bimbingan (Murid)</option>
+                  <option value="tutor">Bersedia Mengajar (Tutor)</option>
                 </select>
               </div>
               <div class="form-group">
                 <label>Mata Kuliah / Bidang</label>
-                <input type="text" class="form-control" placeholder="Contoh: Pemrograman C++, Fisika Radiasi" required>
+                <input type="text" class="form-control" placeholder="Contoh: Pemrograman C++" required>
               </div>
               <div class="form-group">
-                <label>No. WhatsApp Kontak</label>
+                <label>WhatsApp Kontak</label>
                 <input type="text" class="form-control" placeholder="08xxxxxxxxxx" required>
               </div>
             </div>
-            <button type="submit" class="btn-ghost btn-cyan" style="margin-top: 30px;">Daftar Sekarang</button>
+            <button type="submit" class="btn-ghost btn-cyan" style="margin-top: 24px; padding: 12px 24px; font-size: 0.65rem;">Daftar</button>
           </form>
         </div>
 
-        <!-- Project Collaboration -->
+        <!-- Project Collab -->
         <div id="tab-proyek" class="ristek-tab-content">
           <div class="project-board">
             <div class="project-item">
-              <span class="project-tag">IoT & Radiasi</span>
-              <h4>Sistem Monitor Radiasi Real-Time</h4>
-              <p>Pengembangan detektor radiasi modular portabel berbasis ESP32 dan tabung Geiger-Müller terintegrasi dashboard cloud.</p>
-              <button class="btn-ghost btn-cyan" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Terima kasih telah mengajukan kolaborasi proyek. Ketua proyek akan menghubungi Anda via WhatsApp.');">Gabung Proyek</button>
+              <span class="project-tag">IoT & Nuklir</span>
+              <h4 style="margin-bottom: 5px;">Monitor Radiasi ESP32</h4>
+              <p>Membangun detektor radiasi portable Geiger-Müller terkoneksi server IoT realtime.</p>
+              <button class="btn-ghost btn-cyan" style="padding: 8px 16px; font-size: 0.6rem;" onclick="alert('Berhasil mendaftar kolaborasi ESP32.');">Gabung Proyek</button>
             </div>
             <div class="project-item">
               <span class="project-tag">Robotika</span>
-              <h4>Otonom Mobile Robot Inspeksi Lab</h4>
-              <p>Membangun robot tank pemantau kebocoran radiasi otonom untuk inspeksi area steril laboratorium nuklir.</p>
-              <button class="btn-ghost btn-cyan" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Terima kasih telah mengajukan kolaborasi proyek. Ketua proyek akan menghubungi Anda via WhatsApp.');">Gabung Proyek</button>
+              <h4 style="margin-bottom: 5px;">Mobile Robot Inspeksi Lab</h4>
+              <p>Mengembangkan robot roda tank pemantau kebocoran lingkungan lab otonom.</p>
+              <button class="btn-ghost btn-cyan" style="padding: 8px 16px; font-size: 0.6rem;" onclick="alert('Berhasil mendaftar kolaborasi Robot.');">Gabung Proyek</button>
             </div>
           </div>
         </div>
@@ -279,208 +258,124 @@ const DIVISION_DATA = {
     `
   },
   pengma: {
-    title: 'Pengembangan Mahasiswa (Pengma)',
-    desc: 'Pengembangan karir, pelatihan kompetensi industri, soft skill, dan info rekrutmen magang.',
+    title: 'Pengembangan Mahasiswa',
+    desc: 'Fasilitas sertifikasi industri, soft-skill leadership, persiapan karir, rekrutmen magang, dan kompilasi info prestasi kemahasiswaan.',
     icon: '🚀',
     render: () => `
-      <div class="pengma-hub">
-        <p style="color: var(--text-gray); margin-bottom: 24px; font-weight: 300;">Daftarkan diri Anda untuk mengikuti agenda peningkatan kompetensi profesional bidang instrumentasi berikut.</p>
-        <div class="vault-list">
-          <div class="vault-item">
-            <div class="vault-info">
-              <h4>Pelatihan Sertifikasi PLC Siemens S7-1200</h4>
-              <p>Jadwal: 25 Juli 2026 | Lokasi: Lab Kendali Industri | Kuota: 20 Orang</p>
-            </div>
-            <button class="btn-ghost btn-cyan" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Pendaftaran Sertifikasi PLC berhasil dikirim!');">Daftar Pelatihan</button>
+      <div class="vault-list">
+        <div class="vault-item">
+          <div class="vault-info">
+            <h4>Pelatihan Sertifikasi PLC Siemens S7-1200</h4>
+            <p>Jadwal: 25 Juli 2026 | Lokasi: Lab Kendali Industri</p>
           </div>
-          <div class="vault-item">
-            <div class="vault-info">
-              <h4>Instrumentation Intern (Magang) - PT. Thorcon Power Indonesia</h4>
-              <p>Deadline: 1 Agustus 2026 | Kategori: Magang Kerja Industri</p>
-            </div>
-            <button class="btn-ghost" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Membuka tautan portal rekrutmen Thorcon...');">Detail Lowongan</button>
+          <button class="btn-ghost btn-cyan" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Pendaftaran Sertifikasi PLC terkirim!');">Daftar</button>
+        </div>
+        <div class="vault-item">
+          <div class="vault-info">
+            <h4>Magang Kerja: PT. Thorcon Power Indonesia (Instrumentation Intern)</h4>
+            <p>Deadline: 1 Agustus 2026 | Kategori: Magang Industri</p>
           </div>
+          <button class="btn-ghost" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Membuka detail lowongan...');">Detail</button>
         </div>
       </div>
     `
   },
   danus: {
-    title: 'Dana Usaha (Danus)',
-    desc: 'Store merchandise resmi HIMA EINSTEIN dengan sistem pemesanan langsung terhubung ke WhatsApp.',
+    title: 'Dana Usaha Store',
+    desc: 'Wirausaha mandiri Himpunan. Pembelian produk eksklusif PDH, bomber, dan merchandise resmi HIMA EINSTEIN.',
     icon: '🛒',
     render: () => `
       <div class="danus-hub">
-        <!-- Products Grid -->
         <div class="product-grid">
           <div class="product-card">
             <div class="product-img">👕</div>
             <div class="product-info">
-              <span class="product-name">PDH HIMA EINSTEIN 2026</span>
+              <span class="product-name">PDH EINSTEIN 2026</span>
               <span class="product-price">Rp 135.000</span>
-              <button class="btn-ghost btn-cyan product-btn" onclick="addToCart('PDH HIMA EINSTEIN 2026', 135000)">+ Tambah</button>
+              <button class="btn-ghost btn-cyan product-btn" style="padding: 8px; font-size: 0.6rem;" onclick="addToCart('PDH EINSTEIN 2026', 135000)">+ Tambah</button>
             </div>
           </div>
           <div class="product-card">
             <div class="product-img">🧥</div>
             <div class="product-info">
-              <span class="product-name">Jaket Bomber Phótisma</span>
+              <span class="product-name">Bomber Phótisma</span>
               <span class="product-price">Rp 185.000</span>
-              <button class="btn-ghost btn-cyan product-btn" onclick="addToCart('Jaket Bomber Phótisma', 185000)">+ Tambah</button>
-            </div>
-          </div>
-          <div class="product-card">
-            <div class="product-img">🏷️</div>
-            <div class="product-info">
-              <span class="product-name">Gantungan Kunci Kayu Logo</span>
-              <span class="product-price">Rp 15.000</span>
-              <button class="btn-ghost btn-cyan product-btn" onclick="addToCart('Gantungan Kunci Kayu Logo', 15000)">+ Tambah</button>
+              <button class="btn-ghost btn-cyan product-btn" style="padding: 8px; font-size: 0.6rem;" onclick="addToCart('Bomber Phótisma', 185000)">+ Tambah</button>
             </div>
           </div>
         </div>
 
-        <!-- Cart Panel -->
         <div class="cart-panel">
           <div class="cart-title">
             <span>Keranjang Belanja</span>
             <span id="cart-count">0</span>
           </div>
           <div class="cart-items" id="cart-items-list">
-            <p style="color: var(--text-dark-gray); font-size: 0.85rem; text-align: center; padding: 20px 0; font-family: var(--font-header);">Cart Empty</p>
+            <p style="color: var(--text-muted); font-size: 0.8rem; text-align: center;">Keranjang belanja kosong.</p>
           </div>
           <div class="cart-total">
-            <span>Total Pembayaran:</span>
+            <span>Total:</span>
             <span id="cart-total-price">Rp 0</span>
           </div>
           <button class="checkout-btn" onclick="checkoutCart()">
-            <i class="fa-brands fa-whatsapp"></i> Checkout via WhatsApp
+            <i class="fa-brands fa-whatsapp"></i> Checkout WhatsApp
           </button>
         </div>
       </div>
     `
   },
   kominfo: {
-    title: 'Komunikasi dan Informasi (Kominfo)',
-    desc: 'Manajemen penyiaran berita, media publikasi buletin, dan podcast sains terintegrasi.',
+    title: 'Komunikasi & Informasi',
+    desc: 'Media publikasi berita sains nuklir, dokumentasi kegiatan, rilis buletin triwulan EINSTEIN, dan podcast audio visual.',
     icon: '📢',
     render: () => `
-      <div class="kominfo-hub">
-        <p style="color: var(--text-gray); margin-bottom: 24px; font-weight: 300;">Simak dan baca publikasi resmi terbaru dari HIMA EINSTEIN.</p>
-        <div class="project-board">
-          <div class="project-item">
-            <span class="project-tag" style="color: var(--accent-gold); border-color: var(--accent-gold);">Podcast Einstein</span>
-            <h4>Episode #12: Masa Depan SMR (Small Modular Reactor) di RI</h4>
-            <p>Membahas peluang implementasi reaktor nuklir modular kecil sebagai penyuplai energi bersih di Indonesia.</p>
-            <button class="btn-ghost btn-cyan" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Memutar podcast audio...');">▶️ Putar Podcast</button>
-          </div>
-          <div class="project-item">
-            <span class="project-tag" style="color: var(--accent-gold); border-color: var(--accent-gold);">Rilis Buletin</span>
-            <h4>Buletin EINSTEIN Vol. 7 (Edisi Juli 2026)</h4>
-            <p>Kompilasi artikel riset instrumentasi dan rilis pers kegiatan Kabinet Phótisma selama triwulan pertama.</p>
-            <button class="btn-ghost btn-cyan" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Membuka buletin digital...');">📖 Baca Buletin</button>
-          </div>
+      <div class="project-board">
+        <div class="project-item">
+          <span class="project-tag">Podcast Einstein</span>
+          <h4>Episode #12: Small Modular Reactor di Indonesia</h4>
+          <p>Potensi implementasi reaktor mini modular sebagai pemasok energi bersih nasional.</p>
+          <button class="btn-ghost btn-cyan" style="padding: 8px 16px; font-size: 0.6rem;" onclick="alert('Memutar podcast...');">▶️ Dengar</button>
+        </div>
+        <div class="project-item">
+          <span class="project-tag">Buletin</span>
+          <h4>Buletin EINSTEIN Vol. 7 (Edisi Juli 2026)</h4>
+          <p>Kompilasi artikel riset instrumentasi dan rekap kegiatan Himpunan.</p>
+          <button class="btn-ghost btn-cyan" style="padding: 8px 16px; font-size: 0.6rem;" onclick="alert('Membuka PDF buletin...');">📖 Baca</button>
         </div>
       </div>
     `
   },
   aset_logistik: {
-    title: 'Aset dan Logistik',
-    desc: 'Portal peminjaman instrumentasi lab Himpunan dan pemantauan ketersediaan aset logistik.',
+    title: 'Aset & Logistik',
+    desc: 'Portal peminjaman alat penunjang praktikum mahasiswa (solder, multimeter, starter kit Arduino) secara transparan.',
     icon: '📦',
     render: () => `
-      <div class="aset-container">
-        <p style="color: var(--text-gray); margin-bottom: 24px; font-weight: 300;">Daftar instrumentasi & modul praktikum milik Himpunan. Pilih alat untuk mengajukan izin peminjaman.</p>
-        
-        <div class="asset-grid">
-          <div class="asset-card">
-            <div class="asset-header">
-              <span style="font-size: 1.5rem;">📟</span>
-              <span class="asset-status available">Tersedia</span>
-            </div>
-            <h4>Digital Multimeter Sanwa CD800a</h4>
-            <span class="asset-id">ID: HIMA-MULT-002</span>
-            <p>Instrumen ukur tegangan/arus presisi dengan fitur proteksi overload.</p>
-            <button class="btn-ghost btn-cyan" style="padding: 8px 16px; font-size: 0.65rem; width: 100%; margin-top: auto;" onclick="borrowAsset('Digital Multimeter Sanwa CD800a', 'HIMA-MULT-002')">Pinjam Alat</button>
+      <div class="asset-grid">
+        <div class="asset-card">
+          <div class="asset-header">
+            <span style="font-size: 1.5rem;">📟</span>
+            <span class="asset-status available">Tersedia</span>
           </div>
-          <div class="asset-card">
-            <div class="asset-header">
-              <span style="font-size: 1.5rem;">🔥</span>
-              <span class="asset-status borrowed">Dipinjam</span>
-            </div>
-            <h4>Solder Station Hakko FX-888D</h4>
-            <span class="asset-id">ID: HIMA-SOLD-005</span>
-            <p>Solder station dengan pemanas konstan presisi untuk pengerjaan PCB.</p>
-            <button class="btn-ghost" style="padding: 8px 16px; font-size: 0.65rem; width: 100%; margin-top: auto;" disabled>Sedang Dipinjam</button>
+          <h4>Multimeter Sanwa CD800a</h4>
+          <span class="asset-id">ID: HIMA-MULT-002</span>
+          <button class="btn-ghost btn-cyan" style="padding: 6px; font-size: 0.6rem; margin-top: 10px;" onclick="borrowAsset('Multimeter Sanwa CD800a', 'HIMA-MULT-002')">Pinjam Alat</button>
+        </div>
+        <div class="asset-card">
+          <div class="asset-header">
+            <span style="font-size: 1.5rem;">🔥</span>
+            <span class="asset-status borrowed">Dipinjam</span>
           </div>
-          <div class="asset-card">
-            <div class="asset-header">
-              <span style="font-size: 1.5rem;">🔌</span>
-              <span class="asset-status available">Tersedia</span>
-            </div>
-            <h4>Arduino Starter Kit (Uno R3)</h4>
-            <span class="asset-id">ID: HIMA-ARDU-011</span>
-            <p>Kit lengkap development board Uno R3, breadboard, dan modul sensor dasar.</p>
-            <button class="btn-ghost btn-cyan" style="padding: 8px 16px; font-size: 0.65rem; width: 100%; margin-top: auto;" onclick="borrowAsset('Arduino Starter Kit (Uno R3)', 'HIMA-ARDU-011')">Pinjam Alat</button>
-          </div>
+          <h4>Solder Station Hakko FX</h4>
+          <span class="asset-id">ID: HIMA-SOLD-005</span>
+          <button class="btn-ghost" style="padding: 6px; font-size: 0.6rem; margin-top: 10px;" disabled>Pinjam Alat</button>
         </div>
       </div>
     `
   }
 };
 
-let currentActiveDivision = null;
-
-function initDivisions() {
-  const cards = document.querySelectorAll('.divisi-card');
-  cards.forEach(card => {
-    card.addEventListener('click', () => {
-      const divisionId = card.getAttribute('data-divisi');
-      selectDivision(divisionId, card);
-    });
-  });
-}
-
-function selectDivision(id, cardElement) {
-  // Clear previous active card
-  document.querySelectorAll('.divisi-card').forEach(c => c.classList.remove('active'));
-  
-  // Highlight clicked card
-  if (cardElement) {
-    cardElement.classList.add('active');
-  } else {
-    // Find card by division attribute if clicked from header
-    const card = document.querySelector(`.divisi-card[data-divisi="${id}"]`);
-    if (card) card.classList.add('active');
-  }
-
-  currentActiveDivision = id;
-  const data = DIVISION_DATA[id];
-  const hubContent = document.getElementById('hub-content-area');
-  
-  if (data && hubContent) {
-    hubContent.innerHTML = `
-      <div class="hub-header">
-        <div class="hub-title-text">
-          <h3>${data.title}</h3>
-          <p>${data.desc}</p>
-        </div>
-      </div>
-      <div class="hub-body-content">
-        ${data.render()}
-      </div>
-    `;
-
-    // Smooth scroll down to interactive hub
-    document.getElementById('interactive-hub').scrollIntoView({ behavior: 'smooth' });
-    
-    // If Danus is selected, render active cart state
-    if (id === 'danus') {
-      renderCart();
-    }
-  }
-}
-
 /* ==========================================================================
-   INTERACTIVE HUB FUNCTIONALITIES: DANA USAHA (CART SYSTEM)
+   DANA USAHA CART ENGINE
    ========================================================================== */
 let cart = [];
 
@@ -508,7 +403,7 @@ function renderCart() {
   if (!list || !count || !total) return;
 
   if (cart.length === 0) {
-    list.innerHTML = `<p style="color: var(--text-dark-gray); font-size: 0.85rem; text-align: center; padding: 20px 0; font-family: var(--font-header);">Cart Empty</p>`;
+    list.innerHTML = `<p style="color: var(--text-muted); font-size: 0.8rem; text-align: center;">Keranjang belanja kosong.</p>`;
     count.textContent = '0';
     total.textContent = 'Rp 0';
     return;
@@ -522,7 +417,7 @@ function renderCart() {
     return `
       <div class="cart-item">
         <div class="cart-item-name" title="${item.name}">${item.name} (${item.quantity}x)</div>
-        <div style="display:flex; gap:12px; align-items:center;">
+        <div style="display:flex; gap:10px; align-items:center;">
           <span>Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
           <button class="cart-item-remove" onclick="removeFromCart('${item.name}')">❌</button>
         </div>
@@ -553,7 +448,7 @@ window.checkoutCart = function() {
 };
 
 /* ==========================================================================
-   INTERACTIVE HUB FUNCTIONALITIES: RISET & TEKNOLOGI (TABS)
+   RISTEK TABS SWITCHING
    ========================================================================== */
 window.switchRistekTab = function(tabName) {
   const tabs = document.querySelectorAll('.ristek-tab-btn');
@@ -562,8 +457,7 @@ window.switchRistekTab = function(tabName) {
   const contents = document.querySelectorAll('.ristek-tab-content');
   contents.forEach(content => content.classList.remove('active'));
 
-  // Find active button
-  const activeBtn = Array.from(tabs).find(btn => btn.textContent.toLowerCase().includes(tabName === 'vault' ? 'vault' : tabName === 'les' ? 'mengajar' : 'project'));
+  const activeBtn = Array.from(tabs).find(btn => btn.textContent.toLowerCase().includes(tabName === 'vault' ? 'vault' : tabName === 'les' ? 'mengajar' : 'project' || 'collab'));
   if (activeBtn) activeBtn.classList.add('active');
 
   const activeContent = document.getElementById(`tab-${tabName}`);
@@ -571,12 +465,12 @@ window.switchRistekTab = function(tabName) {
 };
 
 /* ==========================================================================
-   INTERACTIVE HUB FUNCTIONALITIES: ASET & LOGISTIK (BORROW REQUEST)
+   ASET LOGISTIK BORROW ENGINE
    ========================================================================== */
 window.borrowAsset = function(assetName, assetId) {
-  const name = prompt('Masukkan Nama Lengkap Anda untuk peminjaman:');
+  const name = prompt('Nama Lengkap Anda:');
   if (!name) return;
-  const nim = prompt('Masukkan NIM Anda:');
+  const nim = prompt('NIM Anda:');
   if (!nim) return;
 
   const text = `Halo Logistik HIMA EINSTEIN!\n\nSaya ingin mengajukan peminjaman alat:\n- Nama Alat: ${assetName}\n- ID Alat: ${assetId}\n\nPeminjam:\n- Nama: ${name}\n- NIM: ${nim}\n\nMohon konfirmasi ketersediaan pengambilan alat di Sekretariat. Terima kasih!`;

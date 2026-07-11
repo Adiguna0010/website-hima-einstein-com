@@ -11,228 +11,175 @@
 </head>
 <body>
 
-  <!-- Background blueprint grid pattern overlay -->
-  <div class="blueprint-grid"></div>
-
   <!-- ==========================================================================
        NAVIGATION BAR
        ========================================================================== -->
   <nav class="navbar">
-    <div class="container nav-container">
+    <div class="nav-container">
       <a href="#" class="nav-logo">
-        <img src="Media Einsten/Media Umum/logo kabinet putih (horizontal).png" alt="HIMA EINSTEIN Logo" class="logo-img">
+        <img src="Media Einsten/Media Umum/logo kabinet putih (horizontal).png" alt="HIMA EINSTEIN Logo">
       </a>
       <ul class="nav-links">
-        <li><a href="#beranda" class="active">Beranda</a></li>
-        <li><a href="#profil">Profil</a></li>
-        <li><a href="#divisi">Divisi</a></li>
-        <li><a href="#interactive-hub">Layanan Hub</a></li>
+        <li><a href="#beranda">Beranda</a></li>
+        <li><a href="#bph">BPH</a></li>
+        <li><a href="#internal">Internal</a></li>
+        <li><a href="#external">External</a></li>
+        <li><a href="#ristek">Ristek</a></li>
+        <li><a href="#pengma">Pengma</a></li>
+        <li><a href="#danus">Danus</a></li>
+        <li><a href="#kominfo">Kominfo</a></li>
+        <li><a href="#logistik">Logistik</a></li>
       </ul>
-      <a href="#interactive-hub" class="btn-ghost btn-cyan" onclick="selectDivision('danus')" style="padding: 10px 20px; font-size: 0.65rem;">
-        <i class="fa-solid fa-store" style="margin-right: 6px;"></i> Danus Store
-      </a>
     </div>
   </nav>
 
   <!-- ==========================================================================
-       HERO SECTION (Cinematic Space/Tech Intro)
+       SLIDE 1: HERO / INTRO (SpaceX Falcon Night Launch style)
        ========================================================================== -->
-  <header id="beranda" class="hero">
-    <canvas id="particle-canvas"></canvas>
-    <div class="container hero-content">
-      <span class="hero-subtitle">Misi Kabinet Phótisma</span>
-      <h1 class="hero-title">HIMA EINSTEIN.COM</h1>
-      <p class="hero-desc">
-        Pusat kolaborasi sains, riset instrumentasi elektronika, dan pengembangan kemahasiswaan Politeknik Teknologi Nuklir Indonesia di bawah kepemimpinan Kabinet Phótisma.
+  <section id="beranda" class="section" style="background-image: url('https://images.unsplash.com/photo-1516849841032-87cbac4d88f7?q=80&w=1920&auto=format&fit=crop');">
+    <div class="section-overlay"></div>
+    <div class="section-content">
+      <span class="section-subtitle">Kabinet Phótisma 💡</span>
+      <h2 class="section-title">HIMA EINSTEIN.COM</h2>
+      <p class="section-desc">
+        Himpunan Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia. Membawa penerangan sains dan inovasi instrumentasi nuklir menuju kancah global.
       </p>
-      <div style="display: flex; gap: 20px;">
-        <a href="#divisi" class="btn-ghost">Jelajahi Divisi</a>
-        <a href="#interactive-hub" class="btn-ghost btn-cyan" onclick="selectDivision('ristek')">Einstein Vault</a>
-      </div>
-    </div>
-    <div class="scroll-indicator">
-      <span style="font-family: var(--font-header); font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;">Scroll</span>
-      <div class="scroll-line"></div>
-    </div>
-  </header>
-
-  <!-- ==========================================================================
-       PHILOSOPHY & STATS (HMTC / SPACEX STYLE)
-       ========================================================================== -->
-  <section id="profil" class="section philosophy">
-    <div class="container philo-grid">
-      <div>
-        <span class="sect-tag">Filosofi</span>
-        <h2 class="sect-title" style="margin-bottom: 30px;">KABINET PHÓTISMA</h2>
-        <p class="philo-desc">
-          Mengambil inspirasi dari akar kata Yunani <strong>Phótisma (φώτισma)</strong> yang berarti <em>"Penerangan"</em>, Himpunan berkomitmen penuh untuk menjadi mercusuar cahaya bagi pengembangan kompetensi mahasiswa di bidang elektronika dan teknologi nuklir instrumentasi.
-        </p>
-        <p class="philo-desc" style="font-size: 1rem;">
-          Kami merancang ekosistem digital ini sebagai pusat pertukaran informasi, proyek riset bersama, peminjaman alat penunjang secara transparan, serta wirausaha mandiri organisasi yang profesional.
-        </p>
-      </div>
-
-      <!-- SpaceX Style Telemetry Metrics -->
-      <div class="stat-grid">
-        <div class="stat-item">
-          <div class="stat-num">08</div>
-          <div class="stat-lbl">Divisi Kerja</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">120+</div>
-          <div class="stat-lbl">Mahasiswa Aktif</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">15+</div>
-          <div class="stat-lbl">Proyek Riset</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">98%</div>
-          <div class="stat-lbl">Indeks Kepuasan</div>
-        </div>
+      <div style="display: flex; gap: 15px;">
+        <a href="#bph" class="btn-ghost">Mulai Jelajahi</a>
+        <button class="btn-ghost btn-cyan" onclick="openConsole('ristek')">Einstein Vault</button>
       </div>
     </div>
   </section>
 
   <!-- ==========================================================================
-       DIVISI GRID SECTOR (Flat, clean, minimalist)
+       SLIDE 2: BPH (SpaceX Starry Control Room style)
        ========================================================================== -->
-  <section id="divisi" class="section divisi">
-    <div class="container">
-      <div class="sect-header">
-        <span class="sect-tag">Struktur</span>
-        <h2 class="sect-title">SEKTOR KOORDINASI DIVISI</h2>
-      </div>
-
-      <div class="divisi-grid">
-        <!-- 01 BPH -->
-        <div class="divisi-card" data-divisi="bph">
-          <div class="divisi-num">01 / BPH</div>
-          <h3 class="divisi-title">Badan Pengurus Harian</h3>
-          <p class="divisi-desc">Pusat komando kebijakan, pengelolaan keuangan, dan kesekretariatan organisasi secara transparan.</p>
-          <span class="divisi-btn">Akses Console <i class="fa-solid fa-arrow-right"></i></span>
-        </div>
-
-        <!-- 02 Internal -->
-        <div class="divisi-card" data-divisi="internal">
-          <div class="divisi-num">02 / INT</div>
-          <h3 class="divisi-title">Internal</h3>
-          <p class="divisi-desc">Penyelarasan keakraban antar anggota pengurus Himpunan dan perumusan kegiatan kekerabatan internal.</p>
-          <span class="divisi-btn">Akses Console <i class="fa-solid fa-arrow-right"></i></span>
-        </div>
-
-        <!-- 03 External -->
-        <div class="divisi-card" data-divisi="external">
-          <div class="divisi-num">03 / EXT</div>
-          <h3 class="divisi-title">External</h3>
-          <p class="divisi-desc">Penghubung relasi antara alumni, industri, instansi luar, serta himpunan mahasiswa eksternal.</p>
-          <span class="divisi-btn">Akses Console <i class="fa-solid fa-arrow-right"></i></span>
-        </div>
-
-        <!-- 04 Ristek -->
-        <div class="divisi-card" data-divisi="ristek">
-          <div class="divisi-num">04 / RISTEK</div>
-          <h3 class="divisi-title">Riset & Teknologi</h3>
-          <p class="divisi-desc">Penyedia bank soal Einstein Vault, program bimbingan belajar, dan proyek riset elektronika nuklir.</p>
-          <span class="divisi-btn">Akses Console <i class="fa-solid fa-arrow-right"></i></span>
-        </div>
-
-        <!-- 05 Pengma -->
-        <div class="divisi-card" data-divisi="pengma">
-          <div class="divisi-num">05 / PENGMA</div>
-          <h3 class="divisi-title">Pengembangan MHS</h3>
-          <p class="divisi-desc">Fokus pelatihan sertifikasi kompetensi keahlian dan pendistribusian informasi karir.</p>
-          <span class="divisi-btn">Akses Console <i class="fa-solid fa-arrow-right"></i></span>
-        </div>
-
-        <!-- 06 Danus -->
-        <div class="divisi-card" data-divisi="danus">
-          <div class="divisi-num">06 / DANUS</div>
-          <h3 class="divisi-title">Dana Usaha</h3>
-          <p class="divisi-desc">Pengembangan kewirausahaan mandiri Himpunan melalui distribusi merchandise resmi.</p>
-          <span class="divisi-btn">Akses Console <i class="fa-solid fa-arrow-right"></i></span>
-        </div>
-
-        <!-- 07 Kominfo -->
-        <div class="divisi-card" data-divisi="kominfo">
-          <div class="divisi-num">07 / KOMINFO</div>
-          <h3 class="divisi-title">Kominfo</h3>
-          <p class="divisi-desc">Pusat media penyiaran informasi, podcast sains, rilis pers digital, dan rilis buletin triwulan.</p>
-          <span class="divisi-btn">Akses Console <i class="fa-solid fa-arrow-right"></i></span>
-        </div>
-
-        <!-- 08 Aset & Logistik -->
-        <div class="divisi-card" data-divisi="aset_logistik">
-          <div class="divisi-num">08 / LOGISTIK</div>
-          <h3 class="divisi-title">Aset & Logistik</h3>
-          <p class="divisi-desc">Manajemen inventarisasi instrumen, perawatan alat lab Himpunan, dan portal pengajuan pinjam alat.</p>
-          <span class="divisi-btn">Akses Console <i class="fa-solid fa-arrow-right"></i></span>
-        </div>
-      </div>
+  <section id="bph" class="section" style="background-image: url('https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=1920&auto=format&fit=crop');">
+    <div class="section-overlay"></div>
+    <div class="section-content">
+      <span class="section-subtitle">01 / Komando Pusat</span>
+      <h2 class="section-title">BADAN PENGURUS HARIAN</h2>
+      <p class="section-desc">
+        Pusat kesekretariatan, administrasi keuangan transparan, dan pengarah kebijakan program kerja Kabinet Phótisma.
+      </p>
+      <button class="btn-ghost" onclick="openConsole('bph')">Buka Struktur BPH</button>
     </div>
   </section>
 
   <!-- ==========================================================================
-       COMMAND CENTER / INTERACTIVE HUB
+       SLIDE 3: INTERNAL (Collaboration / Meeting room style)
        ========================================================================== -->
-  <section id="interactive-hub" class="section interactive-hub">
-    <div class="container">
-      <div class="sect-header">
-        <span class="sect-tag">Terminal</span>
-        <h2 class="sect-title">COMMAND CENTER LAYANAN</h2>
-      </div>
-
-      <!-- Tactical console window with corner brackets -->
-      <div class="tactical-panel hub-window" id="hub-window-panel">
-        <div class="panel-corner corner-tl"></div>
-        <div class="panel-corner corner-tr"></div>
-        <div class="panel-corner corner-bl"></div>
-        <div class="panel-corner corner-br"></div>
-        
-        <div id="hub-content-area">
-          <div class="hub-placeholder">
-            <div class="hub-placeholder-icon">
-              <i class="fa-solid fa-terminal"></i>
-            </div>
-            <h3>System Ready: Awaiting Command</h3>
-            <p>Silakan klik opsi "Akses Console" pada salah satu sektor divisi di atas untuk memulai konsol interaktif.</p>
-          </div>
-        </div>
-      </div>
+  <section id="internal" class="section" style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1920&auto=format&fit=crop');">
+    <div class="section-overlay"></div>
+    <div class="section-content">
+      <span class="section-subtitle">02 / Hub Kekerabatan</span>
+      <h2 class="section-title">INTERNAL</h2>
+      <p class="section-desc">
+        Membangun sinergi internal pengurus Himpunan, menyelaraskan keakraban antar-anggota, dan mengelola komunikasi organisasi.
+      </p>
+      <button class="btn-ghost" onclick="openConsole('internal')">Buka Panel Internal</button>
     </div>
   </section>
 
   <!-- ==========================================================================
-       FOOTER
+       SLIDE 4: EXTERNAL (Satellite Network / Orbit style)
        ========================================================================== -->
-  <footer class="footer">
-    <div class="container footer-grid">
-      <div class="footer-about">
-        <img src="Media Einsten/Media Umum/logo kabinet putih (horizontal).png" alt="HIMA EINSTEIN Logo">
-        <p>Himpunan Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia. Menjalankan misi kepengurusan yang sinergis, inovatif, dan berwawasan global.</p>
-      </div>
-      <div class="footer-links">
-        <h4>Navigasi</h4>
-        <ul>
-          <li><a href="#beranda">Beranda</a></li>
-          <li><a href="#profil">Profil Kabinet</a></li>
-          <li><a href="#divisi">Divisi</a></li>
-          <li><a href="#interactive-hub">Layanan Hub</a></li>
-        </ul>
-      </div>
-      <div class="footer-links">
-        <h4>Kontak Resmi</h4>
-        <ul style="color: var(--text-gray); font-size: 0.9rem;">
-          <li><i class="fa-solid fa-location-dot" style="margin-right: 8px;"></i> Kampus STTN BATAN / Poltek Nuklir BRIN, Yogyakarta</li>
-          <li><i class="fa-solid fa-envelope" style="margin-right: 8px;"></i> himaeinstein@polteknuklir.ac.id</li>
-          <li><i class="fa-brands fa-instagram" style="margin-right: 8px;"></i> @hima_einstein</li>
-        </ul>
-      </div>
+  <section id="external" class="section" style="background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1920&auto=format&fit=crop');">
+    <div class="section-overlay"></div>
+    <div class="section-content">
+      <span class="section-subtitle">03 / Relasi Global</span>
+      <h2 class="section-title">EXTERNAL SECTOR</h2>
+      <p class="section-desc">
+        Menghubungkan HIMA EINSTEIN dengan alumni, korporasi industri nuklir, kementerian BRIN, serta himpunan mahasiswa tingkat nasional.
+      </p>
+      <button class="btn-ghost" onclick="openConsole('external')">Hub Kemitraan</button>
     </div>
-    <div class="footer-bottom container">
-      <p>&copy; 2026 HIMA EINSTEIN.COM - KABINET PHÓTISMA. ALL RIGHTS RESERVED.</p>
+  </section>
+
+  <!-- ==========================================================================
+       SLIDE 5: RISTEK (Fusion Reactor / Quantum Core style)
+       ========================================================================== -->
+  <section id="ristek" class="section" style="background-image: url('https://images.unsplash.com/photo-1507668077129-56e32842fceb?q=80&w=1920&auto=format&fit=crop');">
+    <div class="section-overlay"></div>
+    <div class="section-content">
+      <span class="section-subtitle">04 / Divisi Sains & Teknologi</span>
+      <h2 class="section-title">RISET DAN TEKNOLOGI</h2>
+      <p class="section-desc">
+        Pusat inovasi instrumentasi otonom. Akses Einstein Vault (Bank Soal), ajukan bimbingan tutor, atau bergabung ke proyek riset radiasi IoT kami.
+      </p>
+      <button class="btn-ghost btn-cyan" onclick="openConsole('ristek')">Akses Ristek Console</button>
     </div>
-  </footer>
+  </section>
+
+  <!-- ==========================================================================
+       SLIDE 6: PENGMA (Space Flight Cockpit style)
+       ========================================================================== -->
+  <section id="pengma" class="section" style="background-image: url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1920&auto=format&fit=crop');">
+    <div class="section-overlay"></div>
+    <div class="section-content">
+      <span class="section-subtitle">05 / Pengembangan Kompetensi</span>
+      <h2 class="section-title">PENGEMBANGAN MAHASISWA</h2>
+      <p class="section-desc">
+        Memfasilitasi peningkatan keahlian profesional melalui sertifikasi PLC/LabVIEW, penyaluran info magang kerja, dan inkubasi prestasi.
+      </p>
+      <button class="btn-ghost" onclick="openConsole('pengma')">Info Pelatihan & Karir</button>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       SLIDE 7: DANUS (Premium Materials / Textile style)
+       ========================================================================== -->
+  <section id="danus" class="section" style="background-image: url('https://images.unsplash.com/photo-1558769132-cb1aea458c5e?q=80&w=1920&auto=format&fit=crop');">
+    <div class="section-overlay"></div>
+    <div class="section-content">
+      <span class="section-subtitle">06 / Wirausaha Mandiri</span>
+      <h2 class="section-title">DANA USAHA STORE</h2>
+      <p class="section-desc">
+        Toko merchandise resmi HIMA EINSTEIN. Dapatkan PDH eksklusif, jaket bomber Phótisma, dan ganci kayu ukir dengan checkout WhatsApp cepat.
+      </p>
+      <button class="btn-ghost btn-cyan" onclick="openConsole('danus')">Belanja Merchandise</button>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       SLIDE 8: KOMINFO (Broadcasting dishes style)
+       ========================================================================== -->
+  <section id="kominfo" class="section" style="background-image: url('https://images.unsplash.com/photo-1484704849700-f032a568e944?q=80&w=1920&auto=format&fit=crop');">
+    <div class="section-overlay"></div>
+    <div class="section-content">
+      <span class="section-subtitle">07 / Penyiaran Informasi</span>
+      <h2 class="section-title">KOMINFO MEDIA</h2>
+      <p class="section-desc">
+        Portal distribusi rilis berita, podcast sains berkala, buletin cetak/digital, serta dokumentasi kegiatan resmi Kabinet Phótisma.
+      </p>
+      <button class="btn-ghost" onclick="openConsole('kominfo')">Buka Media Einstein</button>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       SLIDE 9: LOGISTIK (Automated logistics warehouse style)
+       ========================================================================== -->
+  <section id="logistik" class="section" style="background-image: url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1920&auto=format&fit=crop');">
+    <div class="section-overlay"></div>
+    <div class="section-content">
+      <span class="section-subtitle">08 / Inventaris & Logistik</span>
+      <h2 class="section-title">ASET DAN LOGISTIK</h2>
+      <p class="section-desc">
+        Portal peminjaman instrumentasi praktikum Himpunan secara digital (Multimeter Sanwa, Solder Station Hakko FX, Arduino Kit) untuk mempermudah pengerjaan proyek mahasiswa.
+      </p>
+      <button class="btn-ghost btn-cyan" onclick="openConsole('aset_logistik')">Buka Peminjaman Alat</button>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       CONSOLE SLIDE-OUT DRAWER OVERLAY
+       ========================================================================== -->
+  <div class="console-drawer" id="console-drawer">
+    <button class="drawer-close" onclick="closeConsole()"><i class="fa-solid fa-xmark"></i></button>
+    <div id="console-drawer-content">
+      <!-- Loaded dynamically via app.js -->
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
