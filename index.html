@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HIMA EINSTEIN.COM - Kabinet Phótisma 💡</title>
+  <meta name="description" content="Website Resmi Himpunan Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia - Kabinet Phótisma">
+  <link rel="stylesheet" href="style.css">
+  <!-- FontAwesome Icons for clean symbols -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       HEADER / NAVIGATION BAR
+       ========================================================================== -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="#" class="nav-logo">
+        <!-- Logo Kabinet Putih Horizontal -->
+        <img src="Media Einsten/Media Umum/logo kabinet putih (horizontal).png" alt="HIMA EINSTEIN Logo" class="logo-img">
+      </a>
+      <ul class="nav-links">
+        <li><a href="#beranda" class="active">Beranda</a></li>
+        <li><a href="#profil">Profil Kabinet</a></li>
+        <li><a href="#divisi">Divisi</a></li>
+        <li><a href="#interactive-hub">Layanan Hub</a></li>
+      </ul>
+      <a href="#interactive-hub" class="btn btn-primary" onclick="selectDivision('danus')">
+        <i class="fa-solid fa-shopping-cart"></i> Merch Store
+      </a>
+    </div>
+  </nav>
+
+  <!-- ==========================================================================
+       HERO SECTION (With Canvas Particle Background)
+       ========================================================================== -->
+  <header id="beranda" class="hero">
+    <canvas id="particle-canvas"></canvas>
+    <div class="hero-glow"></div>
+    <div class="hero-glow-gold"></div>
+    <div class="hero-content container">
+      <span class="hero-tag">Kabinet Phótisma 💡</span>
+      <h1 class="hero-title-main">HIMA EINSTEIN.COM</h1>
+      <h2 class="hero-title-sub">ELEKTRONIKA INSTRUMENTASI</h2>
+      <p class="hero-desc">
+        Pusat inovasi digital, riset, dan kolaborasi bagi seluruh mahasiswa Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia.
+      </p>
+      <div class="hero-btns">
+        <a href="#divisi" class="btn btn-primary">Jelajahi Divisi <i class="fa-solid fa-arrow-down"></i></a>
+        <a href="#interactive-hub" class="btn btn-secondary" onclick="selectDivision('ristek')">Einstein Vault <i class="fa-solid fa-folder-open"></i></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       PROFIL KABINET SECTION
+       ========================================================================== -->
+  <section id="profil" class="profil">
+    <div class="container">
+      <div class="profil-grid">
+        <div class="profil-text">
+          <span style="color: var(--accent-gold); font-weight: 600; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem;">Tentang Kami</span>
+          <h3 style="font-family: var(--font-header); font-size: 2.2rem; font-weight: 700; margin-top: 8px; margin-bottom: 20px;">Filosofi Phótisma</h3>
+          <p>
+            Nama <strong>Phótisma</strong> diambil dari bahasa Yunani yang berarti <em>"Cahaya"</em> atau <em>"Penerangan"</em>. Visi kami adalah membawa terang bagi civitas akademika Elektronika Instrumentasi, menjadi wadah penerang ide-ide kreatif, dan memicu inovasi teknologi nuklir di kancah nasional maupun internasional.
+          </p>
+          <p>
+            Melalui website ini, HIMA EINSTEIN menghadirkan solusi kolaborasi terpadu untuk menyatukan kekuatan riset, usaha mandiri, dan penyediaan fasilitas terbaik bagi seluruh anggota.
+          </p>
+        </div>
+        <div class="glass-panel profil-card">
+          <h3 style="font-family: var(--font-header); color: var(--accent-gold); margin-bottom: 24px;">Nilai-Nilai Utama</h3>
+          <div class="value-items">
+            <div class="value-card">
+              <h4>Inovatif</h4>
+              <p>Mengembangkan solusi berbasis IoT & teknologi instrumentasi terkini.</p>
+            </div>
+            <div class="value-card">
+              <h4>Sinergi</h4>
+              <p>Membangun kolaborasi solid antar divisi dan pihak eksternal.</p>
+            </div>
+            <div class="value-card">
+              <h4>Elegan</h4>
+              <p>Menampilkan profesionalitas berkelas dunia di setiap program.</p>
+            </div>
+            <div class="value-card">
+              <h4>Transparan</h4>
+              <p>Keterbukaan informasi program kerja dan administrasi himpunan.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       DIVISI SECTION (8 Cards Showcase)
+       ========================================================================== -->
+  <section id="divisi" class="divisi">
+    <div class="container">
+      <h2 class="section-title">Struktur Divisi Kabinet</h2>
+      <p class="section-subtitle">
+        Pilih salah satu divisi di bawah untuk membuka simulasi layanan interaktif dan program kerja unggulan mereka secara langsung.
+      </p>
+
+      <div class="divisi-grid">
+        <!-- 1. BPH -->
+        <div class="glass-panel divisi-card" data-divisi="bph">
+          <div class="divisi-icon"><i class="fa-solid fa-users-gear"></i></div>
+          <h3 class="divisi-name">Badan Pengurus Harian</h3>
+          <p class="divisi-desc">Pilar koordinasi pusat, administrasi kesekretariatan, dan pengawasan anggaran keuangan Himpunan.</p>
+          <span class="divisi-action">Buka Layanan BPH <i class="fa-solid fa-arrow-right"></i></span>
+        </div>
+
+        <!-- 2. Internal -->
+        <div class="glass-panel divisi-card" data-divisi="internal">
+          <div class="divisi-icon"><i class="fa-solid fa-heart"></i></div>
+          <h3 class="divisi-name">Internal</h3>
+          <p class="divisi-desc">Menjaga keakraban antar pengurus, mengapresiasi kinerja anggota, dan mengkoordinasikan kegiatan internal.</p>
+          <span class="divisi-action">Buka Layanan Internal <i class="fa-solid fa-arrow-right"></i></span>
+        </div>
+
+        <!-- 3. External -->
+        <div class="glass-panel divisi-card" data-divisi="external">
+          <div class="divisi-icon"><i class="fa-solid fa-globe"></i></div>
+          <h3 class="divisi-name">External</h3>
+          <p class="divisi-desc">Menjembatani hubungan relasi dengan alumni, industri, instansi luar, serta himpunan mahasiswa eksternal.</p>
+          <span class="divisi-action">Hub Kemitraan <i class="fa-solid fa-arrow-right"></i></span>
+        </div>
+
+        <!-- 4. Ristek -->
+        <div class="glass-panel divisi-card" data-divisi="ristek">
+          <div class="divisi-icon"><i class="fa-solid fa-microscope"></i></div>
+          <h3 class="divisi-name">Riset dan Teknologi</h3>
+          <p class="divisi-desc">Pengembangan teknologi elektronika instrumentasi nuklir, bank soal, program guru les, dan kolaborasi proyek.</p>
+          <span class="divisi-action">Buka Einstein Hub <i class="fa-solid fa-arrow-right"></i></span>
+        </div>
+
+        <!-- 5. Pengma -->
+        <div class="glass-panel divisi-card" data-divisi="pengma">
+          <div class="divisi-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+          <h3 class="divisi-name">Pengembangan Mahasiswa</h3>
+          <p class="divisi-desc">Peningkatan kompetensi akademis/soft-skill anggota Himpunan, info pelatihan, dan pusat karir.</p>
+          <span class="divisi-action">Info Pelatihan <i class="fa-solid fa-arrow-right"></i></span>
+        </div>
+
+        <!-- 6. Dana Usaha -->
+        <div class="glass-panel divisi-card" data-divisi="danus">
+          <div class="divisi-icon"><i class="fa-solid fa-store"></i></div>
+          <h3 class="divisi-name">Dana Usaha</h3>
+          <p class="divisi-desc">Mengembangkan kewirausahaan himpunan mandiri melalui penjualan merchandise resmi HIMA EINSTEIN.</p>
+          <span class="divisi-action">Buka Toko Online <i class="fa-solid fa-arrow-right"></i></span>
+        </div>
+
+        <!-- 7. Kominfo -->
+        <div class="glass-panel divisi-card" data-divisi="kominfo">
+          <div class="divisi-icon"><i class="fa-solid fa-bullhorn"></i></div>
+          <h3 class="divisi-name">Kominfo</h3>
+          <p class="divisi-desc">Pusat dokumentasi kegiatan, rilis pers, publikasi podcast, buletin cetak/digital, dan sosial media.</p>
+          <span class="divisi-action">Lihat Media Einstein <i class="fa-solid fa-arrow-right"></i></span>
+        </div>
+
+        <!-- 8. Aset & Logistik -->
+        <div class="glass-panel divisi-card" data-divisi="aset_logistik">
+          <div class="divisi-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+          <h3 class="divisi-name">Aset dan Logistik</h3>
+          <p class="divisi-desc">Mengatur inventarisasi, perawatan, dan peminjaman alat praktikum/elektronika serta logistik penunjang.</p>
+          <span class="divisi-action">Pinjam Inventaris <i class="fa-solid fa-arrow-right"></i></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       INTERACTIVE HUB SECTION
+       ========================================================================== -->
+  <section id="interactive-hub" class="interactive-hub">
+    <div class="container">
+      <h2 class="section-title">Layanan Hub Interaktif</h2>
+      <p class="section-subtitle">Pilih salah satu divisi di atas untuk mensimulasikan program kerja dan fitur unggulan mereka.</p>
+
+      <div class="glass-panel hub-window" id="hub-window-panel">
+        <div id="hub-content-area">
+          <div class="hub-placeholder">
+            <div class="hub-placeholder-icon">💡</div>
+            <h3>Pilih Divisi Untuk Mencoba Layanan</h3>
+            <p>Klik tombol layanan pada salah satu kartu divisi di atas untuk memuat panel interaktif di sini.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-about">
+        <img src="Media Einsten/Media Umum/logo kabinet putih (horizontal).png" alt="HIMA EINSTEIN Logo">
+        <p>Himpunan Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia. Mewadahi inovasi, teknologi, dan sinergi mahasiswa menuju kancah global.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Tautan Cepat</h4>
+        <ul>
+          <li><a href="#beranda">Beranda</a></li>
+          <li><a href="#profil">Profil Kabinet</a></li>
+          <li><a href="#divisi">Divisi</a></li>
+          <li><a href="#interactive-hub">Layanan Hub</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Hubungi Kami</h4>
+        <ul style="color: var(--text-secondary); font-size: 0.9rem;">
+          <li><i class="fa-solid fa-location-dot"></i> Sekre HIMA EINSTEIN, Gedung Poltek Nuklir BRIN, Yogyakarta</li>
+          <li><i class="fa-solid fa-envelope"></i> himaeinstein@polteknuklir.ac.id</li>
+          <li><i class="fa-brands fa-instagram"></i> @hima_einstein</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom container">
+      <p>&copy; 2026 HIMA EINSTEIN.COM - Kabinet Phótisma. All Rights Reserved.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
