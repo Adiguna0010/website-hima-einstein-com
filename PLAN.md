@@ -46,6 +46,9 @@ Setiap divisi akan memiliki sub-page interaktif yang memaparkan profil dan progr
   * *Fitur E-Commerce/Katalog Produk:* Toko online resmi HIMA EINSTEIN. Menjual merchandise (PDH, kaos, gantungan kunci, stiker) dengan fitur keranjang belanja virtual dan checkout terintegrasi langsung ke WhatsApp Danus.
 * **Kominfo**
   * *Fitur:* Feed media sosial terintegrasi (Instagram/YouTube), galeri buletin/podcast Himpunan, serta bank rilis pers resmi.
+* **Aset dan Logistik**
+  * *Fitur Peminjaman Inventaris:* Portal digital untuk manajemen dan pengajuan peminjaman alat praktikum (multimeter, solder, dll.) serta aset logistik Himpunan.
+  * *Dashboard Ketersediaan:* Halaman visual yang menampilkan status ketersediaan dan kondisi aset Himpunan secara real-time.
 
 ---
 
