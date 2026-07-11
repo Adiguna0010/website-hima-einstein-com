@@ -11,6 +11,9 @@
 </head>
 <body>
 
+  <!-- Aeline vibrant glowing backdrop -->
+  <div class="glowing-backdrop"></div>
+
   <!-- ==========================================================================
        NAVIGATION BAR WITH FUNCTIONAL LINKS & SPHERE DROPDOWN
        ========================================================================== -->
@@ -47,19 +50,76 @@
   </nav>
 
   <!-- ==========================================================================
-       SLIDE 1: BERANDA (Profile & HIMA Introduction)
+       SLIDE 1: BERANDA (Aeline Split Hero Layout)
        ========================================================================== -->
   <section id="beranda" class="section" style="background-image: url('Media Einsten/Media Umum/Foto Umum Beranda/DSC_7954.JPG');">
     <div class="section-overlay"></div>
     <div class="section-content">
-      <span class="section-subtitle">Selamat Datang di HIMA EINSTEIN.COM</span>
-      <h2 class="section-title">KABINET PHÓTISMA</h2>
-      <p class="section-desc">
-        Himpunan Mahasiswa Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia. Mewadahi pengembangan riset teknologi nuklir, instrumentasi otonom, dan kewirausahaan mandiri.
-      </p>
-      <div style="display: flex; gap: 15px;">
-        <a href="#sphere" class="btn-ghost">Jelajahi Sphere</a>
-        <a href="#market" class="btn-ghost btn-cyan">Kunjungi Market</a>
+      <div class="hero-split-grid">
+        <!-- Left Side: Copywriting & Metrics -->
+        <div>
+          <span class="section-subtitle">Selamat Datang di HIMA EINSTEIN.COM</span>
+          <h2 class="section-title" style="color: white;">Building the future with technology & strategy</h2>
+          <p class="section-desc">
+            Himpunan Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia. Menyatukan riset teknologi nuklir, instrumentasi otonom, dan wirausaha mandiri Himpunan.
+          </p>
+          <div style="display: flex; gap: 15px; margin-bottom: 40px;">
+            <a href="#sphere" class="btn-pill btn-lime">Jelajahi Sphere</a>
+            <a href="#market" class="btn-pill btn-outline-white">Kunjungi Market <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+
+          <!-- Aeline Rounded Stats Cards block -->
+          <div class="aeline-stats-container">
+            <div class="metric-card">
+              <span class="metric-num">120+</span>
+              <span class="metric-label">Mahasiswa Aktif</span>
+              <div class="avatar-bubbles">
+                <div class="avatar-bubble" style="background-color:#0066FF;">A</div>
+                <div class="avatar-bubble" style="background-color:#00F0FF;">B</div>
+                <div class="avatar-bubble" style="background-color:#D4FC34; color:#000;">+5</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <span class="metric-num">100%</span>
+              <span class="metric-label">Komitmen Sinergis</span>
+            </div>
+            <div class="metric-card metric-highlight">
+              <span class="metric-num">15+</span>
+              <span class="metric-label">Proyek Riset & IoT</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Curved Fanned-Out Card Deck -->
+        <div class="fanned-deck-wrapper">
+          <!-- Card Left (BPH) -->
+          <div class="fanned-card card-left">
+            <div class="fanned-icon"><i class="fa-solid fa-users-gear"></i></div>
+            <div>
+              <h4>01 / BPH Sektor</h4>
+              <p>Mengatur komando pusat kepengurusan dan administrasi Himpunan.</p>
+            </div>
+            <button class="btn-pill btn-outline-white" onclick="openConsole('bph')" style="padding: 10px; font-size: 0.65rem; border-radius: 20px;">Detail</button>
+          </div>
+          <!-- Card Center (Ristek) -->
+          <div class="fanned-card card-center">
+            <div class="fanned-icon" style="color:var(--accent-lime);"><i class="fa-solid fa-microscope"></i></div>
+            <div>
+              <h4>02 / Ristek Core</h4>
+              <p>Pusat pengembangan teknologi nuklir instrumentasi dan bank soal.</p>
+            </div>
+            <button class="btn-pill btn-lime" onclick="openConsole('ristek')" style="padding: 10px; font-size: 0.65rem; border-radius: 20px; font-weight:700;">Akses</button>
+          </div>
+          <!-- Card Right (Danus) -->
+          <div class="fanned-card card-right">
+            <div class="fanned-icon"><i class="fa-solid fa-store"></i></div>
+            <div>
+              <h4>03 / Danus Store</h4>
+              <p>Pengembangan wirausaha Himpunan dengan merchandise resmi.</p>
+            </div>
+            <button class="btn-pill btn-outline-white" onclick="openConsole('danus')" style="padding: 10px; font-size: 0.65rem; border-radius: 20px;">Detail</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -73,25 +133,57 @@
       <span class="section-subtitle">Sektor Kepengurusan</span>
       <h2 class="section-title">EINSTEIN SPHERE</h2>
       <p class="section-desc">
-        Pusat koordinasi seluruh divisi kerja Himpunan. Pilih divisi di bawah untuk membuka konsol data operasional masing-masing sektor.
+        Pusat koordinasi 8 divisi Kabinet Phótisma. Pilih divisi di bawah untuk membuka laci konsol program kerja.
       </p>
       
-      <!-- Horizontal Division Panel Shortcuts -->
-      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-        <button class="btn-ghost" onclick="openConsole('bph')" style="padding: 10px 20px; font-size: 0.6rem;">BPH</button>
-        <button class="btn-ghost" onclick="openConsole('internal')" style="padding: 10px 20px; font-size: 0.6rem;">Internal</button>
-        <button class="btn-ghost" onclick="openConsole('external')" style="padding: 10px 20px; font-size: 0.6rem;">External</button>
-        <button class="btn-ghost" onclick="openConsole('ristek')" style="padding: 10px 20px; font-size: 0.6rem;">Ristek</button>
-        <button class="btn-ghost" onclick="openConsole('pengma')" style="padding: 10px 20px; font-size: 0.6rem;">Pengma</button>
-        <button class="btn-ghost" onclick="openConsole('danus')" style="padding: 10px 20px; font-size: 0.6rem;">Danus</button>
-        <button class="btn-ghost" onclick="openConsole('kominfo')" style="padding: 10px 20px; font-size: 0.6rem;">Kominfo</button>
-        <button class="btn-ghost" onclick="openConsole('aset_logistik')" style="padding: 10px 20px; font-size: 0.6rem;">Logistik</button>
+      <!-- Aeline Grid of 8 rounded division cards -->
+      <div class="sphere-grid">
+        <div class="sphere-card" onclick="openConsole('bph')">
+          <h4>BPH</h4>
+          <p>Pusat kesekretariatan dan keuangan Himpunan.</p>
+          <span class="sphere-action">Buka Console <i class="fa-solid fa-arrow-right-long"></i></span>
+        </div>
+        <div class="sphere-card" onclick="openConsole('internal')">
+          <h4>Internal</h4>
+          <p>Penyelarasan keakraban antar anggota pengurus.</p>
+          <span class="sphere-action">Buka Console <i class="fa-solid fa-arrow-right-long"></i></span>
+        </div>
+        <div class="sphere-card" onclick="openConsole('external')">
+          <h4>External</h4>
+          <p>Penghubung relasi alumni, industri, dan instansi luar.</p>
+          <span class="sphere-action">Buka Console <i class="fa-solid fa-arrow-right-long"></i></span>
+        </div>
+        <div class="sphere-card" onclick="openConsole('ristek')">
+          <h4>Riset & Teknologi</h4>
+          <p>Penyedia bank soal, bimbingan belajar, dan proyek IoT.</p>
+          <span class="sphere-action">Buka Console <i class="fa-solid fa-arrow-right-long"></i></span>
+        </div>
+        <div class="sphere-card" onclick="openConsole('pengma')">
+          <h4>Pengma</h4>
+          <p>Inkubasi prestasi dan penyaluran info magang.</p>
+          <span class="sphere-action">Buka Console <i class="fa-solid fa-arrow-right-long"></i></span>
+        </div>
+        <div class="sphere-card" onclick="openConsole('danus')">
+          <h4>Dana Usaha</h4>
+          <p>Kewirausahaan melalui merchandise Himpunan.</p>
+          <span class="sphere-action">Buka Console <i class="fa-solid fa-arrow-right-long"></i></span>
+        </div>
+        <div class="sphere-card" onclick="openConsole('kominfo')">
+          <h4>Kominfo</h4>
+          <p>Podcast sains, rilis berita resmi, dan sosial media.</p>
+          <span class="sphere-action">Buka Console <i class="fa-solid fa-arrow-right-long"></i></span>
+        </div>
+        <div class="sphere-card" onclick="openConsole('aset_logistik')">
+          <h4>Logistik</h4>
+          <p>Manajemen peminjaman instrumentasi lab praktikum.</p>
+          <span class="sphere-action">Buka Console <i class="fa-solid fa-arrow-right-long"></i></span>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ==========================================================================
-       SLIDE 3: EINSTEIN MARKET (Dana Usaha E-Commerce storefront)
+       SLIDE 3: EINSTEIN MARKET (Dana Usaha storefront)
        ========================================================================== -->
   <section id="market" class="section" style="background-image: url('https://images.unsplash.com/photo-1558769132-cb1aea458c5e?q=80&w=1920&auto=format&fit=crop');">
     <div class="section-overlay"></div>
@@ -107,7 +199,7 @@
             <div class="product-info">
               <span class="product-name">PDH EINSTEIN 2026</span>
               <span class="product-price">Rp 135.000</span>
-              <button class="btn-ghost btn-cyan product-btn" style="padding: 10px; font-size: 0.6rem;" onclick="addToCart('PDH EINSTEIN 2026', 135000)">+ Keranjang</button>
+              <button class="btn-pill btn-lime product-btn" style="padding: 10px 20px; font-size: 0.75rem;" onclick="addToCart('PDH EINSTEIN 2026', 135000)">+ Keranjang</button>
             </div>
           </div>
           <div class="product-card">
@@ -115,7 +207,7 @@
             <div class="product-info">
               <span class="product-name">Bomber Phótisma</span>
               <span class="product-price">Rp 185.000</span>
-              <button class="btn-ghost btn-cyan product-btn" style="padding: 10px; font-size: 0.6rem;" onclick="addToCart('Bomber Phótisma', 185000)">+ Keranjang</button>
+              <button class="btn-pill btn-lime product-btn" style="padding: 10px 20px; font-size: 0.75rem;" onclick="addToCart('Bomber Phótisma', 185000)">+ Keranjang</button>
             </div>
           </div>
         </div>
@@ -124,10 +216,10 @@
         <div class="cart-panel">
           <div class="cart-title">
             <span>Keranjang Belanja</span>
-            <span id="market-cart-count" style="color: var(--accent-cyan);">0</span>
+            <span id="market-cart-count" style="color: var(--accent-lime); font-weight:700;">0</span>
           </div>
           <div class="cart-items" id="market-cart-list">
-            <p style="color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 20px 0;">Keranjang kosong.</p>
+            <p style="color: var(--text-gray); font-size: 0.85rem; text-align: center; padding: 20px 0;">Keranjang kosong.</p>
           </div>
           <div class="cart-total">
             <span>Total:</span>
@@ -140,7 +232,7 @@
   </section>
 
   <!-- ==========================================================================
-       SLIDE 4: EINSTEIN QUEST (Interactive History & Video Mock)
+       SLIDE 4: EINSTEIN QUEST (Timeline & Video Mock)
        ========================================================================== -->
   <section id="quest" class="section" style="background-image: url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1920&auto=format&fit=crop');">
     <div class="section-overlay"></div>
@@ -183,7 +275,7 @@
   </section>
 
   <!-- ==========================================================================
-       SLIDE 5: EINSTEIN SPACE (Tool & Instrument Booking)
+       SLIDE 5: EINSTEIN SPACE (Tool Booking)
        ========================================================================== -->
   <section id="space" class="section" style="background-image: url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1920&auto=format&fit=crop');">
     <div class="section-overlay"></div>
@@ -201,7 +293,7 @@
           <h4>Digital Multimeter Sanwa</h4>
           <span class="asset-id">ID: HIMA-MULT-002</span>
           <p>Alat ukur parameter listrik presisi tinggi untuk praktikum kelistrikan.</p>
-          <button class="btn-ghost btn-cyan" style="padding: 10px; font-size: 0.6rem; margin-top: auto;" onclick="borrowAsset('Digital Multimeter Sanwa CD800a', 'HIMA-MULT-002')">Pinjam Alat</button>
+          <button class="btn-pill btn-lime" style="padding: 10px 20px; font-size: 0.75rem; margin-top: auto;" onclick="borrowAsset('Digital Multimeter Sanwa CD800a', 'HIMA-MULT-002')">Pinjam Alat</button>
         </div>
         
         <div class="asset-card">
@@ -212,7 +304,7 @@
           <h4>Solder Station Hakko</h4>
           <span class="asset-id">ID: HIMA-SOLD-005</span>
           <p>Solder station dengan kontrol panas digital konstan untuk pengerjaan PCB.</p>
-          <button class="btn-ghost" style="padding: 10px; font-size: 0.6rem; margin-top: auto;" disabled>Sedang Dipinjam</button>
+          <button class="btn-pill btn-outline-white" style="padding: 10px 20px; font-size: 0.75rem; margin-top: auto;" disabled>Sedang Dipinjam</button>
         </div>
 
         <div class="asset-card">
@@ -223,14 +315,14 @@
           <h4>Arduino Uno Starter Kit</h4>
           <span class="asset-id">ID: HIMA-ARDU-011</span>
           <p>Kit modul development microkontroller lengkap beserta sensor dasar.</p>
-          <button class="btn-ghost btn-cyan" style="padding: 10px; font-size: 0.6rem; margin-top: auto;" onclick="borrowAsset('Arduino Starter Kit (Uno R3)', 'HIMA-ARDU-011')">Pinjam Alat</button>
+          <button class="btn-pill btn-lime" style="padding: 10px 20px; font-size: 0.75rem; margin-top: auto;" onclick="borrowAsset('Arduino Starter Kit (Uno R3)', 'HIMA-ARDU-011')">Pinjam Alat</button>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ==========================================================================
-       SLIDE 6: SEKRETARIAT (Letter & Proposal Management)
+       SLIDE 6: SEKRETARIAT (Document Templates)
        ========================================================================== -->
   <section id="sekretariat" class="section" style="background-image: url('https://images.unsplash.com/photo-1507668077129-56e32842fceb?q=80&w=1920&auto=format&fit=crop');">
     <div class="section-overlay"></div>
@@ -268,20 +360,20 @@
         </div>
         
         <!-- Letter number request form -->
-        <form class="tactical-panel" onsubmit="alert('Pengajuan nomor surat berhasil didaftarkan! Sekretaris Himpunan akan menghubungi Anda.'); return false;">
+        <form class="tactical-panel" onsubmit="alert('Pengajuan nomor surat berhasil didaftarkan! Sekretaris Himpunan akan menghubungi Anda.'); return false;" style="border-radius:20px;">
           <div class="panel-corner corner-tl"></div>
           <div class="panel-corner corner-tr"></div>
           <div class="panel-corner corner-bl"></div>
           <div class="panel-corner corner-br"></div>
-          <h4 style="font-family: var(--font-header); font-size: 0.75rem; letter-spacing: 0.1em; margin-bottom: 15px; text-transform: uppercase; color: var(--accent-cyan);">Request Nomor Surat</h4>
+          <h4 style="font-family: var(--font-header); font-size: 0.95rem; margin-bottom: 20px; text-transform: uppercase; color: var(--accent-cyan);">Request Nomor Surat</h4>
           <div class="form-grid">
             <div class="form-group">
               <label>Nama Pengusul / Divisi</label>
-              <input type="text" class="form-control" placeholder="Contoh: Ristek / Nama" required>
+              <input type="text" class="form-control" placeholder="Contoh: Ristek / Nama" required style="border-radius:10px;">
             </div>
             <div class="form-group">
               <label>Kategori Surat</label>
-              <select class="form-control" required style="background: var(--color-black);">
+              <select class="form-control" required style="background: var(--color-bg-deep); border-radius:10px;">
                 <option value="permohonan">Surat Permohonan</option>
                 <option value="undangan">Surat Undangan</option>
                 <option value="tugas">Surat Tugas</option>
@@ -289,17 +381,17 @@
             </div>
             <div class="form-group full-width">
               <label>Perihal Surat</label>
-              <input type="text" class="form-control" placeholder="Perihal pengajuan dana / izin ruang lab..." required>
+              <input type="text" class="form-control" placeholder="Perihal pengajuan dana / izin ruang lab..." required style="border-radius:10px;">
             </div>
           </div>
-          <button type="submit" class="btn-ghost btn-cyan" style="margin-top: 20px; padding: 10px 20px; font-size: 0.6rem;">Kirim Request</button>
+          <button type="submit" class="btn-pill btn-lime" style="margin-top: 20px; padding: 12px 24px; font-size: 0.8rem;">Kirim Request</button>
         </form>
       </div>
     </div>
   </section>
 
   <!-- ==========================================================================
-       SLIDE 7: EINSTEIN KALENDER (HIMA & ORMAWA Events)
+       SLIDE 7: EINSTEIN KALENDER
        ========================================================================== -->
   <section id="kalender" class="section" style="background-image: url('https://images.unsplash.com/photo-1484704849700-f032a568e944?q=80&w=1920&auto=format&fit=crop');">
     <div class="section-overlay"></div>
@@ -311,13 +403,13 @@
         <!-- Explainer and legend -->
         <div>
           <p class="section-desc">Pemantau agenda kegiatan Himpunan Mahasiswa Elektronika Instrumentasi serta jadwal kegiatan ORMAWA tingkat kampus Poltek Nuklir.</p>
-          <div class="tactical-panel" style="padding: 20px; margin-top: 20px;">
+          <div class="tactical-panel" style="padding: 24px; margin-top: 20px; border-radius: 20px;">
             <div class="panel-corner corner-tl"></div>
             <div class="panel-corner corner-tr"></div>
             <div class="panel-corner corner-bl"></div>
             <div class="panel-corner corner-br"></div>
-            <h4 style="font-family: var(--font-header); font-size: 0.7rem; letter-spacing: 0.1em; margin-bottom: 12px; text-transform: uppercase; color: var(--accent-cyan);">Agenda Aktif Terdekat:</h4>
-            <ul style="font-size: 0.8rem; list-style: none; display: flex; flex-direction: column; gap: 8px;">
+            <h4 style="font-family: var(--font-header); font-size: 0.85rem; margin-bottom: 15px; text-transform: uppercase; color: var(--accent-cyan);">Agenda Aktif Terdekat:</h4>
+            <ul style="font-size: 0.9rem; list-style: none; display: flex; flex-direction: column; gap: 10px;">
               <li>📅 <strong>15 Juli:</strong> Einstein Festival (E-Fest) 🚀</li>
               <li>📅 <strong>20 Juli:</strong> Ristek Mengajar Sebaya 🔬</li>
               <li>📅 <strong>28 Juli:</strong> Evaluasi Tengah Tahun Kabinet 🪙</li>
@@ -329,7 +421,7 @@
         <div class="calendar-widget">
           <div class="calendar-header">
             <span>JULI 2026</span>
-            <span style="color: var(--accent-cyan);">KABINET PHÓTISMA</span>
+            <span style="color: var(--accent-lime); font-weight:600;">KABINET PHÓTISMA</span>
           </div>
           <div class="calendar-days">
             <span>SE</span><span>SE</span><span>RA</span><span>KA</span><span>JU</span><span>SA</span><span>MI</span>
@@ -374,7 +466,7 @@
             <div class="calendar-cell"><span>25</span></div>
             <div class="calendar-cell"><span>26</span></div>
           </div>
-          <div class="calendar-legend">
+          <div class="calendar-legend" style="font-size:0.8rem; margin-top:20px;">
             <div class="legend-item"><span class="event-dot hima-dot"></span> HIMA EINSTEIN</div>
             <div class="legend-item"><span class="event-dot ormawa-dot"></span> ORMAWA Kampus</div>
           </div>
