@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
    ========================================================================== */
 function initNavbar() {
   const navbar = document.querySelector('.navbar');
-  const scrollContainer = document.documentElement; // html node
   
   window.addEventListener('scroll', () => {
     if (window.scrollY > 50) {
@@ -25,7 +24,7 @@ function initNavbar() {
 
 function initScrollSpy() {
   const sections = document.querySelectorAll('.section');
-  const navLinks = document.querySelectorAll('.nav-links a');
+  const navLinks = document.querySelectorAll('.nav-links > li > a');
   
   const options = {
     root: null,
@@ -51,7 +50,7 @@ function initScrollSpy() {
 }
 
 /* ==========================================================================
-   CONSOLE DRAWER CONTROL
+   CONSOLE DRAWER CONTROL (Einstein Sphere & Dropdown)
    ========================================================================== */
 window.openConsole = function(divisionId) {
   const drawer = document.getElementById('console-drawer');
@@ -71,7 +70,7 @@ window.openConsole = function(divisionId) {
     
     drawer.classList.add('open');
 
-    // If Danus, render cart
+    // If Danus is opened via the sphere dropdown
     if (divisionId === 'danus') {
       renderCart();
     }
@@ -93,7 +92,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 /* ==========================================================================
-   DIVISION DATA & RENDERERS
+   DIVISION DATA & RENDERERS FOR DRAWER
    ========================================================================== */
 const DIVISION_DATA = {
   bph: {
@@ -286,7 +285,7 @@ const DIVISION_DATA = {
     icon: '🛒',
     render: () => `
       <div class="danus-hub">
-        <div class="product-grid">
+        <div class="product-grid" style="grid-template-columns: 1fr 1fr;">
           <div class="product-card">
             <div class="product-img">👕</div>
             <div class="product-info">
@@ -305,9 +304,9 @@ const DIVISION_DATA = {
           </div>
         </div>
 
-        <div class="cart-panel">
+        <div class="cart-panel" style="margin-top: 20px;">
           <div class="cart-title">
-            <span>Keranjang Belanja</span>
+            <span>Keranjang Belanja (Drawer)</span>
             <span id="cart-count">0</span>
           </div>
           <div class="cart-items" id="cart-items-list">
@@ -350,7 +349,7 @@ const DIVISION_DATA = {
     desc: 'Portal peminjaman alat penunjang praktikum mahasiswa (solder, multimeter, starter kit Arduino) secara transparan.',
     icon: '📦',
     render: () => `
-      <div class="asset-grid">
+      <div class="asset-grid" style="grid-template-columns: 1fr 1fr;">
         <div class="asset-card">
           <div class="asset-header">
             <span style="font-size: 1.5rem;">📟</span>
@@ -375,7 +374,7 @@ const DIVISION_DATA = {
 };
 
 /* ==========================================================================
-   DANA USAHA CART ENGINE
+   EINSTEIN MARKET: E-COMMERCE CART ENGINE (Dual-sync)
    ========================================================================== */
 let cart = [];
 
@@ -396,23 +395,11 @@ window.removeFromCart = function(productName) {
 };
 
 function renderCart() {
-  const list = document.getElementById('cart-items-list');
-  const count = document.getElementById('cart-count');
-  const total = document.getElementById('cart-total-price');
+  const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
   
-  if (!list || !count || !total) return;
-
-  if (cart.length === 0) {
-    list.innerHTML = `<p style="color: var(--text-muted); font-size: 0.8rem; text-align: center;">Keranjang belanja kosong.</p>`;
-    count.textContent = '0';
-    total.textContent = 'Rp 0';
-    return;
-  }
-
-  count.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-  
+  // Calculate total price
   let totalPrice = 0;
-  list.innerHTML = cart.map(item => {
+  const itemsHtml = cart.map(item => {
     totalPrice += item.price * item.quantity;
     return `
       <div class="cart-item">
@@ -425,7 +412,37 @@ function renderCart() {
     `;
   }).join('');
 
-  total.textContent = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+  // 1. Update Market Slide Cart (if present)
+  const marketCount = document.getElementById('market-cart-count');
+  const marketList = document.getElementById('market-cart-list');
+  const marketTotal = document.getElementById('market-cart-total');
+
+  if (marketCount && marketList && marketTotal) {
+    marketCount.textContent = totalQty;
+    if (cart.length === 0) {
+      marketList.innerHTML = `<p style="color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 20px 0;">Keranjang kosong.</p>`;
+      marketTotal.textContent = 'Rp 0';
+    } else {
+      marketList.innerHTML = itemsHtml;
+      marketTotal.textContent = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+    }
+  }
+
+  // 2. Update Console Drawer Cart (if open)
+  const drawerCount = document.getElementById('cart-count');
+  const drawerList = document.getElementById('cart-items-list');
+  const drawerTotal = document.getElementById('cart-total-price');
+
+  if (drawerCount && drawerList && drawerTotal) {
+    drawerCount.textContent = totalQty;
+    if (cart.length === 0) {
+      drawerList.innerHTML = `<p style="color: var(--text-muted); font-size: 0.8rem; text-align: center;">Keranjang belanja kosong.</p>`;
+      drawerTotal.textContent = 'Rp 0';
+    } else {
+      drawerList.innerHTML = itemsHtml;
+      drawerTotal.textContent = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+    }
+  }
 }
 
 window.checkoutCart = function() {
