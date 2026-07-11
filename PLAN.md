@@ -20,35 +20,35 @@ Untuk memudahkan kolaborasi tim dan memfasilitasi fitur-fitur interaktif (sepert
 
 ---
 
-## 📂 Fitur Utama & Pembagian Halaman Divisi
+## 📂 Fitur Utama & Struktur Halaman (7 Landing Page Dedicated)
+Setiap tab pada navigasi utama akan diimplementasikan sebagai halaman (route) mandiri yang memiliki layout dan fungsionalitas khusus:
 
-### 1. Landing Page (Beranda)
-* **Hero Banner:** Efek visual partikel atom interaktif dengan slogan kabinet Phótisma.
-* **Sekilas HIMA EINSTEIN & Kabinet:** Visi, misi, dan sambutan dari Ketua Himpunan.
-* **Menu Cepat / Quick Access:** Navigasi cepat ke masing-masing divisi.
+### 1. Halaman Beranda (Home)
+* *Konten:* Profil lengkap HIMA, Sambutan Ketua Himpunan, Visi & Misi Kabinet Phótisma, Nilai-nilai organisasi, dan Video profil Himpunan.
 
-### 2. Halaman Divisi & Program Kerja Spesifik
-Setiap divisi akan memiliki sub-page interaktif yang memaparkan profil dan program kerja unggulan mereka:
+### 2. Halaman Einstein Sphere (Sektor Divisi Hub)
+* *Konten:* Hub khusus yang memaparkan 8 divisi kerja Himpunan (BPH, Internal, External, Ristek, Pengma, Danus, Kominfo, Logistik).
+* *Fitur:* Dropdown cepat pada navbar dan kartu interaktif yang meluncurkan *Console Drawer* detail program kerja masing-masing divisi dari kanan layar.
 
-* **Badan Pengurus Harian (BPH)**
-  * *Fitur:* Bagan struktur organisasi interaktif (Organizational Chart) dengan foto pengurus dan profil singkat. Timeline program kerja tahunan Himpunan.
-* **Internal**
-  * *Fitur:* (Rencana fitur sedang disusun bersama tim).
-* **External**
-  * *Fitur:* Hub hubungan masyarakat, form pengajuan kerja sama/kunjungan industri, dan portal jejaring alumni HIMA EINSTEIN.
-* **Riset dan Teknologi (Ristek)**
-  * *Einstein Vault (Bank Soal & Materi):* Portal database akademis berisi materi kuliah, modul praktikum, dan bank soal Elektronika & Instrumentasi Nuklir.
-  * *Fitur Ristek Mengajar & Guru Les:* Portal pendaftaran tutor (pengajar) dan pencarian guru les privat bagi mahasiswa.
-  * *Fitur Project Collaboration:* Papan pengumuman proyek riset aktif (seperti IoT, robotika, instrumentasi nuklir) di mana anggota bisa mendaftar untuk berkolaborasi.
-* **Pengembangan Mahasiswa (Pengma)**
-  * *Fitur:* Pusat karir (informasi magang/lowongan kerja bidang nuklir/instrumentasi), kalender pelatihan kompetensi (PLC, Arduino, LabVIEW), dan galeri prestasi mahasiswa.
-* **Dana Usaha (Danus)**
-  * *Fitur E-Commerce/Katalog Produk:* Toko online resmi HIMA EINSTEIN. Menjual merchandise (PDH, kaos, gantungan kunci, stiker) dengan fitur keranjang belanja virtual dan checkout terintegrasi langsung ke WhatsApp Danus.
-* **Kominfo**
-  * *Fitur:* Feed media sosial terintegrasi (Instagram/YouTube), galeri buletin/podcast Himpunan, serta bank rilis pers resmi.
-* **Aset dan Logistik**
-  * *Fitur Peminjaman Inventaris:* Portal digital untuk manajemen dan pengajuan peminjaman alat praktikum (multimeter, solder, dll.) serta aset logistik Himpunan.
-  * *Dashboard Ketersediaan:* Halaman visual yang menampilkan status ketersediaan dan kondisi aset Himpunan secara real-time.
+### 3. Halaman Einstein Market (Dana Usaha Store)
+* *Konten:* Toko online e-commerce resmi HIMA EINSTEIN untuk penjualan merchandise eksklusif (PDH, Kaos, Jaket, Ganci).
+* *Fitur:* Grid produk dinamis, Shopping Cart terintegrasi, dan tombol checkout instan terhubung ke WhatsApp.
+
+### 4. Halaman Einstein Quest (Sejarah & Dokumentasi)
+* *Konten:* Linimasa (Timeline) perjalanan Himpunan dari tahun berdiri hingga era Kabinet Phótisma.
+* *Fitur:* Dokumenter sejarah interaktif, arsip foto-foto kegiatan penting, dan sorotan pencapaian Himpunan.
+
+### 5. Halaman Einstein Space (Peminjaman Alat)
+* *Konten:* Portal peminjaman instrumen laboratorium (Multimeter, Solder, Arduino Kit) milik Himpunan.
+* *Fitur:* Status ketersediaan alat secara real-time (Tersedia / Dipinjam) dan form reservasi booking WhatsApp otomatis.
+
+### 6. Halaman Sekretariat (Dokumen & Persuratan)
+* *Konten:* Portal administrasi digital bagi seluruh anggota Himpunan.
+* *Fitur:* Download center untuk template berkas resmi (Proposal, LPJ, Surat Undangan) dan form pengajuan nomor surat resmi ke BPH.
+
+### 7. Halaman Einstein Kalender (Agenda Ormawa)
+* *Konten:* Kalender agenda kegiatan terintegrasi bulanan.
+* *Fitur:* Kalender ormawa interaktif yang menayangkan jadwal kegiatan HIMA EINSTEIN dan agenda ormawa eksternal kampus Poltek Nuklir.
 
 ---
 
