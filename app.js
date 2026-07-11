@@ -34,8 +34,8 @@ function initParticles() {
   let height = canvas.height = canvas.offsetHeight;
   
   const particles = [];
-  const particleCount = 45;
-  const connectionDistance = 110;
+  const particleCount = 40;
+  const connectionDistance = 120;
   
   window.addEventListener('resize', () => {
     width = canvas.width = canvas.offsetWidth;
@@ -46,9 +46,9 @@ function initParticles() {
     constructor() {
       this.x = Math.random() * width;
       this.y = Math.random() * height;
-      this.vx = (Math.random() - 0.5) * 0.6;
-      this.vy = (Math.random() - 0.5) * 0.6;
-      this.radius = Math.random() * 2 + 1;
+      this.vx = (Math.random() - 0.5) * 0.4;
+      this.vy = (Math.random() - 0.5) * 0.4;
+      this.radius = Math.random() * 1.5 + 0.5;
     }
 
     update() {
@@ -62,11 +62,11 @@ function initParticles() {
     draw() {
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = '#00E5FF';
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = '#00E5FF';
+      ctx.fillStyle = '#00F0FF';
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = '#00F0FF';
       ctx.fill();
-      ctx.shadowBlur = 0; // Reset shadow
+      ctx.shadowBlur = 0; // Reset
     }
   }
 
@@ -82,7 +82,7 @@ function initParticles() {
       p.draw();
     });
 
-    // Draw lines
+    // Draw connecting lines
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const dx = particles[i].x - particles[j].x;
@@ -93,8 +93,8 @@ function initParticles() {
           ctx.beginPath();
           ctx.moveTo(particles[i].x, particles[i].y);
           ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(0, 229, 255, ${0.15 * (1 - dist / connectionDistance)})`;
-          ctx.lineWidth = 0.8;
+          ctx.strokeStyle = `rgba(0, 240, 255, ${0.1 * (1 - dist / connectionDistance)})`;
+          ctx.lineWidth = 0.5;
           ctx.stroke();
         }
       }
@@ -112,32 +112,28 @@ function initParticles() {
 const DIVISION_DATA = {
   bph: {
     title: 'Badan Pengurus Harian (BPH)',
-    desc: 'Pusat komando, kesekretariatan, dan keuangan Kabinet Phótisma.',
+    desc: 'Kesekretariatan pusat, perumusan kebijakan anggaran, dan administrasi Himpunan.',
     icon: '⚡',
     render: () => `
       <div class="bph-chart">
         <div class="chart-level">
           <div class="member-node">
-            <div class="avatar-placeholder">👨‍💼</div>
-            <h4>Kahim HIMA</h4>
+            <h4 style="color: var(--accent-cyan);">KAHIM HIMA</h4>
             <p>Ketua Himpunan</p>
           </div>
           <div class="member-node">
-            <div class="avatar-placeholder">👩‍💼</div>
-            <h4>Wakahim HIMA</h4>
+            <h4 style="color: var(--accent-cyan);">WAKAHIM HIMA</h4>
             <p>Wakil Ketua Himpunan</p>
           </div>
         </div>
         <div class="chart-level">
           <div class="member-node">
-            <div class="avatar-placeholder">📝</div>
-            <h4>Sekretaris I & II</h4>
-            <p>Administrasi & Arsip</p>
+            <h4>SEKRETARIS I & II</h4>
+            <p>Administrasi & Pengarsipan</p>
           </div>
           <div class="member-node">
-            <div class="avatar-placeholder">🪙</div>
-            <h4>Bendahara I & II</h4>
-            <p>Manajemen Keuangan</p>
+            <h4>BENDAHARA I & II</h4>
+            <p>Pengelolaan Keuangan & Anggaran</p>
           </div>
         </div>
       </div>
@@ -145,53 +141,58 @@ const DIVISION_DATA = {
   },
   internal: {
     title: 'Internal',
-    desc: 'Menjaga keakraban pengurus, menampung aspirasi, dan mengeratkan hubungan antar-anggota.',
+    desc: 'Menyelaraskan kekerabatan pengurus Himpunan dan merumuskan kegiatan bonding.',
     icon: '🤝',
     render: () => `
       <div class="hub-placeholder">
-        <div class="hub-placeholder-icon">🛠️</div>
-        <h3>Divisi Internal</h3>
-        <p>Program kerja dan fitur interaktif divisi Internal sedang dirumuskan bersama tim untuk menjaga ikatan keakraban seluruh pengurus.</p>
+        <div class="hub-placeholder-icon"><i class="fa-solid fa-terminal"></i></div>
+        <h3>Console Internal: Offline</h3>
+        <p>Detail program kerja dan fitur khusus divisi Internal sedang dirumuskan secara mendalam oleh tim pengurus.</p>
       </div>
     `
   },
   external: {
     title: 'External',
-    desc: 'Menghubungkan HIMA EINSTEIN dengan pihak luar, alumni, industri, dan himpunan mahasiswa lainnya.',
+    desc: 'Hub relasi luar, kemitraan industri, alumni, dan hubungan antar-himpunan.',
     icon: '🌐',
     render: () => `
       <div class="ristek-vault">
-        <h4>Hubungan Luar & Kolaborasi</h4>
-        <p style="color: var(--text-secondary); margin-bottom: 20px;">Daftarkan instansi atau Himpunan Anda untuk mengadakan kunjungan industri, studi banding, atau kemitraan strategis.</p>
-        <form class="glass-panel" style="padding: 24px;" onsubmit="alert('Formulir kemitraan berhasil dikirim!'); return false;">
+        <p style="color: var(--text-gray); margin-bottom: 24px; font-weight: 300;">Daftarkan instansi atau Himpunan Anda untuk pengajuan kerjasama, studi banding, maupun kemitraan strategis.</p>
+        
+        <form class="tactical-panel" style="padding: 30px;" onsubmit="alert('Formulir kemitraan berhasil terkirim!'); return false;">
+          <div class="panel-corner corner-tl"></div>
+          <div class="panel-corner corner-tr"></div>
+          <div class="panel-corner corner-bl"></div>
+          <div class="panel-corner corner-br"></div>
+          
           <div class="form-grid">
             <div class="form-group">
               <label>Nama Instansi / Himpunan</label>
               <input type="text" class="form-control" placeholder="Contoh: HMTC ITS" required>
             </div>
             <div class="form-group">
-              <label>Email Kontak</label>
+              <label>Alamat Email Resmi</label>
               <input type="email" class="form-control" placeholder="nama@domain.com" required>
             </div>
             <div class="form-group full-width">
-              <label>Tujuan Kunjungan / Kerjasama</label>
-              <textarea class="form-control" rows="3" placeholder="Jelaskan secara singkat rencana kolaborasi..." required></textarea>
+              <label>Tujuan Kemitraan / Kerjasama</label>
+              <textarea class="form-control" rows="3" placeholder="Deskripsikan rencana kolaborasi secara ringkas..." required></textarea>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Kirim Pengajuan</button>
+          <button type="submit" class="btn-ghost btn-cyan" style="margin-top: 30px;">Kirim Pengajuan</button>
         </form>
       </div>
     `
   },
   ristek: {
     title: 'Riset dan Teknologi (Ristek)',
-    desc: 'Pusat riset, pengembangan iptek elektronika nuklir, pendaftaran tutor, dan repositori akademik.',
+    desc: 'Pengembangan teknologi nuklir instrumentasi, modul pelajaran, dan kolaborasi proyek sains.',
     icon: '🔬',
     render: () => `
       <div class="ristek-container">
         <div class="ristek-tabs">
-          <button class="ristek-tab-btn active" onclick="switchRistekTab('vault')">Einstein Vault (Bank Soal)</button>
-          <button class="ristek-tab-btn" onclick="switchRistekTab('les')">Ristek Mengajar (Tutor)</button>
+          <button class="ristek-tab-btn active" onclick="switchRistekTab('vault')">Einstein Vault</button>
+          <button class="ristek-tab-btn" onclick="switchRistekTab('les')">Ristek Mengajar</button>
           <button class="ristek-tab-btn" onclick="switchRistekTab('proyek')">Project Collaboration</button>
         </div>
 
@@ -201,53 +202,59 @@ const DIVISION_DATA = {
             <div class="vault-item">
               <div class="vault-info">
                 <h4>Bank Soal UTS: Mikroprosesor & Mikrokontroler</h4>
-                <p>Format: PDF | Ukuran: 2.4 MB | Diunggah: 2 hari lalu</p>
+                <p>Format: PDF | Ukuran: 2.4 MB | Kategori: Elektronika</p>
               </div>
-              <a href="#" class="download-link" onclick="alert('Mengunduh Soal UTS Mikro...'); return false;">⬇️ Unduh</a>
+              <a href="#" class="download-link" onclick="alert('Mengunduh Soal UTS...'); return false;">Unduh File <i class="fa-solid fa-download"></i></a>
             </div>
             <div class="vault-item">
               <div class="vault-info">
-                <h4>Modul Praktikum: Sensor Radiasi Nuklir & Detektor</h4>
-                <p>Format: PDF | Ukuran: 4.8 MB | Diunggah: 1 minggu lalu</p>
+                <h4>Modul Praktikum: Sensor Radiasi & Detektor Nuklir</h4>
+                <p>Format: PDF | Ukuran: 4.8 MB | Kategori: Instrumentasi Nuklir</p>
               </div>
-              <a href="#" class="download-link" onclick="alert('Mengunduh Modul Detektor...'); return false;">⬇️ Unduh</a>
+              <a href="#" class="download-link" onclick="alert('Mengunduh Modul Detektor...'); return false;">Unduh File <i class="fa-solid fa-download"></i></a>
             </div>
             <div class="vault-item">
               <div class="vault-info">
                 <h4>Catatan Kuliah: Elektronika Analog Lanjut</h4>
-                <p>Format: PDF | Ukuran: 12.1 MB | Diunggah: 3 minggu lalu</p>
+                <p>Format: PDF | Ukuran: 12.1 MB | Kategori: Dasar Eleka</p>
               </div>
-              <a href="#" class="download-link" onclick="alert('Mengunduh Catatan Elekan...'); return false;">⬇️ Unduh</a>
+              <a href="#" class="download-link" onclick="alert('Mengunduh Catatan Elekan...'); return false;">Unduh File <i class="fa-solid fa-download"></i></a>
             </div>
           </div>
         </div>
 
         <!-- Ristek Mengajar / Guru Les -->
         <div id="tab-les" class="ristek-tab-content">
-          <p style="color: var(--text-secondary); margin-bottom: 20px;">Butuh bimbingan belajar tambahan atau ingin mendaftar sebagai tutor sebaya di HIMA EINSTEIN? Daftarkan diri Anda di bawah.</p>
-          <form class="glass-panel" style="padding: 24px;" onsubmit="alert('Pendaftaran Ristek Mengajar berhasil dikirim!'); return false;">
+          <p style="color: var(--text-gray); margin-bottom: 24px; font-weight: 300;">Daftarkan diri Anda sebagai tutor sebaya atau ajukan permohonan pendampingan belajar mata kuliah instrumentasi.</p>
+          
+          <form class="tactical-panel" style="padding: 30px;" onsubmit="alert('Pendaftaran Ristek Mengajar berhasil terkirim!'); return false;">
+            <div class="panel-corner corner-tl"></div>
+            <div class="panel-corner corner-tr"></div>
+            <div class="panel-corner corner-bl"></div>
+            <div class="panel-corner corner-br"></div>
+            
             <div class="form-grid">
               <div class="form-group">
                 <label>Nama Lengkap</label>
                 <input type="text" class="form-control" placeholder="Nama Anda" required>
               </div>
               <div class="form-group">
-                <label>Pilih Peran</label>
-                <select class="form-control" required>
+                <label>Pilih Kategori Peran</label>
+                <select class="form-control" required style="background: var(--color-black);">
                   <option value="murid">Saya Butuh Tutor (Murid)</option>
-                  <option value="tutor">Saya Ingin Mengajar (Tutor)</option>
+                  <option value="tutor">Saya Bersedia Mengajar (Tutor)</option>
                 </select>
               </div>
               <div class="form-group">
                 <label>Mata Kuliah / Bidang</label>
-                <input type="text" class="form-control" placeholder="Contoh: Fisika Radiasi, Pemrograman C++" required>
+                <input type="text" class="form-control" placeholder="Contoh: Pemrograman C++, Fisika Radiasi" required>
               </div>
               <div class="form-group">
-                <label>Kontak WhatsApp</label>
-                <input type="text" class="form-control" placeholder="08xxxxxxxxx" required>
+                <label>No. WhatsApp Kontak</label>
+                <input type="text" class="form-control" placeholder="08xxxxxxxxxx" required>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Daftar Sekarang</button>
+            <button type="submit" class="btn-ghost btn-cyan" style="margin-top: 30px;">Daftar Sekarang</button>
           </form>
         </div>
 
@@ -256,15 +263,15 @@ const DIVISION_DATA = {
           <div class="project-board">
             <div class="project-item">
               <span class="project-tag">IoT & Radiasi</span>
-              <h4>Sistem Monitor Radiasi Real-time</h4>
-              <p>Membangun modul sensor radiasi Geiger-Müller portabel berbasis ESP32 yang terhubung ke dashboard IoT publik.</p>
-              <button class="btn btn-secondary btn-sm" onclick="alert('Terima kasih telah bergabung di proyek Sistem Monitor Radiasi. Ketua proyek akan menghubungi Anda via WhatsApp.');">Gabung Proyek</button>
+              <h4>Sistem Monitor Radiasi Real-Time</h4>
+              <p>Pengembangan detektor radiasi modular portabel berbasis ESP32 dan tabung Geiger-Müller terintegrasi dashboard cloud.</p>
+              <button class="btn-ghost btn-cyan" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Terima kasih telah mengajukan kolaborasi proyek. Ketua proyek akan menghubungi Anda via WhatsApp.');">Gabung Proyek</button>
             </div>
             <div class="project-item">
               <span class="project-tag">Robotika</span>
-              <h4>Robot Detektor Kebocoran Lab</h4>
-              <p>Desain mobile robot beroda tank untuk melakukan inspeksi laboratorium gas dan lingkungan lab radiasi nuklir secara otonom.</p>
-              <button class="btn btn-secondary btn-sm" onclick="alert('Terima kasih telah bergabung di proyek Robot Detektor. Ketua proyek akan menghubungi Anda via WhatsApp.');">Gabung Proyek</button>
+              <h4>Otonom Mobile Robot Inspeksi Lab</h4>
+              <p>Membangun robot tank pemantau kebocoran radiasi otonom untuk inspeksi area steril laboratorium nuklir.</p>
+              <button class="btn-ghost btn-cyan" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Terima kasih telah mengajukan kolaborasi proyek. Ketua proyek akan menghubungi Anda via WhatsApp.');">Gabung Proyek</button>
             </div>
           </div>
         </div>
@@ -273,25 +280,25 @@ const DIVISION_DATA = {
   },
   pengma: {
     title: 'Pengembangan Mahasiswa (Pengma)',
-    desc: 'Pengembangan soft skill, karir, info magang, serta peningkatan kompetensi mahasiswa Elektronika Instrumentasi.',
+    desc: 'Pengembangan karir, pelatihan kompetensi industri, soft skill, dan info rekrutmen magang.',
     icon: '🚀',
     render: () => `
       <div class="pengma-hub">
-        <h4 style="margin-bottom: 20px;">Info Pelatihan & Karir Terkini</h4>
+        <p style="color: var(--text-gray); margin-bottom: 24px; font-weight: 300;">Daftarkan diri Anda untuk mengikuti agenda peningkatan kompetensi profesional bidang instrumentasi berikut.</p>
         <div class="vault-list">
           <div class="vault-item">
             <div class="vault-info">
               <h4>Pelatihan Sertifikasi PLC Siemens S7-1200</h4>
-              <p>Tanggal: 25 Juli 2026 | Kuota: Terbatas | Lokasi: Lab Kendali</p>
+              <p>Jadwal: 25 Juli 2026 | Lokasi: Lab Kendali Industri | Kuota: 20 Orang</p>
             </div>
-            <button class="btn btn-primary btn-sm" style="padding: 6px 14px; font-size: 0.85rem;" onclick="alert('Pendaftaran Sertifikasi PLC berhasil!');">Daftar Pelatihan</button>
+            <button class="btn-ghost btn-cyan" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Pendaftaran Sertifikasi PLC berhasil dikirim!');">Daftar Pelatihan</button>
           </div>
           <div class="vault-item">
             <div class="vault-info">
-              <h4>Info Magang: PT. Thorcon Power Indonesia (Instrumentation Intern)</h4>
-              <p>Deadline: 1 Agustus 2026 | Kategori: Magang Industri</p>
+              <h4>Instrumentation Intern (Magang) - PT. Thorcon Power Indonesia</h4>
+              <p>Deadline: 1 Agustus 2026 | Kategori: Magang Kerja Industri</p>
             </div>
-            <button class="btn btn-secondary btn-sm" style="padding: 6px 14px; font-size: 0.85rem;" onclick="alert('Membuka tautan magang Thorcon...');">Detail Lowongan</button>
+            <button class="btn-ghost" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Membuka tautan portal rekrutmen Thorcon...');">Detail Lowongan</button>
           </div>
         </div>
       </div>
@@ -299,7 +306,7 @@ const DIVISION_DATA = {
   },
   danus: {
     title: 'Dana Usaha (Danus)',
-    desc: 'Toko online resmi HIMA EINSTEIN menjual merchandise eksklusif dengan checkout WhatsApp.',
+    desc: 'Store merchandise resmi HIMA EINSTEIN dengan sistem pemesanan langsung terhubung ke WhatsApp.',
     icon: '🛒',
     render: () => `
       <div class="danus-hub">
@@ -310,7 +317,7 @@ const DIVISION_DATA = {
             <div class="product-info">
               <span class="product-name">PDH HIMA EINSTEIN 2026</span>
               <span class="product-price">Rp 135.000</span>
-              <button class="btn btn-primary product-btn" onclick="addToCart('PDH HIMA EINSTEIN 2026', 135000)">+ Keranjang</button>
+              <button class="btn-ghost btn-cyan product-btn" onclick="addToCart('PDH HIMA EINSTEIN 2026', 135000)">+ Tambah</button>
             </div>
           </div>
           <div class="product-card">
@@ -318,7 +325,7 @@ const DIVISION_DATA = {
             <div class="product-info">
               <span class="product-name">Jaket Bomber Phótisma</span>
               <span class="product-price">Rp 185.000</span>
-              <button class="btn btn-primary product-btn" onclick="addToCart('Jaket Bomber Phótisma', 185000)">+ Keranjang</button>
+              <button class="btn-ghost btn-cyan product-btn" onclick="addToCart('Jaket Bomber Phótisma', 185000)">+ Tambah</button>
             </div>
           </div>
           <div class="product-card">
@@ -326,7 +333,7 @@ const DIVISION_DATA = {
             <div class="product-info">
               <span class="product-name">Gantungan Kunci Kayu Logo</span>
               <span class="product-price">Rp 15.000</span>
-              <button class="btn btn-primary product-btn" onclick="addToCart('Gantungan Kunci Kayu Logo', 15000)">+ Keranjang</button>
+              <button class="btn-ghost btn-cyan product-btn" onclick="addToCart('Gantungan Kunci Kayu Logo', 15000)">+ Tambah</button>
             </div>
           </div>
         </div>
@@ -334,18 +341,18 @@ const DIVISION_DATA = {
         <!-- Cart Panel -->
         <div class="cart-panel">
           <div class="cart-title">
-            <span>🛒 Keranjang Belanja</span>
+            <span>Keranjang Belanja</span>
             <span id="cart-count">0</span>
           </div>
           <div class="cart-items" id="cart-items-list">
-            <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 20px 0;">Keranjang belanja Anda kosong.</p>
+            <p style="color: var(--text-dark-gray); font-size: 0.85rem; text-align: center; padding: 20px 0; font-family: var(--font-header);">Cart Empty</p>
           </div>
           <div class="cart-total">
-            <span>Total:</span>
+            <span>Total Pembayaran:</span>
             <span id="cart-total-price">Rp 0</span>
           </div>
-          <button class="btn checkout-btn" onclick="checkoutCart()">
-            <span>💬 Checkout via WhatsApp</span>
+          <button class="checkout-btn" onclick="checkoutCart()">
+            <i class="fa-brands fa-whatsapp"></i> Checkout via WhatsApp
           </button>
         </div>
       </div>
@@ -353,23 +360,23 @@ const DIVISION_DATA = {
   },
   kominfo: {
     title: 'Komunikasi dan Informasi (Kominfo)',
-    desc: 'Pusat publikasi digital, manajemen media sosial, dokumentasi, dan hubungan eksternal digital.',
+    desc: 'Manajemen penyiaran berita, media publikasi buletin, dan podcast sains terintegrasi.',
     icon: '📢',
     render: () => `
       <div class="kominfo-hub">
-        <h4 style="margin-bottom: 20px;">Publikasi & Konten Media Einstein</h4>
+        <p style="color: var(--text-gray); margin-bottom: 24px; font-weight: 300;">Simak dan baca publikasi resmi terbaru dari HIMA EINSTEIN.</p>
         <div class="project-board">
           <div class="project-item">
-            <span class="project-tag" style="background: rgba(255, 215, 0, 0.1); color: var(--accent-gold);">Podcast Einstein</span>
-            <h4>Episode #12: Masa Depan Reaktor Nuklir Modular di Indonesia</h4>
-            <p>Mendengarkan diskusi hangat bersama pakar reaktor nuklir BRIN mengenai potensi energi bersih berbasis PLTN.</p>
-            <button class="btn btn-secondary btn-sm" onclick="alert('Memutar podcast...');">▶️ Putar Podcast</button>
+            <span class="project-tag" style="color: var(--accent-gold); border-color: var(--accent-gold);">Podcast Einstein</span>
+            <h4>Episode #12: Masa Depan SMR (Small Modular Reactor) di RI</h4>
+            <p>Membahas peluang implementasi reaktor nuklir modular kecil sebagai penyuplai energi bersih di Indonesia.</p>
+            <button class="btn-ghost btn-cyan" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Memutar podcast audio...');">▶️ Putar Podcast</button>
           </div>
           <div class="project-item">
-            <span class="project-tag" style="background: rgba(255, 215, 0, 0.1); color: var(--accent-gold);">Rilis Buletin</span>
+            <span class="project-tag" style="color: var(--accent-gold); border-color: var(--accent-gold);">Rilis Buletin</span>
             <h4>Buletin EINSTEIN Vol. 7 (Edisi Juli 2026)</h4>
-            <p>Rangkuman kegiatan Himpunan selama triwulan pertama Kabinet Phótisma beserta info riset teknologi terbaru.</p>
-            <button class="btn btn-secondary btn-sm" onclick="alert('Membuka file Buletin PDF...');">📖 Baca Buletin</button>
+            <p>Kompilasi artikel riset instrumentasi dan rilis pers kegiatan Kabinet Phótisma selama triwulan pertama.</p>
+            <button class="btn-ghost btn-cyan" style="padding: 10px 20px; font-size: 0.65rem;" onclick="alert('Membuka buletin digital...');">📖 Baca Buletin</button>
           </div>
         </div>
       </div>
@@ -377,45 +384,42 @@ const DIVISION_DATA = {
   },
   aset_logistik: {
     title: 'Aset dan Logistik',
-    desc: 'Pengelolaan, inventarisasi, dan penyediaan alat pendukung kegiatan akademis serta praktikum mahasiswa.',
+    desc: 'Portal peminjaman instrumentasi lab Himpunan dan pemantauan ketersediaan aset logistik.',
     icon: '📦',
     render: () => `
       <div class="aset-container">
-        <div class="hub-header" style="border-bottom: none; margin-bottom: 15px; padding-bottom: 0;">
-          <div class="hub-title-text">
-            <p>Daftar inventaris alat Himpunan yang dapat dipinjam untuk kebutuhan praktikum, riset, atau kegiatan HIMA.</p>
-          </div>
-        </div>
+        <p style="color: var(--text-gray); margin-bottom: 24px; font-weight: 300;">Daftar instrumentasi & modul praktikum milik Himpunan. Pilih alat untuk mengajukan izin peminjaman.</p>
+        
         <div class="asset-grid">
           <div class="asset-card">
             <div class="asset-header">
-              <span class="asset-icon">📟</span>
+              <span style="font-size: 1.5rem;">📟</span>
               <span class="asset-status available">Tersedia</span>
             </div>
             <h4>Digital Multimeter Sanwa CD800a</h4>
             <span class="asset-id">ID: HIMA-MULT-002</span>
-            <p>Alat ukur tegangan, arus, dan hambatan presisi tinggi untuk praktikum rangkaian listrik.</p>
-            <button class="btn btn-primary btn-sm" style="font-size: 0.85rem;" onclick="borrowAsset('Digital Multimeter Sanwa CD800a', 'HIMA-MULT-002')">Ajukan Peminjaman</button>
+            <p>Instrumen ukur tegangan/arus presisi dengan fitur proteksi overload.</p>
+            <button class="btn-ghost btn-cyan" style="padding: 8px 16px; font-size: 0.65rem; width: 100%; margin-top: auto;" onclick="borrowAsset('Digital Multimeter Sanwa CD800a', 'HIMA-MULT-002')">Pinjam Alat</button>
           </div>
           <div class="asset-card">
             <div class="asset-header">
-              <span class="asset-icon">🔥</span>
-              <span class="asset-status borrowed">Sedang Dipinjam</span>
+              <span style="font-size: 1.5rem;">🔥</span>
+              <span class="asset-status borrowed">Dipinjam</span>
             </div>
             <h4>Solder Station Hakko FX-888D</h4>
             <span class="asset-id">ID: HIMA-SOLD-005</span>
-            <p>Solder station dengan pengaturan suhu digital konstan untuk pengerjaan PCB.</p>
-            <button class="btn btn-secondary btn-sm" style="font-size: 0.85rem;" disabled>Pinjam Alat</button>
+            <p>Solder station dengan pemanas konstan presisi untuk pengerjaan PCB.</p>
+            <button class="btn-ghost" style="padding: 8px 16px; font-size: 0.65rem; width: 100%; margin-top: auto;" disabled>Sedang Dipinjam</button>
           </div>
           <div class="asset-card">
             <div class="asset-header">
-              <span class="asset-icon">🔌</span>
+              <span style="font-size: 1.5rem;">🔌</span>
               <span class="asset-status available">Tersedia</span>
             </div>
             <h4>Arduino Starter Kit (Uno R3)</h4>
             <span class="asset-id">ID: HIMA-ARDU-011</span>
-            <p>Kit berisi Arduino Uno R3, kabel jumper, breadboard, sensor-sensor dasar, dan LED.</p>
-            <button class="btn btn-primary btn-sm" style="font-size: 0.85rem;" onclick="borrowAsset('Arduino Starter Kit (Uno R3)', 'HIMA-ARDU-011')">Ajukan Peminjaman</button>
+            <p>Kit lengkap development board Uno R3, breadboard, dan modul sensor dasar.</p>
+            <button class="btn-ghost btn-cyan" style="padding: 8px 16px; font-size: 0.65rem; width: 100%; margin-top: auto;" onclick="borrowAsset('Arduino Starter Kit (Uno R3)', 'HIMA-ARDU-011')">Pinjam Alat</button>
           </div>
         </div>
       </div>
@@ -442,6 +446,10 @@ function selectDivision(id, cardElement) {
   // Highlight clicked card
   if (cardElement) {
     cardElement.classList.add('active');
+  } else {
+    // Find card by division attribute if clicked from header
+    const card = document.querySelector(`.divisi-card[data-divisi="${id}"]`);
+    if (card) card.classList.add('active');
   }
 
   currentActiveDivision = id;
@@ -451,12 +459,9 @@ function selectDivision(id, cardElement) {
   if (data && hubContent) {
     hubContent.innerHTML = `
       <div class="hub-header">
-        <div class="hub-title">
-          <div class="hub-title-icon">${data.icon}</div>
-          <div class="hub-title-text">
-            <h3>${data.title}</h3>
-            <p>${data.desc}</p>
-          </div>
+        <div class="hub-title-text">
+          <h3>${data.title}</h3>
+          <p>${data.desc}</p>
         </div>
       </div>
       <div class="hub-body-content">
@@ -503,7 +508,7 @@ function renderCart() {
   if (!list || !count || !total) return;
 
   if (cart.length === 0) {
-    list.innerHTML = `<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 20px 0;">Keranjang belanja Anda kosong.</p>`;
+    list.innerHTML = `<p style="color: var(--text-dark-gray); font-size: 0.85rem; text-align: center; padding: 20px 0; font-family: var(--font-header);">Cart Empty</p>`;
     count.textContent = '0';
     total.textContent = 'Rp 0';
     return;
@@ -517,7 +522,7 @@ function renderCart() {
     return `
       <div class="cart-item">
         <div class="cart-item-name" title="${item.name}">${item.name} (${item.quantity}x)</div>
-        <div style="display:flex; gap:10px; align-items:center;">
+        <div style="display:flex; gap:12px; align-items:center;">
           <span>Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
           <button class="cart-item-remove" onclick="removeFromCart('${item.name}')">❌</button>
         </div>
