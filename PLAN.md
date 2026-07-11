@@ -33,9 +33,7 @@ Setiap divisi akan memiliki sub-page interaktif yang memaparkan profil dan progr
 * **Badan Pengurus Harian (BPH)**
   * *Fitur:* Bagan struktur organisasi interaktif (Organizational Chart) dengan foto pengurus dan profil singkat. Timeline program kerja tahunan Himpunan.
 * **Internal**
-  * *Fitur Peminjaman Inventaris:* Portal peminjaman alat-alat praktikum/elektronika (multimeter, solder, kit Arduino, osiloskop portabel, dll.) milik Himpunan.
-  * *Einstein Aspiration Hub:* Kotak saran dan aspirasi digital rahasia/anonim bagi pengurus dan anggota Himpunan.
-  * *Apresiasi Anggota & Kalender Keakraban:* Halaman penghargaan anggota berprestasi (Member of the Month) dan jadwal kegiatan bonding internal.
+  * *Fitur:* (Rencana fitur sedang disusun bersama tim).
 * **External**
   * *Fitur:* Hub hubungan masyarakat, form pengajuan kerja sama/kunjungan industri, dan portal jejaring alumni HIMA EINSTEIN.
 * **Riset dan Teknologi (Ristek)**
