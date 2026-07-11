@@ -4,10 +4,11 @@ Rencana ini dibuat untuk merancang dan membangun website resmi **Himpunan Elektr
 
 ---
 
-## 🌟 Identitas Visual & Estetika (Tema Phótisma)
-* **Warna Utama:** Sleek Dark Mode (Deep Charcoal `#0B0C10`, Obsidian `#1F2833`) dipadukan dengan aksen cahaya Phótisma (Gold/Yellow `#F2A900` atau `#FFD700` melambangkan cahaya/penerangan) dan warna biru neon/cyan atomik (`#66FCF1` melambangkan elektronika instrumentasi nuklir).
-* **Typography:** Menggunakan font modern dari Google Fonts seperti **Outfit** (untuk heading besar dan modern) dan **Inter** (untuk keterbacaan tinggi pada teks konten).
-* **Micro-Animations:** Transisi halus pada kartu divisi, efek *hover* bernuansa *glowing*, partikel latar belakang bertema atom bergerak lambat (*floating particle backgrounds*), dan efek *glassmorphism* (UI transparan dengan blur latar belakang).
+## 🌟 Identitas Visual & Estetika (Tema Phótisma x Modern SaaS)
+* **Karakter Desain:** Modern, Premium, & Clean SaaS/Consultancy style (terinspirasi dari konsep visual Aeline & Starlink).
+* **Warna Utama:** Gradien Biru Elektrik/Cyan (`#0052FF` ke `#00D2FF`) dan Lime-Green (`#A3E635`) sebagai aksen penunjuk data. Latar belakang memadukan true dark obsidian (`#05070A`) dengan *glassmorphism* transparan bernuansa biru langit lembut.
+* **Typography:** Font **Outfit** (lebar & futuristik) untuk heading utama, serta **Inter** (tipis & minimalis) untuk isi konten dan menu detail.
+* **Layout Kartu & Metrik:** Desain tumpukan kartu melengkung (*curved fanned-out deck*) untuk menampilkan daftar program divisi secara dinamis, serta modul box metrik statistik bersudut melingkar (*rounded card-metric* dengan radius `16px` - `24px`) lengkap dengan avatar bulat dan angka pencapaian besar (`120+`, `100%`).
 
 ---
 
@@ -28,7 +29,7 @@ Setiap tab pada navigasi utama akan diimplementasikan sebagai halaman (route) ma
 
 ### 2. Halaman Einstein Sphere (Sektor Divisi Hub)
 * *Konten:* Hub khusus yang memaparkan 8 divisi kerja Himpunan (BPH, Internal, External, Ristek, Pengma, Danus, Kominfo, Logistik).
-* *Fitur:* Dropdown cepat pada navbar dan kartu interaktif yang meluncurkan *Console Drawer* detail program kerja masing-masing divisi dari kanan layar.
+* *Fitur:* Dropdown cepat pada navbar and kartu interaktif yang meluncurkan *Console Drawer* detail program kerja masing-masing divisi dari kanan layar.
 
 ### 3. Halaman Einstein Market (Dana Usaha Store)
 * *Konten:* Toko online e-commerce resmi HIMA EINSTEIN untuk penjualan merchandise eksklusif (PDH, Kaos, Jaket, Ganci).
