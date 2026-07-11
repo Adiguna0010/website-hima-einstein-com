@@ -33,11 +33,14 @@ Setiap divisi akan memiliki sub-page interaktif yang memaparkan profil dan progr
 * **Badan Pengurus Harian (BPH)**
   * *Fitur:* Bagan struktur organisasi interaktif (Organizational Chart) dengan foto pengurus dan profil singkat. Timeline program kerja tahunan Himpunan.
 * **Internal**
-  * *Fitur:* Portal database akademis (Bank Soal/Materi Elektronika Nuklir), galeri keakraban anggota, dan form feedback internal.
+  * *Fitur Peminjaman Inventaris:* Portal peminjaman alat-alat praktikum/elektronika (multimeter, solder, kit Arduino, osiloskop portabel, dll.) milik Himpunan.
+  * *Einstein Aspiration Hub:* Kotak saran dan aspirasi digital rahasia/anonim bagi pengurus dan anggota Himpunan.
+  * *Apresiasi Anggota & Kalender Keakraban:* Halaman penghargaan anggota berprestasi (Member of the Month) dan jadwal kegiatan bonding internal.
 * **External**
   * *Fitur:* Hub hubungan masyarakat, form pengajuan kerja sama/kunjungan industri, dan portal jejaring alumni HIMA EINSTEIN.
 * **Riset dan Teknologi (Ristek)**
-  * *Fitur Ristek Mengajar & Guru Les:* Portal pendaftaran tutor (pengajar) dan pencarian guru les privat instrumentasi/matematika/fisika bagi mahasiswa yang membutuhkan bimbingan.
+  * *Einstein Vault (Bank Soal & Materi):* Portal database akademis berisi materi kuliah, modul praktikum, dan bank soal Elektronika & Instrumentasi Nuklir.
+  * *Fitur Ristek Mengajar & Guru Les:* Portal pendaftaran tutor (pengajar) dan pencarian guru les privat bagi mahasiswa.
   * *Fitur Project Collaboration:* Papan pengumuman proyek riset aktif (seperti IoT, robotika, instrumentasi nuklir) di mana anggota bisa mendaftar untuk berkolaborasi.
 * **Pengembangan Mahasiswa (Pengma)**
   * *Fitur:* Pusat karir (informasi magang/lowongan kerja bidang nuklir/instrumentasi), kalender pelatihan kompetensi (PLC, Arduino, LabVIEW), dan galeri prestasi mahasiswa.
