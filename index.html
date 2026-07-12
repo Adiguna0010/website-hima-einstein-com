@@ -11,7 +11,7 @@
 </head>
 <body>
 
-  <!-- Aeline vibrant glowing backdrop -->
+  <!-- BEM Poltek Navy glowing backdrop -->
   <div class="glowing-backdrop"></div>
 
   <!-- ==========================================================================
@@ -50,25 +50,24 @@
   </nav>
 
   <!-- ==========================================================================
-       SLIDE 1: BERANDA (Aeline Split Hero Layout)
+       HERO SECTION (Clean digital layout with Cabinet logo)
        ========================================================================== -->
-  <section id="beranda" class="section" style="background-image: url('Media Einsten/Media Umum/Foto Umum Beranda/DSC_7954.JPG');">
-    <div class="section-overlay"></div>
+  <header id="beranda" class="hero-section">
     <div class="section-content">
-      <div class="hero-split-grid">
+      <div class="hero-grid">
         <!-- Left Side: Copywriting & Metrics -->
         <div>
-          <span class="section-subtitle">Selamat Datang di HIMA EINSTEIN.COM</span>
-          <h2 class="section-title" style="color: white;">Building the future with technology & strategy</h2>
-          <p class="section-desc">
-            Himpunan Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia. Menyatukan riset teknologi nuklir, instrumentasi otonom, dan wirausaha mandiri Himpunan.
+          <span class="section-subtitle">Himpunan Elektronika Instrumentasi</span>
+          <h1 class="hero-title">KABINET PHÓTISMA</h1>
+          <p class="hero-desc">
+            Menyatukan pengembangan riset teknologi nuklir, instrumentasi otonom, dan kewirausahaan mandiri di bawah naungan Politeknik Teknologi Nuklir Indonesia.
           </p>
           <div style="display: flex; gap: 15px; margin-bottom: 40px;">
-            <a href="#sphere" class="btn-pill btn-lime">Jelajahi Sphere</a>
-            <a href="#market" class="btn-pill btn-outline-white">Kunjungi Market <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="#profil" class="btn-pill btn-lime">Profil Hima</a>
+            <a href="#sphere" class="btn-pill btn-outline-white">Jelajahi Sphere <i class="fa-solid fa-arrow-right"></i></a>
           </div>
 
-          <!-- Aeline Rounded Stats Cards block -->
+          <!-- Metrics Row -->
           <div class="aeline-stats-container">
             <div class="metric-card">
               <span class="metric-num">120+</span>
@@ -90,34 +89,40 @@
           </div>
         </div>
 
-        <!-- Right Side: Curved Fanned-Out Card Deck -->
-        <div class="fanned-deck-wrapper">
-          <!-- Card Left (BPH) -->
-          <div class="fanned-card card-left">
-            <div class="fanned-icon"><i class="fa-solid fa-users-gear"></i></div>
-            <div>
-              <h4>01 / BPH Sektor</h4>
-              <p>Mengatur komando pusat kepengurusan dan administrasi Himpunan.</p>
-            </div>
-            <button class="btn-pill btn-outline-white" onclick="openConsole('bph')" style="padding: 10px; font-size: 0.65rem; border-radius: 20px;">Detail</button>
+        <!-- Right Side: Clean Cabinet Logo (Floating) -->
+        <div class="hero-logo-frame">
+          <img src="Media Einsten/Media Umum/logo kabinet putih (vertical).png" alt="Logo Kabinet Phótisma">
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       SECTION 2: PROFIL HIMA (Framed Group Photo & Vision/Mission)
+       ========================================================================== -->
+  <section id="profil" class="page-section">
+    <div class="section-content">
+      <div class="profil-grid">
+        <!-- Left Side: Framed group photo -->
+        <div class="profil-image-card">
+          <img src="Media Einsten/Media Umum/Foto Umum Beranda/DSC_7954.JPG" alt="Pengurus HIMA EINSTEIN">
+          <div class="profil-image-caption">Pengurus HIMA EINSTEIN.COM Kabinet Phótisma 2026</div>
+        </div>
+
+        <!-- Right Side: History, Vision, Mission -->
+        <div>
+          <span class="section-subtitle">Tentang Kami</span>
+          <h2 class="section-title">HIMA EINSTEIN.COM</h2>
+          <p class="section-desc" style="margin-bottom: 20px;">
+            Himpunan Mahasiswa Program Studi Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia dibentuk sebagai wadah pengembangan softskill, kepemimpinan, dan kecakapan riset mahasiswa di bidang instrumentasi nuklir dan otomatisasi industri.
+          </p>
+          <div class="metric-card" style="margin-bottom: 15px; padding: 15px 20px;">
+            <h4 style="color:var(--accent-cyan); font-family:var(--font-header); font-size:0.95rem; margin-bottom: 5px;">VISI KABINET</h4>
+            <p style="font-size:0.85rem; color:var(--text-gray);">Membawa terang bagi sains instrumentasi nuklir Indonesia melalui digitalisasi, ekspansi riset otonom, dan kemitraan berskala nasional.</p>
           </div>
-          <!-- Card Center (Ristek) -->
-          <div class="fanned-card card-center">
-            <div class="fanned-icon" style="color:var(--accent-lime);"><i class="fa-solid fa-microscope"></i></div>
-            <div>
-              <h4>02 / Ristek Core</h4>
-              <p>Pusat pengembangan teknologi nuklir instrumentasi dan bank soal.</p>
-            </div>
-            <button class="btn-pill btn-lime" onclick="openConsole('ristek')" style="padding: 10px; font-size: 0.65rem; border-radius: 20px; font-weight:700;">Akses</button>
-          </div>
-          <!-- Card Right (Danus) -->
-          <div class="fanned-card card-right">
-            <div class="fanned-icon"><i class="fa-solid fa-store"></i></div>
-            <div>
-              <h4>03 / Danus Store</h4>
-              <p>Pengembangan wirausaha Himpunan dengan merchandise resmi.</p>
-            </div>
-            <button class="btn-pill btn-outline-white" onclick="openConsole('danus')" style="padding: 10px; font-size: 0.65rem; border-radius: 20px;">Detail</button>
+          <div class="metric-card" style="padding: 15px 20px;">
+            <h4 style="color:var(--accent-lime); font-family:var(--font-header); font-size:0.95rem; margin-bottom: 5px;">MISI UTAMA</h4>
+            <p style="font-size:0.85rem; color:var(--text-gray);">Mengotomatisasi birokrasi kemahasiswaan, mengamankan pengelolaan aset logistik, dan mengoptimalkan pendanaan mandiri organisasi.</p>
           </div>
         </div>
       </div>
@@ -125,18 +130,17 @@
   </section>
 
   <!-- ==========================================================================
-       SLIDE 2: EINSTEIN SPHERE (Divisions Hub)
+       SECTION 3: EINSTEIN SPHERE (Divisions Hub)
        ========================================================================== -->
-  <section id="sphere" class="section" style="background-image: url('Media Einsten/Media Umum/Foto Umum Beranda/IMG-20260707-WA0037.jpg');">
-    <div class="section-overlay"></div>
+  <section id="sphere" class="page-section">
     <div class="section-content">
-      <span class="section-subtitle">Sektor Kepengurusan</span>
-      <h2 class="section-title">EINSTEIN SPHERE</h2>
-      <p class="section-desc">
-        Pusat koordinasi 8 divisi Kabinet Phótisma. Pilih divisi di bawah untuk membuka laci konsol program kerja.
-      </p>
+      <div class="section-header">
+        <span class="section-subtitle">Sektor Kepengurusan</span>
+        <h2 class="section-title">EINSTEIN SPHERE</h2>
+        <p class="section-desc">Pusat koordinasi 8 divisi Kabinet Phótisma. Pilih divisi di bawah untuk membuka laci konsol program kerja.</p>
+      </div>
       
-      <!-- Aeline Grid of 8 rounded division cards -->
+      <!-- Grid of 8 rounded division cards -->
       <div class="sphere-grid">
         <div class="sphere-card" onclick="openConsole('bph')">
           <h4>BPH</h4>
@@ -183,13 +187,15 @@
   </section>
 
   <!-- ==========================================================================
-       SLIDE 3: EINSTEIN MARKET (Dana Usaha storefront)
+       SECTION 4: EINSTEIN MARKET (Dana Usaha storefront)
        ========================================================================== -->
-  <section id="market" class="section" style="background-image: url('https://images.unsplash.com/photo-1558769132-cb1aea458c5e?q=80&w=1920&auto=format&fit=crop');">
-    <div class="section-overlay"></div>
-    <div class="section-content" style="max-width: 1200px;">
-      <span class="section-subtitle">Wirausaha Mandiri Danus</span>
-      <h2 class="section-title">EINSTEIN MARKET</h2>
+  <section id="market" class="page-section">
+    <div class="section-content">
+      <div class="section-header">
+        <span class="section-subtitle">Wirausaha Mandiri Danus</span>
+        <h2 class="section-title">EINSTEIN MARKET</h2>
+        <p class="section-desc">Katalog belanja produk resmi HIMA EINSTEIN. Pembelian kaos, PDH, dan aksesoris Himpunan.</p>
+      </div>
       
       <div class="market-slide-container">
         <!-- Products -->
@@ -221,9 +227,9 @@
           <div class="cart-items" id="market-cart-list">
             <p style="color: var(--text-gray); font-size: 0.85rem; text-align: center; padding: 20px 0;">Keranjang kosong.</p>
           </div>
-          <div class="cart-total">
+          <div class="cart-total" style="display:flex; justify-content:space-between; margin-bottom:15px; font-family:var(--font-header);">
             <span>Total:</span>
-            <span id="market-cart-total">Rp 0</span>
+            <span id="market-cart-total" style="color:var(--accent-lime);">Rp 0</span>
           </div>
           <button class="checkout-btn" onclick="checkoutCart()"><i class="fa-brands fa-whatsapp"></i> Checkout via WhatsApp</button>
         </div>
@@ -232,34 +238,33 @@
   </section>
 
   <!-- ==========================================================================
-       SLIDE 4: EINSTEIN QUEST (Timeline & Video Mock)
+       SECTION 5: EINSTEIN QUEST (Timeline & Video Mock)
        ========================================================================== -->
-  <section id="quest" class="section" style="background-image: url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1920&auto=format&fit=crop');">
-    <div class="section-overlay"></div>
-    <div class="section-content" style="max-width: 1200px;">
-      <span class="section-subtitle">Perjalanan Himpunan</span>
-      <h2 class="section-title">EINSTEIN QUEST</h2>
+  <section id="quest" class="page-section">
+    <div class="section-content">
+      <div class="section-header">
+        <span class="section-subtitle">Perjalanan Himpunan</span>
+        <h2 class="section-title">EINSTEIN QUEST</h2>
+        <p class="section-desc">Menelusuri jejak sejarah pembentukan hingga transformasi digital Himpunan Elektronika Instrumentasi.</p>
+      </div>
       
-      <div class="slide-grid-container">
+      <div class="profil-grid">
         <!-- Interactive timeline -->
-        <div>
-          <p class="section-desc" style="margin-bottom: 20px;">Menelusuri jejak sejarah pembentukan hingga transformasi digital Himpunan Elektronika Instrumentasi.</p>
-          <div class="quest-timeline">
-            <div class="timeline-event">
-              <div class="timeline-year">2021</div>
-              <div class="timeline-title">Inisiasi Awal</div>
-              <div class="timeline-desc">Pembentukan komite persiapakan pembentukan Himpunan Mahasiswa Elins.</div>
-            </div>
-            <div class="timeline-event">
-              <div class="timeline-year">2023</div>
-              <div class="timeline-title">Deklarasi Resmi</div>
-              <div class="timeline-desc">Pendirian resmi HIMA EINSTEIN sebagai ormawa sah di kampus Poltek Nuklir.</div>
-            </div>
-            <div class="timeline-event">
-              <div class="timeline-year">2026</div>
-              <div class="timeline-title">Kabinet Phótisma</div>
-              <div class="timeline-desc">Fokus digitalisasi, ekspansi riset otonom, dan kemitraan berskala internasional.</div>
-            </div>
+        <div class="quest-timeline">
+          <div class="timeline-event">
+            <div class="timeline-year">2021</div>
+            <div class="timeline-title">Inisiasi Awal</div>
+            <div class="timeline-desc">Pembentukan komite persiapakan pembentukan Himpunan Mahasiswa Elins.</div>
+          </div>
+          <div class="timeline-event">
+            <div class="timeline-year">2023</div>
+            <div class="timeline-title">Deklarasi Resmi</div>
+            <div class="timeline-desc">Pendirian resmi HIMA EINSTEIN sebagai ormawa sah di kampus Poltek Nuklir.</div>
+          </div>
+          <div class="timeline-event">
+            <div class="timeline-year">2026</div>
+            <div class="timeline-title">Kabinet Phótisma</div>
+            <div class="timeline-desc">Fokus digitalisasi, ekspansi riset otonom, dan kemitraan berskala internasional.</div>
           </div>
         </div>
         
@@ -275,14 +280,15 @@
   </section>
 
   <!-- ==========================================================================
-       SLIDE 5: EINSTEIN SPACE (Tool Booking)
+       SECTION 6: EINSTEIN SPACE (Tool Booking)
        ========================================================================== -->
-  <section id="space" class="section" style="background-image: url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1920&auto=format&fit=crop');">
-    <div class="section-overlay"></div>
-    <div class="section-content" style="max-width: 1200px;">
-      <span class="section-subtitle">Layanan Praktikum & Riset</span>
-      <h2 class="section-title">EINSTEIN SPACE</h2>
-      <p class="section-desc">Peminjaman alat praktikum dan kit elektronika milik Himpunan secara digital untuk mendukung proyek praktikum Anda.</p>
+  <section id="space" class="page-section">
+    <div class="section-content">
+      <div class="section-header">
+        <span class="section-subtitle">Layanan Praktikum & Riset</span>
+        <h2 class="section-title">EINSTEIN SPACE</h2>
+        <p class="section-desc">Peminjaman alat praktikum dan kit elektronika milik Himpunan secara digital untuk mendukung proyek praktikum Anda.</p>
+      </div>
       
       <div class="asset-grid">
         <div class="asset-card">
@@ -322,15 +328,17 @@
   </section>
 
   <!-- ==========================================================================
-       SLIDE 6: SEKRETARIAT (Document Templates)
+       SECTION 7: SEKRETARIAT (Document Templates & Backoffice)
        ========================================================================== -->
-  <section id="sekretariat" class="section" style="background-image: url('https://images.unsplash.com/photo-1507668077129-56e32842fceb?q=80&w=1920&auto=format&fit=crop');">
-    <div class="section-overlay"></div>
-    <div class="section-content" style="max-width: 1200px;">
-      <span class="section-subtitle">Pengurusan Dokumen Himpunan</span>
-      <h2 class="section-title">SEKRETARIAT PORTAL</h2>
+  <section id="sekretariat" class="page-section">
+    <div class="section-content">
+      <div class="section-header">
+        <span class="section-subtitle">Pengurusan Dokumen Himpunan</span>
+        <h2 class="section-title">SEKRETARIAT PORTAL</h2>
+        <p class="section-desc">Unduh template berkas resmi dan ajukan permohonan nomor surat digital ke BPH.</p>
+      </div>
       
-      <div class="slide-grid-container">
+      <div class="profil-grid">
         <!-- Download templates -->
         <div>
           <p class="section-desc" style="margin-bottom: 20px;">Unduh template dokumen resmi Himpunan untuk keperluan proposal kegiatan, surat undangan, atau laporan pertanggungjawaban (LPJ).</p>
@@ -360,32 +368,33 @@
         </div>
         
         <!-- Letter number request form -->
-        <form class="tactical-panel" onsubmit="submitLetterRequest(event); return false;" id="letter-request-form" style="border-radius:20px;">
+        <form class="tactical-panel" onsubmit="submitLetterRequest(event); return false;" id="letter-request-form" style="border-radius:20px; padding:24px;">
           <div class="panel-corner corner-tl"></div>
           <div class="panel-corner corner-tr"></div>
           <div class="panel-corner corner-bl"></div>
           <div class="panel-corner corner-br"></div>
           <h4 style="font-family: var(--font-header); font-size: 0.95rem; margin-bottom: 20px; text-transform: uppercase; color: var(--accent-cyan);">Request Nomor Surat</h4>
           <div class="form-grid">
-            <div class="form-group">
-              <label>Nama Pengusul / Divisi</label>
-              <input type="text" class="form-control" placeholder="Contoh: Ristek / Nama" required style="border-radius:10px;">
+            <div class="form-group" style="margin-bottom:12px;">
+              <label style="font-size:0.75rem; color:var(--text-gray); display:block; margin-bottom:5px;">Nama Pengusul / Divisi</label>
+              <input type="text" class="form-control" placeholder="Contoh: Ristek / Nama" required style="border-radius:10px; width:100%; padding:10px; background:var(--color-bg-deep); border:1px solid var(--color-border); color:white;">
             </div>
-            <div class="form-group">
-              <label>Kategori Surat</label>
-              <select class="form-control" required style="background: var(--color-bg-deep); border-radius:10px;">
+            <div class="form-group" style="margin-bottom:12px;">
+              <label style="font-size:0.75rem; color:var(--text-gray); display:block; margin-bottom:5px;">Kategori Surat</label>
+              <select class="form-control" required style="background: var(--color-bg-deep); border-radius:10px; width:100%; padding:10px; border:1px solid var(--color-border); color:white;">
                 <option value="permohonan">Surat Permohonan</option>
                 <option value="undangan">Surat Undangan</option>
                 <option value="tugas">Surat Tugas</option>
               </select>
             </div>
-            <div class="form-group full-width">
-              <label>Perihal Surat</label>
-              <input type="text" class="form-control" placeholder="Perihal pengajuan dana / izin ruang lab..." required style="border-radius:10px;">
+            <div class="form-group" style="margin-bottom:16px;">
+              <label style="font-size:0.75rem; color:var(--text-gray); display:block; margin-bottom:5px;">Perihal Surat</label>
+              <input type="text" class="form-control" placeholder="Perihal pengajuan dana / izin ruang lab..." required style="border-radius:10px; width:100%; padding:10px; background:var(--color-bg-deep); border:1px solid var(--color-border); color:white;">
             </div>
+          </div>
           <div style="display: flex; gap: 10px;">
-            <button type="submit" class="btn-pill btn-lime" style="margin-top: 20px; padding: 12px 24px; font-size: 0.8rem;">Kirim Request</button>
-            <button type="button" class="btn-pill btn-outline-white" onclick="toggleBackoffice()" style="margin-top: 20px; padding: 12px 24px; font-size: 0.8rem;"><i class="fa-solid fa-lock"></i> Backoffice Sekretaris</button>
+            <button type="submit" class="btn-pill btn-lime" style="font-size: 0.8rem; padding:10px 20px;">Kirim Request</button>
+            <button type="button" class="btn-pill btn-outline-white" onclick="toggleBackoffice()" style="font-size: 0.8rem; padding:10px 20px;"><i class="fa-solid fa-lock"></i> Backoffice</button>
           </div>
         </form>
 
@@ -399,7 +408,7 @@
             <table class="dashboard-table">
               <thead>
                 <tr>
-                  <th>Pengusul / Divisi</th>
+                  <th>Pengusul</th>
                   <th>Kategori</th>
                   <th>Perihal</th>
                   <th>Status</th>
@@ -407,7 +416,7 @@
                 </tr>
               </thead>
               <tbody id="backoffice-letters-list">
-                <!-- Populated dynamically from localstorage submissions -->
+                <!-- Populated dynamically -->
               </tbody>
             </table>
           </div>
@@ -417,19 +426,20 @@
   </section>
 
   <!-- ==========================================================================
-       SLIDE 7: EINSTEIN KALENDER
+       SECTION 8: EINSTEIN KALENDER
        ========================================================================== -->
-  <section id="kalender" class="section" style="background-image: url('https://images.unsplash.com/photo-1484704849700-f032a568e944?q=80&w=1920&auto=format&fit=crop');">
-    <div class="section-overlay"></div>
-    <div class="section-content" style="max-width: 1200px;">
-      <span class="section-subtitle">Agenda & Timeline Kegiatan</span>
-      <h2 class="section-title">EINSTEIN KALENDER</h2>
+  <section id="kalender" class="page-section">
+    <div class="section-content">
+      <div class="section-header">
+        <span class="section-subtitle">Agenda & Timeline Kegiatan</span>
+        <h2 class="section-title">EINSTEIN KALENDER</h2>
+        <p class="section-desc">Pemantau agenda kegiatan Himpunan Mahasiswa Elektronika Instrumentasi serta jadwal kegiatan ORMAWA.</p>
+      </div>
       
-      <div class="slide-grid-container">
+      <div class="profil-grid">
         <!-- Explainer and legend -->
         <div>
-          <p class="section-desc">Pemantau agenda kegiatan Himpunan Mahasiswa Elektronika Instrumentasi serta jadwal kegiatan ORMAWA tingkat kampus Poltek Nuklir.</p>
-          <div class="tactical-panel" style="padding: 24px; margin-top: 20px; border-radius: 20px;">
+          <div class="tactical-panel" style="padding: 24px; border-radius: 20px;">
             <div class="panel-corner corner-tl"></div>
             <div class="panel-corner corner-tr"></div>
             <div class="panel-corner corner-bl"></div>
@@ -492,7 +502,7 @@
             <div class="calendar-cell"><span>25</span></div>
             <div class="calendar-cell"><span>26</span></div>
           </div>
-          <div class="calendar-legend" style="font-size:0.8rem; margin-top:20px;">
+          <div class="calendar-legend" style="font-size:0.8rem; margin-top:20px; display:flex; gap:15px;">
             <div class="legend-item"><span class="event-dot hima-dot"></span> HIMA EINSTEIN</div>
             <div class="legend-item"><span class="event-dot ormawa-dot"></span> ORMAWA Kampus</div>
           </div>
@@ -500,6 +510,41 @@
       </div>
     </div>
   </section>
+
+  <!-- ==========================================================================
+       FOOTER (BEM Poltek Affiliation)
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="section-content">
+      <div class="footer-grid">
+        <div class="footer-about">
+          <img src="Media Einsten/Media Umum/logo kabinet putih (horizontal).png" alt="Logo Kabinet">
+          <p style="margin-top: 15px;">
+            Official website of Himpunan Mahasiswa Program Studi Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia.
+          </p>
+        </div>
+        <div class="footer-links">
+          <h4>PETA SITUS</h4>
+          <ul>
+            <li><a href="#beranda">Beranda</a></li>
+            <li><a href="#profil">Profil HIMA</a></li>
+            <li><a href="#sphere">Einstein Sphere</a></li>
+            <li><a href="#market">Einstein Market</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>KEMITRAAN & DUKUNGAN</h4>
+          <ul>
+            <li><a href="https://polteknuklir.ac.id" target="_blank">Politeknik Teknologi Nuklir</a></li>
+            <li><a href="https://brin.go.id" target="_blank">Badan Riset & Inovasi Nasional (BRIN)</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 HIMA EINSTEIN.COM Kabinet Phótisma. All Rights Reserved. Powered by BRIN Yogyakarta.</p>
+      </div>
+    </div>
+  </footer>
 
   <!-- ==========================================================================
        MODAL BARCODE SCANNER (Webcam API)
@@ -528,7 +573,7 @@
 
       <div style="margin-top: 15px;">
         <label style="font-family: var(--font-header); font-size: 0.65rem; color: var(--text-gray); letter-spacing: 0.1em; display: block; margin-bottom: 5px;">Pilih Alat Secara Manual (Cadangan)</label>
-        <select class="form-control" id="manual-tool-select" style="background: var(--color-bg-deep); border-radius: 10px; width: 100%;">
+        <select class="form-control" id="manual-tool-select" style="background: var(--color-bg-deep); border-radius: 10px; width: 100%; padding:10px; border:1px solid var(--color-border); color:white;">
           <option value="HIMA-MULT-002">HIMA-MULT-002: Digital Multimeter Sanwa CD800a</option>
           <option value="HIMA-ARDU-011">HIMA-ARDU-011: Arduino Uno Starter Kit</option>
         </select>

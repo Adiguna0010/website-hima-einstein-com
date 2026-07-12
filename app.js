@@ -24,7 +24,7 @@ function initNavbar() {
 }
 
 function initScrollSpy() {
-  const sections = document.querySelectorAll('.section');
+  const sections = document.querySelectorAll('.page-section, .hero-section');
   const navLinks = document.querySelectorAll('.nav-links > li > a');
   
   const options = {
