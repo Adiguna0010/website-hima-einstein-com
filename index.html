@@ -360,7 +360,7 @@
         </div>
         
         <!-- Letter number request form -->
-        <form class="tactical-panel" onsubmit="alert('Pengajuan nomor surat berhasil didaftarkan! Sekretaris Himpunan akan menghubungi Anda.'); return false;" style="border-radius:20px;">
+        <form class="tactical-panel" onsubmit="submitLetterRequest(event); return false;" id="letter-request-form" style="border-radius:20px;">
           <div class="panel-corner corner-tl"></div>
           <div class="panel-corner corner-tr"></div>
           <div class="panel-corner corner-bl"></div>
@@ -383,9 +383,35 @@
               <label>Perihal Surat</label>
               <input type="text" class="form-control" placeholder="Perihal pengajuan dana / izin ruang lab..." required style="border-radius:10px;">
             </div>
+          <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn-pill btn-lime" style="margin-top: 20px; padding: 12px 24px; font-size: 0.8rem;">Kirim Request</button>
+            <button type="button" class="btn-pill btn-outline-white" onclick="toggleBackoffice()" style="margin-top: 20px; padding: 12px 24px; font-size: 0.8rem;"><i class="fa-solid fa-lock"></i> Backoffice Sekretaris</button>
           </div>
-          <button type="submit" class="btn-pill btn-lime" style="margin-top: 20px; padding: 12px 24px; font-size: 0.8rem;">Kirim Request</button>
         </form>
+
+        <!-- Backoffice Dashboard for Sekretaris BPH -->
+        <div class="backoffice-container" id="backoffice-dashboard" style="display: none; grid-column: span 2;">
+          <h4 style="font-family: var(--font-header); font-size: 0.95rem; color: var(--accent-cyan); display: flex; justify-content: space-between; align-items: center; margin-bottom:15px;">
+            <span><i class="fa-solid fa-folder-open"></i> DASHBOARD BACKOFFICE SEKRETARIS</span>
+            <button class="table-btn" onclick="toggleBackoffice()" style="border-radius:20px; padding: 6px 12px;">Keluar Dashboard</button>
+          </h4>
+          <div class="table-wrapper">
+            <table class="dashboard-table">
+              <thead>
+                <tr>
+                  <th>Pengusul / Divisi</th>
+                  <th>Kategori</th>
+                  <th>Perihal</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="backoffice-letters-list">
+                <!-- Populated dynamically from localstorage submissions -->
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -474,6 +500,89 @@
       </div>
     </div>
   </section>
+
+  <!-- ==========================================================================
+       MODAL BARCODE SCANNER (Webcam API)
+       ========================================================================== -->
+  <div class="modal-overlay" id="scanner-modal">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="closeScannerModal()"><i class="fa-solid fa-xmark"></i></button>
+      <h3 style="font-family: var(--font-header); font-size: 1.15rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-qrcode"></i> BARCODE SCANNER
+      </h3>
+      <p style="font-size: 0.8rem; color: var(--text-gray); margin-top: 5px;">Arahkan kamera ponsel Anda pada Barcode/QR Code alat laboratorium.</p>
+      
+      <div class="scanner-box">
+        <div class="scanner-laser"></div>
+        <div class="scanner-overlay-mask"></div>
+        <div class="scanner-success-anim" id="scanner-success-badge">
+          <i class="fa-solid fa-circle-check"></i> Scanned Successfully!
+        </div>
+        <video class="scanner-video" id="scanner-video" autoplay playsinline></video>
+      </div>
+
+      <div style="text-align: center; color: var(--text-gray); font-size: 0.8rem; display: none;" id="scanner-error-msg">
+        <i class="fa-solid fa-triangle-exclamation" style="color: #ff3b3b; margin-right: 5px;"></i>
+        Kamera tidak terdeteksi. Silakan input ID secara manual di bawah.
+      </div>
+
+      <div style="margin-top: 15px;">
+        <label style="font-family: var(--font-header); font-size: 0.65rem; color: var(--text-gray); letter-spacing: 0.1em; display: block; margin-bottom: 5px;">Pilih Alat Secara Manual (Cadangan)</label>
+        <select class="form-control" id="manual-tool-select" style="background: var(--color-bg-deep); border-radius: 10px; width: 100%;">
+          <option value="HIMA-MULT-002">HIMA-MULT-002: Digital Multimeter Sanwa CD800a</option>
+          <option value="HIMA-ARDU-011">HIMA-ARDU-011: Arduino Uno Starter Kit</option>
+        </select>
+      </div>
+
+      <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-pill btn-outline-white" onclick="closeScannerModal()" style="padding: 10px 20px; font-size: 0.75rem;">Batal</button>
+        <button class="btn-pill btn-lime" onclick="processMockScan()" style="padding: 10px 20px; font-size: 0.75rem;">Simulasikan Scan (3 Detik)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL CHECKOUT MARKET QRIS
+       ========================================================================== -->
+  <div class="modal-overlay" id="checkout-modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <button class="modal-close-btn" onclick="closeCheckoutModal()"><i class="fa-solid fa-xmark"></i></button>
+      <h3 style="font-family: var(--font-header); font-size: 1.15rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-receipt"></i> CHECKOUT SUMMARY
+      </h3>
+      <p style="font-size: 0.8rem; color: var(--text-gray); margin-top: 5px;">Silakan selesaikan pembayaran Anda menggunakan QRIS HIMA EINSTEIN.</p>
+      
+      <div style="margin-top: 20px; border-bottom: 1px solid var(--color-border); padding-bottom: 15px;" id="checkout-items-summary">
+        <!-- Populated dynamically -->
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; font-family: var(--font-header); font-size: 1rem; margin-top: 15px; font-weight: 600;">
+        <span>TOTAL PEMBAYARAN:</span>
+        <span id="checkout-total-val" style="color: var(--accent-lime);">Rp 0</span>
+      </div>
+
+      <div class="qris-container">
+        <div class="qris-img-placeholder">
+          <i class="fa-solid fa-qrcode"></i>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-gray); text-align: center; margin-top: 12px; font-weight: 500;">Pindai kode QR di atas menggunakan aplikasi bank/e-wallet Anda.</p>
+      </div>
+
+      <div class="file-upload-box" onclick="document.getElementById('proof-upload-input').click()">
+        <input type="file" id="proof-upload-input" accept="image/*" style="display: none;" onchange="handleProofUpload(event)">
+        <div id="upload-box-content">
+          <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.5rem; color: var(--accent-cyan); margin-bottom: 8px;"></i>
+          <p style="font-size: 0.8rem; font-weight: 500;">Klik untuk unggah Bukti Transfer QRIS</p>
+          <span style="font-size: 0.7rem; color: var(--text-gray);">Format: PNG, JPG, JPEG (Maks. 2MB)</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-pill btn-outline-white" onclick="closeCheckoutModal()" style="padding: 10px 20px; font-size: 0.75rem;">Batal</button>
+        <button class="btn-pill btn-lime" id="confirm-checkout-btn" onclick="sendOrderToWhatsApp()" style="padding: 10px 20px; font-size: 0.75rem;" disabled>Kirim Bukti via WhatsApp</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ==========================================================================
        CONSOLE SLIDE-OUT DRAWER OVERLAY

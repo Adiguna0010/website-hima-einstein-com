@@ -956,3 +956,246 @@ html, body {
   .sphere-grid { grid-template-columns: 1fr; }
   .asset-grid { grid-template-columns: 1fr; }
 }
+
+/* ==========================================================================
+   PRD INTERACTIVE MODALS & DASHBOARD STYLES
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 7, 12, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition-smooth);
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: var(--color-panel-glass);
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  width: 90%;
+  max-width: 540px;
+  padding: 40px;
+  position: relative;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+  transform: translateY(20px);
+  transition: var(--transition-smooth);
+}
+
+.modal-overlay.open .modal-content {
+  transform: translateY(0);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  background: none;
+  border: none;
+  color: var(--text-white);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.modal-close-btn:hover {
+  color: var(--accent-lime);
+}
+
+/* Webcam Barcode Scanner Layout */
+.scanner-box {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  background: #000;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1.5px solid var(--accent-cyan);
+  margin: 20px 0;
+}
+
+.scanner-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scanner-laser {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 12px var(--accent-cyan);
+  animation: laserScan 2s linear infinite;
+  z-index: 5;
+}
+
+@keyframes laserScan {
+  0% { top: 0%; }
+  50% { top: 100%; }
+  100% { top: 0%; }
+}
+
+.scanner-overlay-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 40px solid rgba(0,0,0,0.4);
+  box-sizing: border-box;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.scanner-success-anim {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(46, 204, 113, 0.9);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-family: var(--font-header);
+  font-size: 0.8rem;
+  z-index: 10;
+  display: none;
+}
+
+/* QRIS Checkout & Summary Card */
+.qris-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255,255,255,0.02);
+  border: 1px dashed var(--color-border);
+  padding: 20px;
+  border-radius: 16px;
+  margin: 20px 0;
+}
+
+.qris-img-placeholder {
+  width: 180px;
+  height: 180px;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.qris-img-placeholder i {
+  color: #000;
+  font-size: 8rem;
+}
+
+.qris-img-placeholder::after {
+  content: 'QRIS HIMA EINSTEIN';
+  position: absolute;
+  bottom: 8px;
+  color: #000;
+  font-size: 0.6rem;
+  font-family: var(--font-header);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.file-upload-box {
+  border: 1.5px dashed var(--color-border);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.file-upload-box:hover {
+  border-color: var(--accent-lime);
+  background: rgba(212,252,52,0.02);
+}
+
+/* Sekretariat Backoffice Dashboard */
+.backoffice-container {
+  margin-top: 30px;
+  background: rgba(10, 15, 30, 0.4);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.dashboard-table th {
+  font-family: var(--font-header);
+  font-weight: 600;
+  color: var(--accent-cyan);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dashboard-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.status-badge {
+  font-family: var(--font-header);
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  display: inline-block;
+}
+.status-badge.pending { background: rgba(255, 184, 0, 0.1); color: #ffb800; }
+.status-badge.acc { background: rgba(46, 204, 113, 0.1); color: #2ecc71; }
+.status-badge.rejected { background: rgba(231, 76, 60, 0.1); color: #e74c3c; }
+
+.table-btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: var(--font-header);
+  transition: var(--transition-smooth);
+}
+.table-btn.btn-acc:hover {
+  background: rgba(46, 204, 113, 0.2);
+  border-color: #2ecc71;
+  color: #2ecc71;
+}
+.table-btn.btn-rej:hover {
+  background: rgba(231, 76, 60, 0.2);
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
