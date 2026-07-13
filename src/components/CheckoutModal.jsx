@@ -127,7 +127,7 @@ export default function CheckoutModal({ isOpen, onClose }) {
             <div className="w-48 h-48 bg-white p-2 rounded-xl flex items-center justify-center relative shadow-md">
               {/* QR Image Placeholder / Real QRIS */}
               <img 
-                src="/Media Einsten/Media Umum/Foto Umum Beranda/IMG-20260707-WA0037.jpg" 
+                src="/Media/QRIS/AT-Service.jpeg" 
                 alt="QRIS HIMPUNAN EINSTEN.COM" 
                 className="w-full h-full object-contain rounded-lg"
                 onError={(e) => {
