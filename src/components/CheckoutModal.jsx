@@ -63,7 +63,7 @@ export default function CheckoutModal({ isOpen, onClose }) {
     }
 
     // Build WA Message
-    let text = `Halo Admin Danus HIMA EINSTEIN! 🌟\n\n`;
+    let text = `Halo Admin Danus HIMPUNAN EINSTEN.COM! 🌟\n\n`;
     text += `Saya ingin melakukan pemesanan merchandise resmi:\n`;
     cart.forEach(item => {
       text += `- ${item.name} (${item.quantity}x) : Rp ${(item.price * item.quantity).toLocaleString('id-ID')}\n`;
@@ -127,13 +127,13 @@ export default function CheckoutModal({ isOpen, onClose }) {
             <div className="w-48 h-48 bg-white p-2 rounded-xl flex items-center justify-center relative shadow-md">
               {/* QR Image Placeholder / Real QRIS */}
               <img 
-                src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=DUMMY_HIMA_EINSTEIN_QRIS" 
-                alt="QRIS HIMA EINSTEIN" 
+                src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=DUMMY_HIMPUNAN_EINSTEN.COM_QRIS" 
+                alt="QRIS HIMPUNAN EINSTEN.COM" 
                 className="w-full h-full object-contain"
               />
             </div>
             <p className="text-center text-xs text-slate-500 leading-normal max-w-xs">
-              Silakan scan QRIS di atas untuk melakukan transfer pembayaran resmi HIMA EINSTEIN.
+              Silakan scan QRIS di atas untuk melakukan transfer pembayaran resmi HIMPUNAN EINSTEN.COM.
             </p>
           </div>
 

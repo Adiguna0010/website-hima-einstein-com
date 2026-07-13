@@ -92,7 +92,7 @@ export default function Navbar() {
           <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate('/')}>
             <img 
               src="/Media Einsten/Media Umum/logo kabinet hitam (horizontal) (1).png" 
-              alt="HIMA EINSTEIN Logo" 
+              alt="HIMPUNAN EINSTEN.COM Logo" 
               className="h-10 w-auto object-contain"
               onError={(e) => {
                 e.target.src = "https://placehold.co/180x45/ffffff/000000?text=EINSTEIN";

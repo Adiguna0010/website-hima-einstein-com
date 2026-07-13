@@ -86,17 +86,17 @@ export default function Home() {
 
           {/* Right Logo Frame Column */}
           <div className="lg:col-span-5 flex justify-center lg:justify-end">
-            <div className="relative group max-w-sm w-full">
+            <div className="relative group max-w-xs sm:max-w-sm w-full flex justify-center">
               {/* Glowing decorative frame background */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-gold to-gold-light rounded-2xl opacity-10 blur-2xl group-hover:opacity-15 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-gold to-gold-light rounded-full opacity-25 blur-2xl group-hover:opacity-35 transition-opacity duration-300"></div>
               
-              <div className="relative bg-white border border-gold-border rounded-2xl p-8 flex items-center justify-center aspect-square shadow-lg overflow-hidden">
+              <div className="relative bg-slate-950 border border-gold/30 rounded-full p-10 flex items-center justify-center aspect-square w-4/5 sm:w-full shadow-2xl overflow-hidden">
                 <img 
-                  src="/Media Einsten/Media Umum/logo kabinet hitam (vertical).png" 
+                  src="/Media Einsten/Media Umum/logo kabinet putih (vertical).png" 
                   alt="Logo Kabinet Phótisma" 
-                  className="w-4/5 h-4/5 object-contain"
+                  className="w-4/5 h-4/5 object-contain animate-pulse-slow"
                   onError={(e) => {
-                    e.target.src = "https://placehold.co/300x300/ffffff/000000?text=PHOTISMA";
+                    e.target.src = "https://placehold.co/300x300/000000/ffffff?text=PHOTISMA";
                   }}
                 />
               </div>
@@ -115,14 +115,14 @@ export default function Home() {
             <div className="relative bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md aspect-video sm:aspect-square">
               <img 
                 src="/Media Einsten/Media Umum/Foto Umum Beranda/DSC_7954.JPG" 
-                alt="Pengurus HIMA EINSTEIN" 
+                alt="Pengurus HIMPUNAN EINSTEN" 
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.target.src = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80";
                 }}
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-left">
-                <p className="text-xs font-semibold text-white">Pengurus HIMA EINSTEIN.COM</p>
+                <p className="text-xs font-semibold text-white">Pengurus HIMPUNAN EINSTEN.COM</p>
                 <p className="text-[10px] text-gold-light font-medium mt-0.5">Kabinet Phótisma 2026/2027</p>
               </div>
             </div>
@@ -132,7 +132,7 @@ export default function Home() {
           <div className="lg:col-span-7 space-y-6 text-left">
             <div>
               <span className="text-xs font-bold text-gold-dark uppercase tracking-widest block">Tentang Kami</span>
-              <h2 className="text-3xl font-extrabold uppercase text-slate-900 mt-1">HIMA EINSTEIN.COM</h2>
+              <h2 className="text-3xl font-extrabold uppercase text-slate-900 mt-1">HIMPUNAN EINSTEN.COM</h2>
             </div>
             
             <p className="text-slate-600 text-sm leading-relaxed font-light">
@@ -196,14 +196,14 @@ export default function Home() {
         <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
           <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Video Profil</span>
           <h2 className="text-3xl font-extrabold uppercase text-slate-900">OFFICIAL TEASER PROFILE</h2>
-          <p className="text-xs text-slate-500 font-light">Saksikan sekilas profil dan kegiatan Himpunan Mahasiswa EINSTEIN</p>
+          <p className="text-xs text-slate-500 font-light">Saksikan sekilas profil dan kegiatan HIMPUNAN EINSTEN.COM</p>
         </div>
 
         <div className="max-w-4xl mx-auto bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md relative aspect-video">
           <iframe 
             className="w-full h-full"
             src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
-            title="Teaser Profile HIMA EINSTEIN"
+            title="Teaser Profile HIMPUNAN EINSTEN.COM"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
             allowFullScreen
