@@ -127,9 +127,12 @@ export default function CheckoutModal({ isOpen, onClose }) {
             <div className="w-48 h-48 bg-white p-2 rounded-xl flex items-center justify-center relative shadow-md">
               {/* QR Image Placeholder / Real QRIS */}
               <img 
-                src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=DUMMY_HIMPUNAN_EINSTEN.COM_QRIS" 
+                src="/Media Einsten/Media Umum/Foto Umum Beranda/IMG-20260707-WA0037.jpg" 
                 alt="QRIS HIMPUNAN EINSTEN.COM" 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain rounded-lg"
+                onError={(e) => {
+                  e.target.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=DUMMY_HIMPUNAN_EINSTEN.COM_QRIS";
+                }}
               />
             </div>
             <p className="text-center text-xs text-slate-500 leading-normal max-w-xs">
