@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -40,7 +40,7 @@ function ProtectedRoute({ children, allowedRoles }) {
 
 // Wrapper to intercept unauthorized states and trigger toast
 function HomeWrapper({ showToast }) {
-  const { state } = React.useLocation();
+  const { state } = useLocation();
   React.useEffect(() => {
     if (state?.showUnauthorizedToast) {
       showToast('Akses Ditolak: Anda tidak memiliki wewenang untuk membuka halaman ini!', 'error');
