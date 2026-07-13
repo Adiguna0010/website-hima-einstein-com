@@ -38,7 +38,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           {/* Left Text Column */}
-          <div className="lg:col-span-7 space-y-6 text-left">
+          <div className="lg:col-span-6 space-y-6 text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gold/30 bg-gold/5 text-xs font-semibold text-gold-dark tracking-wider uppercase">
               <Sparkles className="w-3.5 h-3.5 text-gold" /> Himpunan Elektronika Instrumentasi
             </div>
@@ -84,19 +84,26 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Right Logo Frame Column */}
-          <div className="lg:col-span-5 flex justify-center lg:justify-end">
-            <div className="relative group max-w-xs sm:max-w-sm w-full flex justify-center">
-              {/* Glowing decorative frame background */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-gold to-gold-light rounded-full opacity-25 blur-2xl group-hover:opacity-35 transition-opacity duration-300"></div>
+          {/* Right Hero Banner Column */}
+          <div className="lg:col-span-6 flex justify-center lg:justify-end">
+            <div className="relative group w-full max-w-xl">
+              {/* Decorative back-glow matching gold colors */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-gold to-gold-light rounded-3xl opacity-15 blur-2xl group-hover:opacity-25 transition-opacity duration-300"></div>
               
-              <div className="relative bg-slate-950 border border-gold/30 rounded-full p-10 flex items-center justify-center aspect-square w-4/5 sm:w-full shadow-2xl overflow-hidden">
+              {/* Main Banner Image Container */}
+              <div className="relative bg-white border border-gold-border rounded-3xl p-2.5 shadow-xl overflow-hidden group-hover:scale-[1.01] transition-transform duration-350 active:scale-[0.99] w-full">
+                <div className="absolute top-4 left-4 z-10 flex gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm" />
+                </div>
+                
                 <img 
-                  src="/Media Einsten/Media Umum/logo kabinet putih (vertical).png" 
-                  alt="Logo Kabinet Phótisma" 
-                  className="w-4/5 h-4/5 object-contain animate-pulse-slow"
+                  src="/Media Einsten/Media Umum/hero_banner.jpg" 
+                  alt="HIMPUNAN EINSTEN.COM Banner" 
+                  className="w-full h-auto object-cover rounded-2xl shadow-inner aspect-[16/10]"
                   onError={(e) => {
-                    e.target.src = "https://placehold.co/300x300/000000/ffffff?text=PHOTISMA";
+                    e.target.src = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80";
                   }}
                 />
               </div>
