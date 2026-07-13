@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-obsidian: #05070A;
+  --color-obsidian-deep: #020304;
+  --color-obsidian-card: #0B0F19;
+  --color-obsidian-border: #1A2333;
+  
+  --color-electricBlue: #0052FF;
+  --color-electricCyan: #00D2FF;
+  --color-limeGreen: #A3E635;
+
+  --font-heading: 'Outfit', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-slide-in: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+  0% { transform: translateY(1rem) scale(0.95); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@layer base {
+  body {
+    background-color: var(--color-obsidian);
+    color: #f1f5f9; /* slate-100 */
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(0, 82, 255, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(0, 210, 255, 0.05) 0%, transparent 40%);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: 0.025em;
+  }
+}
+
+/* Glassmorphism utilities */
+.glass {
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-deep {
+  background-color: rgba(11, 15, 25, 0.8);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(26, 35, 51, 0.8);
+}
+
+.glass-glow {
+  background-color: rgba(11, 15, 25, 0.9);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 82, 255, 0.2);
+  box-shadow: 0 0 25px -5px rgba(0, 82, 255, 0.25);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--color-obsidian);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-obsidian-border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 82, 255, 0.6);
+}
+
+/* Hide default browser range and other elements scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom gradient background animations */
+.glow-orb {
+  filter: blur(120px);
+  pointer-events: none;
+}
