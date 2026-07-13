@@ -4,62 +4,62 @@ import { ShieldAlert, BookOpen, ExternalLink, Globe } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-obsidian-deep border-t border-white/5 py-12 mt-20 relative overflow-hidden">
+    <footer className="bg-slate-100 border-t border-gold-border/40 py-12 mt-20 relative overflow-hidden">
       {/* Decorative Blur Orb */}
-      <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-electricBlue/5 glow-orb"></div>
+      <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-gold/5 glow-orb"></div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-slate-850">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand/About */}
           <div className="md:col-span-2 space-y-4">
             <img 
-              src="/Media Einsten/Media Umum/logo kabinet putih (horizontal).png" 
+              src="/Media Einsten/Media Umum/logo kabinet hitam (horizontal) (1).png" 
               alt="HIMA EINSTEIN Logo" 
               className="h-10 w-auto object-contain"
               onError={(e) => {
-                e.target.src = "https://placehold.co/180x45/05070a/ffffff?text=EINSTEIN";
+                e.target.src = "https://placehold.co/180x45/ffffff/000000?text=EINSTEIN";
               }}
             />
-            <p className="text-slate-400 text-sm max-w-sm leading-relaxed">
+            <p className="text-slate-600 text-sm max-w-sm leading-relaxed">
               Website Resmi Himpunan Mahasiswa Program Studi Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia - Kabinet Phótisma.
             </p>
             <div className="flex items-center gap-1.5 text-xs text-slate-500">
-              <Globe className="w-3.5 h-3.5" />
+              <Globe className="w-3.5 h-3.5 text-gold" />
               <span>Yogyakarta, Indonesia</span>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Peta Situs</h4>
+            <h4 className="text-xs font-semibold text-slate-850 uppercase tracking-widest mb-4 font-bold">Peta Situs</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/" className="text-slate-400 hover:text-white transition-colors">Beranda</Link>
+                <Link to="/" className="text-slate-600 hover:text-gold-dark transition-colors font-medium">Beranda</Link>
               </li>
               <li>
-                <Link to="/sphere" className="text-slate-400 hover:text-white transition-colors">Einstein Sphere</Link>
+                <Link to="/sphere" className="text-slate-600 hover:text-gold-dark transition-colors font-medium">Einstein Sphere</Link>
               </li>
               <li>
-                <Link to="/market" className="text-slate-400 hover:text-white transition-colors">Einstein Market</Link>
+                <Link to="/market" className="text-slate-600 hover:text-gold-dark transition-colors font-medium">Einstein Market</Link>
               </li>
               <li>
-                <Link to="/space" className="text-slate-400 hover:text-white transition-colors">Einstein Space</Link>
+                <Link to="/space" className="text-slate-600 hover:text-gold-dark transition-colors font-medium">Einstein Space</Link>
               </li>
             </ul>
           </div>
 
           {/* Institutional Links */}
           <div>
-            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Kemitraan & Dukungan</h4>
+            <h4 className="text-xs font-semibold text-slate-850 uppercase tracking-widest mb-4 font-bold">Kemitraan & Dukungan</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <a 
                   href="https://polteknuklir.ac.id" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="text-slate-400 hover:text-white transition-colors flex items-center gap-1"
+                  className="text-slate-600 hover:text-gold-dark transition-colors flex items-center gap-1 font-medium"
                 >
-                  Poltek Nuklir <ExternalLink className="w-3 h-3" />
+                  Poltek Nuklir <ExternalLink className="w-3 h-3 text-gold" />
                 </a>
               </li>
               <li>
@@ -67,16 +67,16 @@ export default function Footer() {
                   href="https://brin.go.id" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="text-slate-400 hover:text-white transition-colors flex items-center gap-1"
+                  className="text-slate-600 hover:text-gold-dark transition-colors flex items-center gap-1 font-medium"
                 >
-                  BRIN <ExternalLink className="w-3 h-3" />
+                  BRIN <ExternalLink className="w-3 h-3 text-gold" />
                 </a>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-white/5 mt-10 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500">
+        <div className="border-t border-slate-200 mt-10 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500">
           <p>&copy; {new Date().getFullYear()} HIMA EINSTEIN.COM Kabinet Phótisma. All Rights Reserved.</p>
           <p className="mt-2 md:mt-0 flex items-center gap-1">
             <span>Powered by BRIN Yogyakarta</span>

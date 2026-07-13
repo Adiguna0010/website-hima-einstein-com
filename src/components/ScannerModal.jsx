@@ -133,20 +133,20 @@ export default function ScannerModal({ isOpen, onClose, activeToolId, activeTool
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/75 backdrop-blur-sm" 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
         onClick={onClose}
       />
 
       {/* Modal Box */}
-      <div className="glass-glow rounded-2xl w-full max-w-md overflow-hidden relative z-10 flex flex-col text-slate-100 animate-slide-in">
+      <div className="bg-white border border-gold-border shadow-xl rounded-2xl w-full max-w-md overflow-hidden relative z-10 flex flex-col text-slate-800 animate-slide-in">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-          <h3 className="text-base font-bold text-electricCyan uppercase tracking-wider flex items-center gap-2">
-            <Camera className="w-5 h-5" /> BARCODE SCANNER
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="text-base font-bold text-gold-dark uppercase tracking-wider flex items-center gap-2">
+            <Camera className="w-5 h-5 text-gold" /> BARCODE SCANNER
           </h3>
           <button 
             onClick={onClose} 
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -154,17 +154,17 @@ export default function ScannerModal({ isOpen, onClose, activeToolId, activeTool
 
         {/* Content */}
         <div className="p-6 space-y-6">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500 text-left">
             Arahkan kamera ponsel/laptop Anda ke Barcode/QR Code alat laboratorium.
           </p>
 
           {/* Scanner Box */}
-          <div className="relative w-full aspect-square max-w-[280px] mx-auto bg-obsidian border border-white/10 rounded-2xl overflow-hidden flex items-center justify-center">
+          <div className="relative w-full aspect-square max-w-[280px] mx-auto bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden flex items-center justify-center">
             {successMsg ? (
-              <div className="absolute inset-0 bg-emerald-950/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center z-20">
+              <div className="absolute inset-0 bg-emerald-900/90 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center z-20">
                 <CheckCircle className="w-12 h-12 text-emerald-400 animate-bounce mb-2" />
-                <p className="text-sm font-semibold text-emerald-300">Scan Berhasil!</p>
-                <p className="text-xs text-slate-300 mt-1">{successMsg}</p>
+                <p className="text-sm font-semibold text-white">Scan Berhasil!</p>
+                <p className="text-xs text-slate-100 mt-1">{successMsg}</p>
               </div>
             ) : null}
 
@@ -180,8 +180,8 @@ export default function ScannerModal({ isOpen, onClose, activeToolId, activeTool
             />
 
             {!scannerActive && !successMsg && (
-              <div className="flex flex-col items-center justify-center text-center p-4 text-slate-500 space-y-2">
-                <Camera className="w-12 h-12 text-slate-600" />
+              <div className="flex flex-col items-center justify-center text-center p-4 text-slate-400 space-y-2">
+                <Camera className="w-12 h-12 text-slate-350" />
                 <span className="text-xs">Kamera dinonaktifkan</span>
               </div>
             )}
@@ -189,21 +189,21 @@ export default function ScannerModal({ isOpen, onClose, activeToolId, activeTool
 
           {/* Camera Access Error Message */}
           {errorMsg && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs rounded-xl flex items-start gap-2">
+            <div className="p-3 bg-rose-50 border border-rose-250 text-rose-600 text-xs rounded-xl flex items-start gap-2 text-left">
               <AlertTriangle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {/* Fallback Manual Dropdown */}
-          <div className="space-y-2 border-t border-white/5 pt-4">
+          <div className="space-y-2 border-t border-slate-100 pt-4 text-left">
             <label className="block text-[10px] font-semibold text-slate-500 tracking-wider uppercase">
               Pilih Alat Secara Manual (Cadangan)
             </label>
             <select
               value={selectedToolId}
               onChange={(e) => setSelectedToolId(e.target.value)}
-              className="w-full bg-obsidian-deep border border-obsidian-border rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-electricBlue transition-colors"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-gold transition-colors"
             >
               {toolFallbackOptions.map((tool) => (
                 <option key={tool.id} value={tool.id}>
@@ -215,10 +215,10 @@ export default function ScannerModal({ isOpen, onClose, activeToolId, activeTool
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-white/5 bg-obsidian-deep/50 flex justify-between gap-3">
+        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-between gap-3">
           <button
             onClick={handleSimulateScan}
-            className="px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition-all"
+            className="px-4 py-2 bg-white border border-slate-250 hover:bg-slate-100 text-slate-700 hover:text-slate-900 rounded-xl text-xs font-semibold transition-all shadow-sm"
           >
             Simulasikan Scan (3 Detik)
           </button>
@@ -226,13 +226,13 @@ export default function ScannerModal({ isOpen, onClose, activeToolId, activeTool
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 border border-white/10 hover:bg-white/5 text-slate-300 hover:text-white rounded-xl text-xs font-medium transition-colors"
+              className="px-4 py-2 border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-semibold transition-colors"
             >
               Batal
             </button>
             <button
               onClick={handleManualSubmit}
-              className="px-5 py-2 bg-gradient-to-r from-electricBlue to-electricCyan text-white rounded-xl text-xs font-bold shadow-[0_0_15px_-3px_rgba(0,82,255,0.4)] hover:brightness-110 transition-all"
+              className="px-5 py-2 bg-gradient-to-r from-gold to-gold-light text-white rounded-xl text-xs font-bold shadow-md shadow-gold/20 hover:brightness-110 transition-all active:scale-95"
             >
               Gunakan ID
             </button>

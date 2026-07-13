@@ -27,31 +27,31 @@ export default function Register({ showToast }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center pt-24 pb-12 px-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center pt-24 pb-12 px-4 relative overflow-hidden text-slate-800">
       {/* Background orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-electricBlue/10 glow-orb"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-electricCyan/5 glow-orb"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-gold/5 glow-orb"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-gold/5 glow-orb"></div>
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <Link to="/" className="inline-block">
             <img 
-              src="/Media Einsten/Media Umum/logo kabinet putih (horizontal).png" 
+              src="/Media Einsten/Media Umum/logo kabinet hitam (horizontal) (1).png" 
               alt="HIMA EINSTEIN" 
               className="h-12 w-auto mx-auto object-contain"
               onError={(e) => {
-                e.target.src = "https://placehold.co/180x45/05070a/ffffff?text=EINSTEIN";
+                e.target.src = "https://placehold.co/180x45/ffffff/000000?text=EINSTEIN";
               }}
             />
           </Link>
-          <h2 className="mt-4 text-2xl font-bold text-white uppercase tracking-wider">DAFTAR AKUN BARU</h2>
-          <p className="text-xs text-slate-400 mt-1">Portal Keanggotaan Kabinet Phótisma</p>
+          <h2 className="mt-4 text-2xl font-bold text-slate-900 uppercase tracking-wider">DAFTAR AKUN BARU</h2>
+          <p className="text-xs text-slate-500 mt-1">Portal Keanggotaan Kabinet Phótisma</p>
         </div>
 
-        <div className="glass-glow rounded-2xl p-8 relative overflow-hidden">
+        <div className="glass-glow rounded-2xl p-8 relative overflow-hidden shadow-md bg-white border border-gold-border">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5 text-left">
-              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block font-sans">Nama Lengkap</label>
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block font-sans">Nama Lengkap</label>
               <div className="relative">
                 <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
                 <input
@@ -60,13 +60,13 @@ export default function Register({ showToast }) {
                   placeholder="Contoh: Dian Pratama"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-obsidian border border-obsidian-border rounded-xl py-3 pl-11 pr-4 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-electricBlue transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold transition-all"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5 text-left">
-              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block font-sans">NIM (Nomor Induk Mahasiswa)</label>
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block font-sans">NIM (Nomor Induk Mahasiswa)</label>
               <div className="relative">
                 <IdCard className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
                 <input
@@ -75,13 +75,13 @@ export default function Register({ showToast }) {
                   placeholder="Contoh: 240011"
                   value={nim}
                   onChange={(e) => setNim(e.target.value)}
-                  className="w-full bg-obsidian border border-obsidian-border rounded-xl py-3 pl-11 pr-4 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-electricBlue transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold transition-all"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5 text-left">
-              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block font-sans">Email Mahasiswa</label>
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block font-sans">Email Mahasiswa</label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
                 <input
@@ -90,13 +90,13 @@ export default function Register({ showToast }) {
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-obsidian border border-obsidian-border rounded-xl py-3 pl-11 pr-4 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-electricBlue transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold transition-all"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5 text-left">
-              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block font-sans">Kata Sandi</label>
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block font-sans">Kata Sandi</label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
                 <input
@@ -105,22 +105,22 @@ export default function Register({ showToast }) {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-obsidian border border-obsidian-border rounded-xl py-3 pl-11 pr-4 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-electricBlue transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold transition-all"
                 />
               </div>
             </div>
 
-            <div className="flex items-start gap-2 p-3 bg-white/5 border border-white/5 rounded-xl text-left">
-              <ShieldAlert className="w-4 h-4 text-limeGreen shrink-0 mt-0.5" />
-              <p className="text-[10px] text-slate-400 leading-normal">
-                Akun baru secara default terdaftar sebagai <strong className="text-white">Anggota Biasa</strong> dengan status <strong className="text-white">Pending</strong>. Anda membutuhkan persetujuan Admin/BPH untuk masuk.
+            <div className="flex items-start gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl text-left">
+              <ShieldAlert className="w-4 h-4 text-gold shrink-0 mt-0.5" />
+              <p className="text-[10px] text-slate-500 leading-normal">
+                Akun baru secara default terdaftar sebagai <strong className="text-slate-850">Anggota Biasa</strong> dengan status <strong className="text-slate-850">Pending</strong>. Anda membutuhkan persetujuan Admin/BPH untuk masuk.
               </p>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-electricBlue to-electricCyan text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="w-full py-3 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl shadow-md shadow-gold/20 flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {loading ? (
                 <>
@@ -134,10 +134,10 @@ export default function Register({ showToast }) {
             </button>
           </form>
 
-          <div className="mt-6 border-t border-white/5 pt-5 text-center">
-            <p className="text-xs text-slate-400">
+          <div className="mt-6 border-t border-slate-100 pt-5 text-center">
+            <p className="text-xs text-slate-500">
               Sudah memiliki akun?{' '}
-              <Link to="/login" className="text-electricCyan hover:underline font-semibold">
+              <Link to="/login" className="text-gold-dark hover:underline font-semibold">
                 Masuk ke Portal
               </Link>
             </p>

@@ -55,14 +55,14 @@ export default function Quest() {
   ];
 
   return (
-    <div className="relative pt-24 pb-16 space-y-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="relative pt-24 pb-16 space-y-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-slate-800">
       {/* Background orb decoration */}
-      <div className="absolute top-1/4 left-10 w-96 h-96 bg-electricBlue/5 glow-orb"></div>
+      <div className="absolute top-1/4 left-10 w-96 h-96 bg-gold/5 glow-orb"></div>
       
       <div className="text-center max-w-2xl mx-auto space-y-3">
-        <span className="text-xs font-bold text-electricCyan uppercase tracking-widest">Perjalanan Himpunan</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-white">EINSTEIN QUEST</h1>
-        <p className="text-slate-400 text-xs sm:text-sm leading-relaxed font-light">
+        <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Perjalanan Himpunan</span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">EINSTEIN QUEST</h1>
+        <p className="text-slate-500 text-xs sm:text-sm leading-relaxed font-light">
           Menelusuri linimasa sejarah peradaban digital, pengabdian sosial, dan riset teknologi Himpunan Elektronika Instrumentasi.
         </p>
       </div>
@@ -73,22 +73,22 @@ export default function Quest() {
         <div className="lg:col-span-7 text-left space-y-8 relative">
           
           {/* Vertical line connector */}
-          <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-obsidian-border z-0"></div>
+          <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-slate-200 z-0"></div>
 
           {historyEvents.map((ev, idx) => (
             <div key={idx} className="flex gap-6 relative z-10 group">
               
               {/* Circular timeline year emblem */}
-              <div className="w-12 h-12 rounded-xl bg-obsidian-card border border-white/10 flex flex-col items-center justify-center shrink-0 shadow-lg group-hover:border-electricCyan/50 group-hover:bg-electricBlue/10 transition-colors duration-300">
-                <span className="text-[10px] font-bold text-limeGreen tracking-widest">{ev.year}</span>
+              <div className="w-12 h-12 rounded-xl bg-white border border-gold-border flex flex-col items-center justify-center shrink-0 shadow-sm group-hover:border-gold group-hover:bg-gold/10 transition-colors duration-300">
+                <span className="text-[10px] font-bold text-gold-dark tracking-widest">{ev.year}</span>
               </div>
 
               {/* Event card detail */}
-              <div className="flex-1 p-5 rounded-2xl border border-white/5 bg-white/5 space-y-2 group-hover:border-white/10 group-hover:bg-white/10 transition-all duration-300">
-                <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-electricCyan"></span> {ev.title}
+              <div className="flex-1 p-5 rounded-2xl border border-gold-border bg-white space-y-2 hover:border-gold/30 hover:bg-slate-50/50 shadow-sm transition-all duration-300">
+                <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-gold"></span> {ev.title}
                 </h4>
-                <p className="text-xs text-slate-400 leading-relaxed font-light">
+                <p className="text-xs text-slate-500 leading-relaxed font-light">
                   {ev.desc}
                 </p>
               </div>
@@ -99,15 +99,15 @@ export default function Quest() {
         {/* Right Column: Documentary Video Teaser */}
         <div className="lg:col-span-5 space-y-6">
           <div className="text-left space-y-2">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-              <Camera className="w-4.5 h-4.5 text-limeGreen" /> Dokumenter Sejarah
+            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <Camera className="w-4.5 h-4.5 text-gold" /> Dokumenter Sejarah
             </h3>
-            <p className="text-xs text-slate-400 font-light">
+            <p className="text-xs text-slate-550 font-light">
               Tonton cuplikan dokumenter perjuangan pendirian Himpunan Mahasiswa Elins Poltek Nuklir.
             </p>
           </div>
 
-          <div className="relative glass border border-white/10 rounded-2xl overflow-hidden shadow-2xl aspect-video bg-obsidian-deep flex items-center justify-center group">
+          <div className="relative bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md aspect-video flex items-center justify-center group">
             {isVideoPlaying ? (
               <iframe 
                 className="absolute inset-0 w-full h-full"
@@ -122,14 +122,15 @@ export default function Quest() {
                 <img 
                   src="/Media Einsten/Media Umum/Foto Umum Beranda/DSC_7954.JPG" 
                   alt="Video thumbnail"
-                  className="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:scale-105 transition-transform duration-300"
+                  className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
                     e.target.src = "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80";
                   }}
                 />
+                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-300"></div>
                 <button 
                   onClick={() => setIsVideoPlaying(true)}
-                  className="w-14 h-14 rounded-full bg-limeGreen text-obsidian flex items-center justify-center relative z-10 shadow-xl hover:scale-110 active:scale-95 transition-transform duration-200"
+                  className="w-14 h-14 rounded-full bg-gold text-white flex items-center justify-center relative z-10 shadow-xl hover:scale-110 active:scale-95 transition-transform duration-200"
                 >
                   <Play className="w-6 h-6 fill-current ml-0.5" />
                 </button>
@@ -144,12 +145,12 @@ export default function Quest() {
       </div>
 
       {/* ================= DOKUMENTASI GALLERY SECTION ================= */}
-      <div className="border-t border-white/5 pt-16 space-y-6">
+      <div className="border-t border-slate-200 pt-16 space-y-6">
         <div className="text-left space-y-2">
-          <h2 className="text-xl font-bold uppercase text-white tracking-wide flex items-center gap-2">
-            <Image className="w-5 h-5 text-electricCyan" /> ARSIP DOKUMENTASI KEGIATAN
+          <h2 className="text-xl font-bold uppercase text-slate-800 tracking-wide flex items-center gap-2">
+            <Image className="w-5 h-5 text-gold" /> ARSIP DOKUMENTASI KEGIATAN
           </h2>
-          <p className="text-xs text-slate-400 font-light">
+          <p className="text-xs text-slate-500 font-light">
             Kumpulan potret jejak kebersamaan, riset teknologi, dan pengabdian masyarakat oleh anggota himpunan.
           </p>
         </div>
@@ -158,18 +159,18 @@ export default function Quest() {
           {galleryImages.map((img, idx) => (
             <div 
               key={idx} 
-              className="group relative glass border border-white/10 rounded-2xl overflow-hidden shadow-lg aspect-[4/3] flex flex-col justify-end text-left"
+              className="group relative bg-white border border-gold-border rounded-2xl overflow-hidden shadow-sm aspect-[4/3] flex flex-col justify-end text-left"
             >
               <img 
                 src={img.url} 
                 alt={img.title} 
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-60 group-hover:opacity-85"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100"
                 onError={(e) => {
                   e.target.src = img.fallback;
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-obsidian/95 via-obsidian/20 to-transparent p-4 flex flex-col justify-end">
-                <span className="text-[10px] text-limeGreen font-semibold uppercase tracking-widest">Dokumentasi</span>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent p-4 flex flex-col justify-end">
+                <span className="text-[10px] text-gold-light font-semibold uppercase tracking-widest">Dokumentasi</span>
                 <h4 className="text-xs font-bold text-white truncate mt-0.5" title={img.title}>
                   {img.title}
                 </h4>

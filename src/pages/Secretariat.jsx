@@ -75,14 +75,14 @@ export default function Secretariat({ showToast }) {
   const hasBackofficeAccess = currentUser && (currentUser.role === 'Master Admin' || currentUser.role === 'Sekretaris Umum');
 
   return (
-    <div className="relative pt-24 pb-16 space-y-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="relative pt-24 pb-16 space-y-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-slate-800">
       {/* Background decoration */}
-      <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-electricBlue/5 glow-orb"></div>
+      <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-gold/5 glow-orb"></div>
 
       <div className="text-center max-w-2xl mx-auto space-y-3">
-        <span className="text-xs font-bold text-electricCyan uppercase tracking-widest">Pengurusan Dokumen Himpunan</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-white">PORTAL SEKRETARIAT</h1>
-        <p className="text-slate-400 text-xs sm:text-sm leading-relaxed font-light">
+        <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Pengurusan Dokumen Himpunan</span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">PORTAL SEKRETARIAT</h1>
+        <p className="text-slate-500 text-xs sm:text-sm leading-relaxed font-light">
           Unduh berkas template resmi organisasi dan ajukan permohonan nomor surat digital secara praktis.
         </p>
       </div>
@@ -91,18 +91,18 @@ export default function Secretariat({ showToast }) {
         
         {/* Left Column: Download Center */}
         <div className="lg:col-span-7 space-y-6 text-left">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-white/5 pb-3">
-            <Download className="w-4.5 h-4.5 text-electricCyan" /> Download Center (Template Dokumen)
+          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-200 pb-3">
+            <Download className="w-4.5 h-4.5 text-gold" /> Download Center (Template Dokumen)
           </h3>
 
           <div className="space-y-4">
             {templates.map((tpl, idx) => (
               <div 
                 key={idx} 
-                className="p-4 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-between hover:bg-white/10 transition-all group"
+                className="p-4 bg-white border border-gold-border rounded-2xl flex items-center justify-between hover:bg-slate-50/50 shadow-sm transition-all group"
               >
                 <div className="space-y-1">
-                  <h4 className="text-xs font-bold text-white group-hover:text-electricCyan transition-colors">
+                  <h4 className="text-xs font-bold text-slate-800 group-hover:text-gold-dark transition-colors">
                     {tpl.name}
                   </h4>
                   <p className="text-[10px] text-slate-500 font-mono">
@@ -111,7 +111,7 @@ export default function Secretariat({ showToast }) {
                 </div>
                 <button
                   onClick={() => showToast(`Mengunduh file: ${tpl.name}...`, 'success')}
-                  className="px-4 py-2 bg-white/5 border border-white/10 hover:bg-electricBlue hover:border-electricBlue hover:text-white text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center gap-1 active:scale-95"
+                  className="px-4 py-2 bg-slate-50 border border-slate-200 hover:bg-gold hover:border-gold hover:text-white text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1 active:scale-95 shadow-sm"
                 >
                   Unduh <Download className="w-3.5 h-3.5" />
                 </button>
@@ -122,32 +122,32 @@ export default function Secretariat({ showToast }) {
 
         {/* Right Column: Request Form */}
         <div className="lg:col-span-5 space-y-6">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider text-left flex items-center gap-1.5 border-b border-white/5 pb-3">
-            <Send className="w-4.5 h-4.5 text-limeGreen" /> Request Nomor Surat BPH
+          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider text-left flex items-center gap-1.5 border-b border-slate-200 pb-3">
+            <Send className="w-4.5 h-4.5 text-gold" /> Request Nomor Surat BPH
           </h3>
 
-          <div className="glass border border-white/10 rounded-2xl p-6 text-left space-y-4 relative overflow-hidden">
-            <div className="absolute -bottom-10 -right-10 w-20 h-20 bg-limeGreen/5 rounded-full blur-xl"></div>
+          <div className="bg-white border border-gold-border rounded-2xl p-6 text-left space-y-4 relative overflow-hidden shadow-md">
+            <div className="absolute -bottom-10 -right-10 w-20 h-20 bg-gold/5 rounded-full blur-xl"></div>
 
             <form onSubmit={handleRequestSubmit} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block">Nama Pengusul / Divisi</label>
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Nama Pengusul / Divisi</label>
                 <input 
                   type="text" 
                   required
                   placeholder="Contoh: Ristek / Zacky"
                   value={requester}
                   onChange={(e) => setRequester(e.target.value)}
-                  className="w-full bg-obsidian border border-white/10 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-electricBlue"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block">Kategori Surat</label>
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Kategori Surat</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full bg-obsidian border border-white/10 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-electricBlue"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-850 focus:outline-none focus:border-gold"
                 >
                   <option value="Surat Permohonan">Surat Permohonan</option>
                   <option value="Surat Undangan">Surat Undangan</option>
@@ -156,21 +156,21 @@ export default function Secretariat({ showToast }) {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block">Perihal Surat</label>
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Perihal Surat</label>
                 <input 
                   type="text" 
                   required
                   placeholder="Perihal pengajuan dana / izin ruang lab..."
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="w-full bg-obsidian border border-white/10 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-electricBlue"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
                 />
               </div>
 
               <div className="flex gap-2 pt-2">
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-limeGreen text-obsidian font-bold rounded-xl text-xs hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-1 shadow-md"
+                  className="flex-1 py-2.5 bg-gold text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-1 shadow-md shadow-gold/25"
                 >
                   Kirim Request <Send className="w-3.5 h-3.5" />
                 </button>
@@ -179,7 +179,7 @@ export default function Secretariat({ showToast }) {
                   <button
                     type="button"
                     onClick={() => setShowBackoffice(!showBackoffice)}
-                    className="px-4 py-2.5 border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all"
+                    className="px-4 py-2.5 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 rounded-xl text-xs font-bold transition-all"
                   >
                     {showBackoffice ? 'Tutup Panel' : 'Backoffice'}
                   </button>
@@ -193,21 +193,21 @@ export default function Secretariat({ showToast }) {
 
       {/* Backoffice Dashboard panel */}
       {hasBackofficeAccess && showBackoffice && (
-        <div className="border-t border-white/5 pt-12 space-y-6 animate-slide-in">
+        <div className="border-t border-slate-200 pt-12 space-y-6 animate-slide-in">
           <div className="text-left space-y-1">
-            <h2 className="text-lg font-bold uppercase text-white tracking-wide flex items-center gap-2">
-              <ClipboardCheck className="w-5 h-5 text-electricCyan" /> DASHBOARD BACKOFFICE SEKRETARIS
+            <h2 className="text-lg font-bold uppercase text-slate-800 tracking-wide flex items-center gap-2">
+              <ClipboardCheck className="w-5 h-5 text-gold" /> DASHBOARD BACKOFFICE SEKRETARIS
             </h2>
-            <p className="text-xs text-slate-400 font-light">
+            <p className="text-xs text-slate-500 font-light">
               Tinjau, ACC (setujui), atau tolak nomor pengajuan surat resmi BPH secara otonom.
             </p>
           </div>
 
-          <div className="glass border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+          <div className="bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-white/5 bg-white/5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                     <th className="px-6 py-4">Pengusul / Divisi</th>
                     <th className="px-6 py-4">Kategori Surat</th>
                     <th className="px-6 py-4">Perihal</th>
@@ -215,26 +215,26 @@ export default function Secretariat({ showToast }) {
                     <th className="px-6 py-4 text-center">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                <tbody className="divide-y divide-slate-200 text-xs text-slate-700">
                   {letters.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="px-6 py-10 text-center text-slate-500">
+                      <td colSpan="5" className="px-6 py-10 text-center text-slate-400">
                         Belum ada antrean pengajuan surat resmi.
                       </td>
                     </tr>
                   ) : (
                     letters.map((letter) => (
-                      <tr key={letter.id} className="hover:bg-white/[0.02] transition-colors">
-                        <td className="px-6 py-4 font-semibold text-white">{letter.requester}</td>
+                      <tr key={letter.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-6 py-4 font-bold text-slate-800">{letter.requester}</td>
                         <td className="px-6 py-4">{letter.category}</td>
                         <td className="px-6 py-4 max-w-xs truncate">{letter.subject}</td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
                             letter.status === 'ACC' 
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                              ? 'bg-emerald-50 text-emerald-600 border-emerald-55/20' 
                               : letter.status === 'Ditolak'
-                                ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                ? 'bg-rose-50 text-rose-600 border-rose-55/20'
+                                : 'bg-amber-50 text-amber-600 border-amber-55/20'
                           }`}>
                             {letter.status}
                           </span>
@@ -243,17 +243,17 @@ export default function Secretariat({ showToast }) {
                           {letter.status !== 'ACC' && (
                             <button
                               onClick={() => handleUpdateStatus(letter.id, 'ACC')}
-                              className="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-obsidian text-[10px] font-bold rounded-lg transition-colors flex items-center gap-0.5 active:scale-95"
+                              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg transition-colors flex items-center gap-0.5 active:scale-95"
                             >
-                              <CheckCircle className="w-3 h-3" /> ACC
+                              <CheckCircle className="w-3 h-3 text-white" /> ACC
                             </button>
                           )}
                           {letter.status !== 'Ditolak' && (
                             <button
                               onClick={() => handleUpdateStatus(letter.id, 'Ditolak')}
-                              className="px-3 py-1 bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold rounded-lg transition-colors flex items-center gap-0.5 active:scale-95"
+                              className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-lg transition-colors flex items-center gap-0.5 active:scale-95"
                             >
-                              <XCircle className="w-3 h-3" /> Tolak
+                              <XCircle className="w-3 h-3 text-white" /> Tolak
                             </button>
                           )}
                         </td>
