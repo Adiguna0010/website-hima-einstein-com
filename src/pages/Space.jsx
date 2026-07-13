@@ -61,7 +61,7 @@ export default function Space({ showToast }) {
 
     // Build WA URL
     const text = `Halo Admin Logistik HIMPUNAN EINSTEN.COM! 📦\n\nSaya ingin mengajukan permohonan peminjaman alat laboratorium:\n- Nama Alat: ${selectedToolName}\n- ID Alat: ${selectedToolId}\n\nData Peminjam:\n- Nama: ${borrowerName}\n- NIM: ${borrowerNim}\n\n*Reservasi terdaftar melalui Portal Einstein Space.* Mohon konfirmasi pengambilan alat. Terima kasih!`;
-    const waNumber = '628123456789';
+    const waNumber = '6285175420692';
     const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
 

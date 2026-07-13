@@ -2,8 +2,41 @@ import React, { useState } from 'react';
 import { X, QrCode, Upload, CheckCircle2, AlertTriangle, MessageSquare } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
+const STATIC_QRIS = '00020101021126610014COM.GO-JEK.WWW01189360091432097791970210G2097791970303UMI51440014ID.CO.QRIS.WWW0215ID10254006622310303UMI5204762953033605802ID5910At-Service6014KOTA TANGERANG61051515762070703A016304EC70';
+
+function generateDynamicQRIS(staticQris, amount) {
+  function crc16(str) {
+    let crc = 0xFFFF;
+    for (let c = 0; c < str.length; c++) {
+      let code = str.charCodeAt(c);
+      crc ^= (code << 8);
+      for (let i = 0; i < 8; i++) {
+        if (crc & 0x8000) {
+          crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+        } else {
+          crc = (crc << 1) & 0xFFFF;
+        }
+      }
+    }
+    return crc.toString(16).toUpperCase().padStart(4, '0');
+  }
+
+  let baseQris = staticQris.slice(0, -8);
+  let tag54Index = baseQris.indexOf('54');
+  if (tag54Index !== -1) {
+    let len = parseInt(baseQris.substring(tag54Index + 2, tag54Index + 4), 10);
+    baseQris = baseQris.substring(0, tag54Index) + baseQris.substring(tag54Index + 4 + len);
+  }
+  let amountStr = Math.round(amount).toString();
+  let tag54 = '54' + amountStr.length.toString().padStart(2, '0') + amountStr;
+  let newPayload = baseQris + tag54 + '6304';
+  let checksum = crc16(newPayload);
+  return newPayload + checksum;
+}
+
 export default function CheckoutModal({ isOpen, onClose }) {
   const { cart, totalPrice, clearCart } = useCart();
+  const dynamicQris = generateDynamicQRIS(STATIC_QRIS, totalPrice);
   const [proofFile, setProofFile] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [isDragActive, setIsDragActive] = useState(false);
@@ -72,7 +105,7 @@ export default function CheckoutModal({ isOpen, onClose }) {
     text += `*Bukti Pembayaran:* Terlampir (File: ${proofFile.name})\n\n`;
     text += `Mohon konfirmasi pesanan saya. Terima kasih!`;
 
-    const waNumber = '628123456789'; // Official HIMA Admin WA
+    const waNumber = '6285175420692'; // Official Admin WA
     const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
 
@@ -127,11 +160,11 @@ export default function CheckoutModal({ isOpen, onClose }) {
             <div className="w-48 h-48 bg-white p-2 rounded-xl flex items-center justify-center relative shadow-md">
               {/* QR Image Placeholder / Real QRIS */}
               <img 
-                src="/Media/QRIS/AT-Service.jpeg" 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(dynamicQris)}`}
                 alt="QRIS HIMPUNAN EINSTEN.COM" 
                 className="w-full h-full object-contain rounded-lg"
                 onError={(e) => {
-                  e.target.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=DUMMY_HIMPUNAN_EINSTEN.COM_QRIS";
+                  e.target.src = "/Media/QRIS/AT-Service.jpeg";
                 }}
               />
             </div>
