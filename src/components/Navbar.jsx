@@ -37,7 +37,7 @@ export default function Navbar() {
   };
 
   const handleSphereSelect = (divKey) => {
-    navigate('/sphere', { state: { openDivision: divKey } });
+    navigate(`/sphere/${divKey}`);
     setIsSphereOpen(false);
   };
 

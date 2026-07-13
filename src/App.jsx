@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Sphere from './pages/Sphere';
+import DivisionDetail from './pages/DivisionDetail';
 import Market from './pages/Market';
 import Quest from './pages/Quest';
 import Space from './pages/Space';
@@ -76,6 +77,7 @@ export default function App() {
                 {/* Public Routes */}
                 <Route path="/" element={<HomeWrapper showToast={showToast} />} />
                 <Route path="/sphere" element={<Sphere showToast={showToast} />} />
+                <Route path="/sphere/:divisionKey" element={<DivisionDetail showToast={showToast} />} />
                 <Route path="/market" element={<Market showToast={showToast} />} />
                 <Route path="/quest" element={<Quest />} />
                 <Route path="/space" element={<Space showToast={showToast} />} />

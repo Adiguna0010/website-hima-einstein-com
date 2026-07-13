@@ -3,14 +3,18 @@
 @import "tailwindcss";
 
 @theme {
-  --color-obsidian: #05070A;
-  --color-obsidian-deep: #020304;
-  --color-obsidian-card: #0B0F19;
-  --color-obsidian-border: #1A2333;
+  --color-obsidian: #FFFFFF;
+  --color-obsidian-deep: #F8F9FA;
+  --color-obsidian-card: #FFFFFF;
+  --color-obsidian-border: rgba(170, 124, 17, 0.15);
   
-  --color-electricBlue: #0052FF;
-  --color-electricCyan: #00D2FF;
-  --color-limeGreen: #A3E635;
+  --color-gold: #AA7C11;
+  --color-gold-dark: #8B6508;
+  --color-gold-light: #D4AF37;
+  
+  --color-electricBlue: #AA7C11;
+  --color-electricCyan: #D4AF37;
+  --color-limeGreen: #8B6508;
 
   --font-heading: 'Outfit', sans-serif;
   --font-sans: 'Inter', sans-serif;
@@ -26,40 +30,43 @@
 
 @layer base {
   body {
-    background-color: var(--color-obsidian);
-    color: #f1f5f9; /* slate-100 */
+    background-color: #F9FBFD;
+    color: #1F2937; /* gray-800 */
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
     background-image: 
-      radial-gradient(circle at 10% 20%, rgba(0, 82, 255, 0.05) 0%, transparent 40%),
-      radial-gradient(circle at 90% 80%, rgba(0, 210, 255, 0.05) 0%, transparent 40%);
+      radial-gradient(circle at 10% 20%, rgba(170, 124, 17, 0.03) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(212, 175, 55, 0.03) 0%, transparent 40%);
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     letter-spacing: 0.025em;
+    color: #111827; /* gray-900 */
   }
 }
 
-/* Glassmorphism utilities */
+/* Glassmorphism utilities optimized for Light Mode with Gold Accents */
 .glass {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(170, 124, 17, 0.12);
+  box-shadow: 0 4px 20px -2px rgba(170, 124, 17, 0.04);
 }
 
 .glass-deep {
-  background-color: rgba(11, 15, 25, 0.8);
+  background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(24px);
-  border: 1px solid rgba(26, 35, 51, 0.8);
+  border: 1px solid rgba(170, 124, 17, 0.18);
+  box-shadow: 0 10px 30px -5px rgba(170, 124, 17, 0.08);
 }
 
 .glass-glow {
-  background-color: rgba(11, 15, 25, 0.9);
+  background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 82, 255, 0.2);
-  box-shadow: 0 0 25px -5px rgba(0, 82, 255, 0.25);
+  border: 1px solid rgba(170, 124, 17, 0.25);
+  box-shadow: 0 0 30px -5px rgba(170, 124, 17, 0.15);
 }
 
 /* Custom Scrollbar */
@@ -69,16 +76,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background-color: var(--color-obsidian);
+  background-color: #F3F4F6;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--color-obsidian-border);
+  background-color: rgba(170, 124, 17, 0.3);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 82, 255, 0.6);
+  background-color: rgba(170, 124, 17, 0.6);
 }
 
 /* Hide default browser range and other elements scrollbar */
