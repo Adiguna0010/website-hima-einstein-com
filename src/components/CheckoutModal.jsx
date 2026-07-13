@@ -22,6 +22,10 @@ function generateDynamicQRIS(staticQris, amount) {
   }
 
   let baseQris = staticQris.slice(0, -8);
+  
+  // Change Tag 01 from 11 (static) to 12 (dynamic)
+  baseQris = baseQris.replace('010211', '010212');
+
   let tag54Index = baseQris.indexOf('54');
   if (tag54Index !== -1) {
     let len = parseInt(baseQris.substring(tag54Index + 2, tag54Index + 4), 10);
