@@ -26,11 +26,27 @@ function generateDynamicQRIS(staticQris, amount) {
   // Change Tag 01 from 11 (static) to 12 (dynamic)
   baseQris = baseQris.replace('010211', '010212');
 
-  let tag54Index = baseQris.indexOf('54');
-  if (tag54Index !== -1) {
-    let len = parseInt(baseQris.substring(tag54Index + 2, tag54Index + 4), 10);
-    baseQris = baseQris.substring(0, tag54Index) + baseQris.substring(tag54Index + 4 + len);
+  // Parse EMVCo tags to find Tag 54 safely by length
+  let index = 0;
+  let tag54Info = null;
+  while (index < baseQris.length) {
+    if (index + 4 > baseQris.length) break;
+    let tag = baseQris.substring(index, index + 2);
+    let len = parseInt(baseQris.substring(index + 2, index + 4), 10);
+    if (isNaN(len)) break;
+    if (tag === '54') {
+      tag54Info = { index, len };
+      break;
+    }
+    index += 4 + len;
   }
+
+  // If Tag 54 was found, remove it safely
+  if (tag54Info) {
+    baseQris = baseQris.substring(0, tag54Info.index) + baseQris.substring(tag54Info.index + 4 + tag54Info.len);
+  }
+
+  // Construct Tag 54
   let amountStr = Math.round(amount).toString();
   let tag54 = '54' + amountStr.length.toString().padStart(2, '0') + amountStr;
   let newPayload = baseQris + tag54 + '6304';
