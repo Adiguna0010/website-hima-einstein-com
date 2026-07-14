@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, ShoppingBag, Plus, Minus, Trash2, ArrowRight } from 'lucide-react';
+import { ShoppingCart, ShoppingBag, Plus, Minus, Trash2, ArrowRight, Shirt, Key } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import CheckoutModal from '../components/CheckoutModal';
 
@@ -12,29 +12,43 @@ export default function Market({ showToast }) {
       id: 'prod-pdh',
       name: 'PDH EINSTEIN 2026',
       price: 135000,
-      image: '👕',
+      image: '/Media/Baju PDH Elins/pdh-elins.png',
       desc: 'Pakaian Dinas Harian resmi mahasiswa Elektronika Instrumentasi dengan bahan Premium Drill dingin.'
     },
     {
       id: 'prod-bomber',
       name: 'Bomber Phótisma',
       price: 185000,
-      image: '🧥',
+      image: Shirt,
       desc: 'Jaket Bomber eksklusif edisi Kabinet Phótisma dilengkapi bordir logo bersinar.'
     },
     {
       id: 'prod-tshirt',
       name: 'T-Shirt Phótisma',
       price: 85000,
-      image: '👕',
+      image: Shirt,
       desc: 'Kaos katun Combed 30s premium dengan sablon plastisol grafis Phótisma.'
     },
     {
       id: 'prod-keychain',
       name: 'Gantungan Kunci Acrylic',
       price: 15000,
-      image: '🔑',
+      image: Key,
       desc: 'Gantungan kunci akrilik double-sided logo HIMA EINSTEIN.'
+    },
+    {
+      id: 'prod-magiccom',
+      name: 'Magic Com',
+      price: 120000,
+      image: '/Media/Media yg dijual/Magiccom 120.000/magiccom.png',
+      desc: 'Magic Com penanak nasi praktis, kondisi secondary terawat dan berfungsi normal.'
+    },
+    {
+      id: 'prod-mejabelajar',
+      name: 'Meja Belajar',
+      price: 150000,
+      image: '/Media/Media yg dijual/Meja Belajar 150.000/mejabelajar.png',
+      desc: 'Meja belajar minimalis kayu kokoh, nyaman digunakan untuk belajar dan bekerja.'
     }
   ];
 
@@ -67,38 +81,49 @@ export default function Market({ showToast }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Product Catalog Grid */}
         <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {products.map((p) => (
-            <div 
-              key={p.id} 
-              className="p-6 bg-white border border-gold-border rounded-2xl flex flex-col justify-between space-y-4 hover:border-gold/30 hover:bg-slate-50/50 transition-all duration-300 relative group overflow-hidden text-left shadow-sm hover:shadow-md"
-            >
-              <div className="absolute -top-10 -right-10 w-20 h-20 bg-gold/5 group-hover:scale-150 transition-transform duration-300 rounded-full blur-xl"></div>
-              
-              <div className="space-y-3">
-                <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-4xl shadow-inner">
-                  {p.image}
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-850 group-hover:text-gold-dark transition-colors">
-                    {p.name}
-                  </h3>
-                  <span className="block text-xs text-gold-dark font-semibold mt-1">
-                    Rp {p.price.toLocaleString('id-ID')}
-                  </span>
-                  <p className="text-[11px] text-slate-500 leading-normal mt-2 font-light">
-                    {p.desc}
-                  </p>
-                </div>
-              </div>
-
-              <button 
-                onClick={() => handleAddToCart(p)}
-                className="w-full py-2.5 bg-slate-50 border border-slate-200 hover:bg-gold hover:text-white hover:border-gold text-slate-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all duration-200 shadow-sm"
+          {products.map((p) => {
+            const Icon = p.image;
+            return (
+              <div 
+                key={p.id} 
+                className="p-6 bg-white border border-gold-border rounded-2xl flex flex-col justify-between space-y-4 hover:border-gold/30 hover:bg-slate-50/50 transition-all duration-300 relative group overflow-hidden text-left shadow-sm hover:shadow-md"
               >
-                <Plus className="w-3.5 h-3.5" /> Tambah Keranjang
-              </button>
-            </div>
-          ))}
+                <div className="absolute -top-10 -right-10 w-20 h-20 bg-gold/5 group-hover:scale-150 transition-transform duration-300 rounded-full blur-xl"></div>
+                
+                <div className="space-y-3">
+                  <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
+                    {typeof p.image === 'string' ? (
+                      <img 
+                        src={p.image} 
+                        alt={p.name} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <Icon className="w-10 h-10 text-slate-400" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-850 group-hover:text-gold-dark transition-colors">
+                      {p.name}
+                    </h3>
+                    <span className="block text-xs text-gold-dark font-semibold mt-1">
+                      Rp {p.price.toLocaleString('id-ID')}
+                    </span>
+                    <p className="text-[11px] text-slate-500 leading-normal mt-2 font-light">
+                      {p.desc}
+                    </p>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => handleAddToCart(p)}
+                  className="w-full py-2.5 bg-slate-50 border border-slate-200 hover:bg-gold hover:text-white hover:border-gold text-slate-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all duration-200 shadow-sm"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Tambah Keranjang
+                </button>
+              </div>
+            );
+          })}
         </div>
 
         {/* Shopping Cart Sidebar */}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Users, Terminal, Globe, BookOpen, Rocket, ShoppingCart, Radio, Box, Send, Download, Check, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Users, Terminal, Globe, BookOpen, Rocket, ShoppingCart, Radio, Box, Send, Download, Check, ShieldCheck, Shirt } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 export default function DivisionDetail({ showToast }) {
@@ -310,7 +310,9 @@ export default function DivisionDetail({ showToast }) {
           <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-left">Produk Populer Danus</h4>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-white border border-gold-border rounded-2xl flex flex-col justify-between text-left space-y-3 shadow-sm hover:border-gold/30 transition-all">
-              <span className="text-4xl text-center">👕</span>
+              <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
+                <img src="/Media/Baju PDH Elins/pdh-elins.png" alt="PDH HIMA" className="w-full h-full object-cover" />
+              </div>
               <span className="text-xs font-bold text-slate-800 truncate">PDH HIMA 2026</span>
               <span className="text-xs text-gold-dark font-semibold">Rp 135.000</span>
               <button 
@@ -324,7 +326,9 @@ export default function DivisionDetail({ showToast }) {
               </button>
             </div>
             <div className="p-4 bg-white border border-gold-border rounded-2xl flex flex-col justify-between text-left space-y-3 shadow-sm hover:border-gold/30 transition-all">
-              <span className="text-4xl text-center">🧥</span>
+              <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shadow-inner">
+                <Shirt className="w-8 h-8 text-slate-400" />
+              </div>
               <span className="text-xs font-bold text-slate-800 truncate">Bomber Phótisma</span>
               <span className="text-xs text-gold-dark font-semibold">Rp 185.000</span>
               <button 
