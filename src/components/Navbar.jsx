@@ -48,6 +48,8 @@ export default function Navbar() {
     { label: 'Einstein Space', path: '/space' },
     { label: 'Secretariat', path: '/secretariat' },
     { label: 'Einstein Kalender', path: '/calendar' },
+    { label: 'Mitra', path: '/mitra' },
+    { label: 'Investor', path: '/investor' },
   ];
 
   const divisions = [

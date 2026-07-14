@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, ShoppingBag, Plus, Minus, Trash2, ArrowRight, Shirt, Key } from 'lucide-react';
+import { ShoppingCart, ShoppingBag, Plus, Minus, Trash2, ArrowRight, Shirt, Key, ImageOff } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import CheckoutModal from '../components/CheckoutModal';
 
@@ -19,21 +19,21 @@ export default function Market({ showToast }) {
       id: 'prod-bomber',
       name: 'Bomber Phótisma',
       price: 185000,
-      image: Shirt,
+      icon: Shirt,
       desc: 'Jaket Bomber eksklusif edisi Kabinet Phótisma dilengkapi bordir logo bersinar.'
     },
     {
       id: 'prod-tshirt',
       name: 'T-Shirt Phótisma',
       price: 85000,
-      image: Shirt,
+      icon: Shirt,
       desc: 'Kaos katun Combed 30s premium dengan sablon plastisol grafis Phótisma.'
     },
     {
       id: 'prod-keychain',
       name: 'Gantungan Kunci Acrylic',
       price: 15000,
-      image: Key,
+      icon: Key,
       desc: 'Gantungan kunci akrilik double-sided logo HIMA EINSTEIN.'
     },
     {
@@ -82,26 +82,39 @@ export default function Market({ showToast }) {
         {/* Product Catalog Grid */}
         <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
           {products.map((p) => {
-            const Icon = p.image;
+            const Icon = p.icon;
+            const hasImage = !!p.image;
             return (
               <div 
                 key={p.id} 
-                className="p-6 bg-white border border-gold-border rounded-2xl flex flex-col justify-between space-y-4 hover:border-gold/30 hover:bg-slate-50/50 transition-all duration-300 relative group overflow-hidden text-left shadow-sm hover:shadow-md"
+                className="p-5 bg-white border border-gold-border rounded-2xl flex flex-col justify-between space-y-4 hover:border-gold/30 hover:bg-slate-50/50 transition-all duration-300 relative group overflow-hidden text-left shadow-sm hover:shadow-md"
               >
                 <div className="absolute -top-10 -right-10 w-20 h-20 bg-gold/5 group-hover:scale-150 transition-transform duration-300 rounded-full blur-xl"></div>
                 
                 <div className="space-y-3">
-                  <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
-                    {typeof p.image === 'string' ? (
+                  {/* Product Image Container */}
+                  <div className="w-full aspect-[4/3] rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shadow-inner relative">
+                    {hasImage ? (
                       <img 
                         src={p.image} 
                         alt={p.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling && (e.target.nextSibling.style.display = 'flex');
+                        }}
                       />
                     ) : (
-                      <Icon className="w-10 h-10 text-slate-400" />
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-gold/10 to-gold-light/5 border border-gold/15 flex items-center justify-center">
+                          <Icon className="w-8 h-8 text-gold/60" />
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium tracking-wide">Foto segera hadir</span>
+                      </div>
                     )}
                   </div>
+
+                  {/* Product Info */}
                   <div>
                     <h3 className="text-sm font-bold text-slate-850 group-hover:text-gold-dark transition-colors">
                       {p.name}
@@ -109,7 +122,7 @@ export default function Market({ showToast }) {
                     <span className="block text-xs text-gold-dark font-semibold mt-1">
                       Rp {p.price.toLocaleString('id-ID')}
                     </span>
-                    <p className="text-[11px] text-slate-500 leading-normal mt-2 font-light">
+                    <p className="text-[11px] text-slate-500 leading-relaxed mt-2 font-light line-clamp-2">
                       {p.desc}
                     </p>
                   </div>
@@ -127,7 +140,7 @@ export default function Market({ showToast }) {
         </div>
 
         {/* Shopping Cart Sidebar */}
-        <div className="lg:col-span-4 bg-white border border-gold-border rounded-2xl p-6 space-y-6 text-left relative overflow-hidden shadow-md">
+        <div className="lg:col-span-4 bg-white border border-gold-border rounded-2xl p-6 space-y-6 text-left relative overflow-hidden shadow-md lg:sticky lg:top-24">
           <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-gold/5 rounded-full blur-xl"></div>
 
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
