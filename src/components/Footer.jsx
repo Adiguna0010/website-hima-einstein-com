@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldAlert, BookOpen, ExternalLink, Globe } from 'lucide-react';
+import { ExternalLink, Globe } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -9,18 +9,18 @@ export default function Footer() {
       <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-gold/5 glow-orb"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-slate-850">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-left">
           {/* Brand/About */}
           <div className="md:col-span-2 space-y-4">
             <img 
-              src="/Media Einsten/Media Umum/logo kabinet hitam (horizontal) (1).png" 
-              alt="HIMPUNAN EINSTEN.COM Logo" 
+              src="/Media/Logo Kabinet/logo kabinet hitam (horizontal).png" 
+              alt="Kabinet Phótisma Logo" 
               className="h-10 w-auto object-contain"
               onError={(e) => {
-                e.target.src = "https://placehold.co/180x45/ffffff/000000?text=EINSTEIN";
+                e.target.src = "https://placehold.co/180x45/ffffff/000000?text=KABINET+PHOTISMA";
               }}
             />
-            <p className="text-slate-600 text-sm max-w-sm leading-relaxed">
+            <p className="text-slate-600 text-sm max-w-sm leading-relaxed font-light">
               Website Resmi Himpunan Mahasiswa Program Studi Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia - Kabinet Phótisma.
             </p>
             <div className="flex items-center gap-1.5 text-xs text-slate-500">
@@ -77,7 +77,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-slate-200 mt-10 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500">
-          <p>&copy; {new Date().getFullYear()} HIMPUNAN EINSTEN.COM Kabinet Phótisma. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} HIMPUNAN EINSTEIN.COM Kabinet Phótisma. All Rights Reserved.</p>
           <p className="mt-2 md:mt-0 flex items-center gap-1">
             <span>Powered by BRIN Yogyakarta</span>
           </p>
