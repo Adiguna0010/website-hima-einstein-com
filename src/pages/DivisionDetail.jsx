@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Users, Terminal, Globe, BookOpen, Rocket, ShoppingCart, Radio, Box, Send, Download, Check, ShieldCheck, Shirt } from 'lucide-react';
+import { ArrowLeft, Users, Terminal, Globe, BookOpen, Rocket, ShoppingCart, Radio, Box, Send, Download, Check, ShieldCheck, Shirt, Calendar, Plus, MessageSquare } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function DivisionDetail({ showToast }) {
   const { divisionKey } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { currentUser } = useAuth();
   
   // Ristek tabs
   const [ristekTab, setRistekTab] = useState('vault');
 
   // Form states
   const [extForm, setExtForm] = useState({ name: '', email: '', desc: '' });
-  const [ristekForm, setRistekForm] = useState({ name: '', role: 'murid', subject: '', wa: '' });
+  const [ristekForm, setRistekForm] = useState({ name: currentUser?.name || '', role: 'murid', subject: '', wa: '' });
   const [vaultItems, setVaultItems] = useState([]);
 
   useEffect(() => {
@@ -148,8 +150,28 @@ export default function DivisionDetail({ showToast }) {
       renderContent: () => {
         const handleRistekSubmit = (e) => {
           e.preventDefault();
-          showToast(`Pendaftaran Ristek Mengajar untuk ${ristekForm.name} berhasil!`, 'success');
-          setRistekForm({ name: '', role: 'murid', subject: '', wa: '' });
+          if (!ristekForm.name || !ristekForm.subject || !ristekForm.wa) {
+            showToast('Mohon lengkapi seluruh kolom formulir!', 'error');
+            return;
+          }
+          const newRequest = {
+            id: Date.now(),
+            requesterName: ristekForm.name,
+            userEmail: currentUser?.email || 'guest@einstein.com',
+            type: 'Ristek Mengajar',
+            role: ristekForm.role,
+            subject: ristekForm.subject,
+            wa: ristekForm.wa,
+            status: 'Pending',
+            timestamp: Date.now()
+          };
+          const saved = localStorage.getItem('hima_ristek_requests');
+          const list = saved ? JSON.parse(saved) : [];
+          const updated = [...list, newRequest];
+          localStorage.setItem('hima_ristek_requests', JSON.stringify(updated));
+
+          showToast(`Pendaftaran Ristek Mengajar berhasil dikirim! Menunggu ACC Kadiv Ristek.`, 'success');
+          setRistekForm({ name: currentUser?.name || '', role: 'murid', subject: '', wa: '' });
         };
         return (
           <div className="max-w-2xl mx-auto space-y-6">
@@ -226,79 +248,186 @@ export default function DivisionDetail({ showToast }) {
 
             {/* Tab: Les */}
             {ristekTab === 'les' && (
-              <form onSubmit={handleRistekSubmit} className="space-y-4 text-left p-6 bg-white border border-gold-border rounded-2xl shadow-sm max-w-md mx-auto">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Nama Lengkap</label>
-                  <input 
-                    type="text" 
-                    required
-                    placeholder="Nama Anda"
-                    value={ristekForm.name}
-                    onChange={(e) => setRistekForm({ ...ristekForm, name: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
-                  />
-                </div>
-                
-                <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Kategori Peran</label>
-                  <select
-                    value={ristekForm.role}
-                    onChange={(e) => setRistekForm({ ...ristekForm, role: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none"
-                  >
-                    <option value="murid">Butuh Bimbingan (Murid)</option>
-                    <option value="tutor">Bersedia Mengajar (Tutor)</option>
-                  </select>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start text-left">
+                {/* Form column */}
+                <div className="md:col-span-5 space-y-3">
+                  <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <Plus className="w-4.5 h-4.5 text-gold" /> Pendaftaran Tutor / Murid
+                  </h5>
+                  <form onSubmit={handleRistekSubmit} className="space-y-4 p-5 bg-white border border-gold-border rounded-2xl shadow-sm">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Nama Lengkap</label>
+                      <input 
+                        type="text" 
+                        required
+                        placeholder="Nama Anda"
+                        value={ristekForm.name}
+                        onChange={(e) => setRistekForm({ ...ristekForm, name: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Kategori Peran</label>
+                      <select
+                        value={ristekForm.role}
+                        onChange={(e) => setRistekForm({ ...ristekForm, role: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                      >
+                        <option value="murid">Butuh Bimbingan (Murid)</option>
+                        <option value="tutor">Bersedia Mengajar (Tutor)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Mata Kuliah / Bidang</label>
+                      <input 
+                        type="text" 
+                        required
+                        placeholder="Contoh: Pemrograman C++"
+                        value={ristekForm.subject}
+                        onChange={(e) => setRistekForm({ ...ristekForm, subject: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">WhatsApp Kontak</label>
+                      <input 
+                        type="text" 
+                        required
+                        placeholder="08xxxxxxxxxx"
+                        value={ristekForm.wa}
+                        onChange={(e) => setRistekForm({ ...ristekForm, wa: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                      />
+                    </div>
+
+                    <button 
+                      type="submit"
+                      className="w-full py-2.5 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-gold/20"
+                    >
+                      Daftar Tutor/Murid
+                    </button>
+                  </form>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Mata Kuliah / Bidang</label>
-                  <input 
-                    type="text" 
-                    required
-                    placeholder="Contoh: Pemrograman C++"
-                    value={ristekForm.subject}
-                    onChange={(e) => setRistekForm({ ...ristekForm, subject: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
-                  />
-                </div>
+                {/* Schedule column */}
+                <div className="md:col-span-7 space-y-3">
+                  <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <Calendar className="w-4.5 h-4.5 text-gold" /> Jadwal Kegiatan Mengajar Sebaya
+                  </h5>
+                  
+                  <div className="space-y-3">
+                    <div className="p-4 bg-white border border-gold-border rounded-2xl space-y-2 shadow-sm hover:border-gold/30 transition-all">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-mono font-bold bg-gold/10 text-gold-dark border border-gold/20 px-2 py-0.5 rounded">
+                          Senin, 20 Juli 2026
+                        </span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                          15.30 - 17.00 WIB
+                        </span>
+                      </div>
+                      <h5 className="text-xs font-bold text-slate-800">Kelas Dasar Pemrograman C++</h5>
+                      <p className="text-[10px] text-slate-500 leading-normal font-light">
+                        Materi: Pengenalan Sintaks Dasar, Variabel, Array, dan Pointers untuk mahasiswa baru.
+                      </p>
+                      <p className="text-[9px] text-slate-400 font-mono">
+                        Tutor: Adiguna Nugroho Halomoan (Kadiv Ristek) • Ruang: Lab Komputasi 3
+                      </p>
+                    </div>
 
-                <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">WhatsApp Kontak</label>
-                  <input 
-                    type="text" 
-                    required
-                    placeholder="08xxxxxxxxxx"
-                    value={ristekForm.wa}
-                    onChange={(e) => setRistekForm({ ...ristekForm, wa: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
-                  />
+                    <div className="p-4 bg-white border border-gold-border rounded-2xl space-y-2 shadow-sm hover:border-gold/30 transition-all">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-mono font-bold bg-gold/10 text-gold-dark border border-gold/20 px-2 py-0.5 rounded">
+                          Rabu, 22 Juli 2026
+                        </span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                          13.00 - 15.00 WIB
+                        </span>
+                      </div>
+                      <h5 className="text-xs font-bold text-slate-800">Praktikum Elektronika Lanjut</h5>
+                      <p className="text-[10px] text-slate-500 leading-normal font-light">
+                        Materi: Desain Sirkuit Analog, Penggunaan Osiloskop, & Lab Virtual Proteus.
+                      </p>
+                      <p className="text-[9px] text-slate-400 font-mono">
+                        Tutor: Dian Ristek (Operator) • Ruang: Laboratorium Elektronika Dasar
+                      </p>
+                    </div>
+                  </div>
                 </div>
-
-                <button 
-                  type="submit"
-                  className="w-full py-2.5 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-gold/20"
-                >
-                  Daftar Tutor/Murid
-                </button>
-              </form>
+              </div>
             )}
 
             {/* Tab: Proyek */}
             {ristekTab === 'proyek' && (
-              <div className="space-y-3 text-left">
+              <div className="space-y-4 text-left">
                 <div className="p-5 bg-white border border-gold-border rounded-2xl space-y-3 shadow-sm hover:border-gold/30 transition-all">
                   <span className="inline-block px-2.5 py-0.5 rounded bg-gold/10 border border-gold/20 text-[9px] font-bold text-gold-dark uppercase tracking-wider">IoT & Nuklir</span>
                   <h5 className="text-sm font-bold text-slate-800">Monitor Radiasi Geiger-Müller ESP32</h5>
-                  <p className="text-xs text-slate-500 leading-normal">
+                  <p className="text-xs text-slate-500 leading-normal font-light">
                     Membangun alat ukur paparan radiasi portable berbasis sensor IoT otonom terkoneksi database IoT.
                   </p>
-                  <button 
-                    onClick={() => showToast('Pendaftaran kolaborasi proyek Geiger-Müller diterima!', 'success')}
-                    className="px-4 py-2 bg-gold text-white text-xs font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all shadow-sm"
-                  >
-                    Gabung Proyek
-                  </button>
+                  
+                  {/* Inline Join Project Form */}
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const name = e.target.name.value;
+                    const wa = e.target.wa.value;
+                    if (!name || !wa) {
+                      showToast('Mohon lengkapi nama dan WhatsApp!', 'error');
+                      return;
+                    }
+                    const newRequest = {
+                      id: Date.now(),
+                      requesterName: name,
+                      userEmail: currentUser?.email || 'guest@einstein.com',
+                      type: 'Proyek Collab',
+                      role: 'Anggota',
+                      subject: 'Geiger-Müller ESP32',
+                      wa: wa,
+                      status: 'Pending',
+                      timestamp: Date.now()
+                    };
+                    const saved = localStorage.getItem('hima_ristek_requests');
+                    const list = saved ? JSON.parse(saved) : [];
+                    const updated = [...list, newRequest];
+                    localStorage.setItem('hima_ristek_requests', JSON.stringify(updated));
+                    
+                    showToast('Permohonan bergabung proyek kolaborasi dikirim! Menunggu ACC Kadiv Ristek.', 'success');
+                    e.target.reset();
+                  }} className="pt-3 border-t border-slate-100 space-y-3">
+                    <p className="text-[10px] font-bold text-gold-dark uppercase tracking-widest">Formulir Kolaborasi Proyek</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-slate-500 font-semibold block">Nama Lengkap</label>
+                        <input
+                          type="text"
+                          name="name"
+                          required
+                          defaultValue={currentUser?.name || ''}
+                          placeholder="Nama Anda"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-slate-500 font-semibold block">WhatsApp Kontak</label>
+                        <input
+                          type="text"
+                          name="wa"
+                          required
+                          placeholder="08xxxxxxxxxx"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-gold text-white text-xs font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all shadow-sm w-full sm:w-auto"
+                    >
+                      Gabung Proyek
+                    </button>
+                  </form>
                 </div>
               </div>
             )}

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Shield, 
-  ShoppingBag, Compass, History, Cpu
+  ShoppingBag, Compass, History, Cpu, Bell, MessageSquare, Send, ArrowLeft, Trash2, MessageCircle
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -16,11 +16,21 @@ export default function Navbar() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isMobileSuiteOpen, setIsMobileSuiteOpen] = useState(false);
   
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatUsers, setChatUsers] = useState([]);
+  const [activeChat, setActiveChat] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+
   const navigate = useNavigate();
   const location = useLocation();
   
   const suiteRef = useRef(null);
   const adminRef = useRef(null);
+  const notifRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,7 +49,108 @@ export default function Navbar() {
     setIsOpen(false);
     setIsSuiteOpen(false);
     setIsAdminOpen(false);
+    setIsNotifOpen(false);
   }, [location]);
+
+  // Load notifications from localStorage
+  const loadNotifications = () => {
+    if (currentUser) {
+      const saved = localStorage.getItem('hima_notifications');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const filtered = parsed.filter(n => n.recipientEmail?.toLowerCase() === currentUser.email?.toLowerCase());
+        // Sort newest first
+        filtered.sort((a, b) => b.id - a.id);
+        setNotifications(filtered);
+      }
+    } else {
+      setNotifications([]);
+    }
+  };
+
+  // Load chat contacts and messages
+  const loadChats = () => {
+    const savedUsers = localStorage.getItem('hima_users');
+    if (savedUsers && currentUser) {
+      const parsedUsers = JSON.parse(savedUsers);
+      const list = parsedUsers.filter(u => u.email?.toLowerCase() !== currentUser.email?.toLowerCase());
+      setChatUsers(list);
+    }
+
+    if (currentUser && activeChat) {
+      const savedMsgs = localStorage.getItem('hima_chats');
+      if (savedMsgs) {
+        const parsedMsgs = JSON.parse(savedMsgs);
+        const filtered = parsedMsgs.filter(m => 
+          (m.sender?.toLowerCase() === currentUser.email?.toLowerCase() && m.recipient?.toLowerCase() === activeChat.email?.toLowerCase()) ||
+          (m.sender?.toLowerCase() === activeChat.email?.toLowerCase() && m.recipient?.toLowerCase() === currentUser.email?.toLowerCase())
+        );
+        setChatMessages(filtered);
+      } else {
+        setChatMessages([]);
+      }
+    }
+  };
+
+  useEffect(() => {
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 4000);
+    return () => clearInterval(interval);
+  }, [currentUser]);
+
+  useEffect(() => {
+    loadChats();
+    const chatInterval = setInterval(loadChats, 3000);
+    return () => clearInterval(chatInterval);
+  }, [currentUser, activeChat]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleMarkAllRead = () => {
+    const saved = localStorage.getItem('hima_notifications');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const updated = parsed.map(n => {
+        if (n.recipientEmail?.toLowerCase() === currentUser.email?.toLowerCase()) {
+          return { ...n, read: true };
+        }
+        return n;
+      });
+      localStorage.setItem('hima_notifications', JSON.stringify(updated));
+      loadNotifications();
+    }
+  };
+
+  const handleClearNotifs = () => {
+    const saved = localStorage.getItem('hima_notifications');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const updated = parsed.filter(n => n.recipientEmail?.toLowerCase() !== currentUser.email?.toLowerCase());
+      localStorage.setItem('hima_notifications', JSON.stringify(updated));
+      loadNotifications();
+    }
+  };
+
+  const handleSendChatMessage = (e) => {
+    e.preventDefault();
+    if (!chatInput.trim() || !activeChat || !currentUser) return;
+
+    const newMsg = {
+      id: Date.now(),
+      sender: currentUser.email,
+      recipient: activeChat.email,
+      message: chatInput.trim(),
+      timestamp: Date.now()
+    };
+
+    const savedMsgs = localStorage.getItem('hima_chats');
+    const msgsList = savedMsgs ? JSON.parse(savedMsgs) : [];
+    msgsList.push(newMsg);
+    localStorage.setItem('hima_chats', JSON.stringify(msgsList));
+
+    setChatInput('');
+    loadChats();
+  };
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -49,6 +160,9 @@ export default function Navbar() {
       if (adminRef.current && !adminRef.current.contains(event.target)) {
         setIsAdminOpen(false);
       }
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setIsNotifOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -56,6 +170,8 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout();
+    setIsChatOpen(false);
+    setActiveChat(null);
     navigate('/');
   };
 
@@ -303,6 +419,53 @@ export default function Navbar() {
               />
             </div>
             
+            {currentUser && (
+              <div className="relative mr-1.5" ref={notifRef}>
+                <button 
+                  onClick={() => setIsNotifOpen(!isNotifOpen)}
+                  className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-800 transition-all active:scale-95 relative cursor-pointer"
+                  title="Notifikasi"
+                >
+                  <Bell className="w-4 h-4 text-gold-dark animate-none" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-rose-600 text-white font-bold text-[8px] w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {isNotifOpen && (
+                  <div className="absolute right-0 top-full mt-3 w-72 rounded-2xl bg-white border border-gold-border shadow-xl py-2.5 z-55 animate-slide-in">
+                    <div className="px-4 py-1.5 border-b border-slate-100 flex items-center justify-between">
+                      <p className="text-[10px] font-bold text-slate-850 uppercase tracking-wider">Notifikasi Akun</p>
+                      <div className="flex gap-2">
+                        {unreadCount > 0 && (
+                          <button onClick={handleMarkAllRead} className="text-[9px] text-gold-dark hover:underline font-bold">Baca Semua</button>
+                        )}
+                        {notifications.length > 0 && (
+                          <button onClick={handleClearNotifs} className="text-[9px] text-rose-600 hover:underline font-bold font-mono">Hapus</button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 mt-2 px-1">
+                      {notifications.length === 0 ? (
+                        <p className="text-center py-6 text-[10px] text-slate-400">Belum ada notifikasi.</p>
+                      ) : (
+                        notifications.map((n) => (
+                          <div key={n.id} className={`p-2 rounded-xl text-[10px] leading-relaxed transition-colors mb-1 ${!n.read ? 'bg-gold/5 font-bold text-slate-900 border-l-2 border-gold' : 'text-slate-500'}`}>
+                            <p>{n.message}</p>
+                            <span className="text-[8px] text-slate-400 font-mono mt-1 block">
+                              {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {currentUser ? (
               <div className="flex items-center gap-3 bg-slate-50 border border-gold-border rounded-xl px-3 py-1.5 pl-2 relative" ref={adminRef}>
                 <div className="w-8 h-8 rounded-lg overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center cursor-pointer" onClick={() => setIsAdminOpen(!isAdminOpen)}>
@@ -552,6 +715,141 @@ export default function Navbar() {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Floating Chat Widget */}
+      {currentUser && (
+        <div className="fixed bottom-6 right-6 z-55 text-slate-800 text-left font-sans">
+          {/* Chat Bubble Toggle Button */}
+          <button
+            onClick={() => setIsChatOpen(!isChatOpen)}
+            className="w-14 h-14 rounded-full bg-gradient-to-r from-gold to-gold-light text-white shadow-2xl flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-all relative"
+            title="Einstein Chat"
+          >
+            <MessageSquare className="w-6 h-6 text-white" />
+            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full animate-pulse" />
+          </button>
+
+          {/* Chat Window Panel */}
+          {isChatOpen && (
+            <div className="fixed bottom-24 right-6 w-80 h-96 bg-white border border-gold-border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-in">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-gold to-gold-light text-white px-4 py-3 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2">
+                  {activeChat ? (
+                    <button 
+                      onClick={() => setActiveChat(null)}
+                      className="p-1 hover:bg-white/10 rounded-lg transition-colors text-white"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <MessageCircle className="w-4 h-4" />
+                  )}
+                  <div>
+                    <h4 className="text-xs font-bold truncate max-w-[150px]">
+                      {activeChat ? activeChat.name : 'Einstein Messenger'}
+                    </h4>
+                    <p className="text-[8px] text-white/80 uppercase font-semibold">
+                      {activeChat ? activeChat.role : 'Obrolan Internal'}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsChatOpen(false)}
+                  className="p-1 hover:bg-white/10 rounded-lg transition-colors text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Chat Body */}
+              <div className="flex-1 overflow-y-auto p-3 bg-slate-50 space-y-2.5">
+                {!activeChat ? (
+                  /* CONTACTS LIST VIEW */
+                  <div className="space-y-1.5">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">Kontak Pengurus</p>
+                    {chatUsers.map((user) => (
+                      <div
+                        key={user.email}
+                        onClick={() => setActiveChat(user)}
+                        className="p-2.5 bg-white border border-slate-150 rounded-xl flex items-center gap-3 cursor-pointer hover:border-gold hover:shadow-sm transition-all"
+                      >
+                        <div className="w-8 h-8 rounded-lg overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                          {user.photo ? (
+                            <img src={user.photo} alt={user.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <User className="w-4 h-4 text-gold" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h5 className="text-[11px] font-bold text-slate-800 truncate">{user.name}</h5>
+                          <p className="text-[9px] text-gold-dark font-medium uppercase truncate">{user.role}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  /* CHAT ROOM VIEW */
+                  <div className="space-y-2">
+                    {chatMessages.length === 0 ? (
+                      <div className="text-center py-10 space-y-2">
+                        <MessageCircle className="w-8 h-8 mx-auto text-slate-300 animate-pulse" />
+                        <p className="text-[10px] text-slate-400 font-light leading-normal">
+                          Belum ada obrolan. Kirim pesan pertama untuk memulai percakapan.
+                        </p>
+                      </div>
+                    ) : (
+                      chatMessages.map((msg) => {
+                        const isSelf = msg.sender?.toLowerCase() === currentUser.email?.toLowerCase();
+                        return (
+                          <div
+                            key={msg.id}
+                            className={`flex ${isSelf ? 'justify-end' : 'justify-start'}`}
+                          >
+                            <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-[10px] leading-relaxed shadow-sm ${
+                              isSelf 
+                                ? 'bg-gold text-white rounded-tr-none' 
+                                : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
+                            }`}>
+                              <p>{msg.message}</p>
+                              <span className={`text-[7px] block mt-1 text-right ${isSelf ? 'text-white/70' : 'text-slate-400'}`}>
+                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Chat Footer Input */}
+              {activeChat && (
+                <form 
+                  onSubmit={handleSendChatMessage}
+                  className="p-2 border-t border-slate-200 bg-white flex items-center gap-1.5 shrink-0"
+                >
+                  <input
+                    type="text"
+                    required
+                    placeholder="Tulis pesan..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[10px] text-slate-800 focus:outline-none focus:border-gold"
+                  />
+                  <button
+                    type="submit"
+                    className="p-2 bg-gold hover:bg-gold-light text-white rounded-xl transition-colors active:scale-95 flex items-center justify-center"
+                  >
+                    <Send className="w-3.5 h-3.5 text-white" />
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
         </div>
       )}
     </nav>
