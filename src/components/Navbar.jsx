@@ -10,6 +10,15 @@ import { useCart } from '../context/CartContext';
 export default function Navbar() {
   const { currentUser, logout } = useAuth();
   const { totalQty } = useCart();
+
+  const normalizeEmail = (emailStr) => {
+    if (!emailStr) return '';
+    return emailStr
+      .toLowerCase()
+      .replace(/\s+/g, '')
+      .replace(/einstein\.com$/, 'einsten.com');
+  };
+
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSuiteOpen, setIsSuiteOpen] = useState(false);
@@ -59,7 +68,7 @@ export default function Navbar() {
       const saved = localStorage.getItem('hima_notifications');
       if (saved) {
         const parsed = JSON.parse(saved);
-        const filtered = parsed.filter(n => n.recipientEmail?.toLowerCase() === currentUser.email?.toLowerCase());
+        const filtered = parsed.filter(n => normalizeEmail(n.recipientEmail) === normalizeEmail(currentUser.email));
         // Sort newest first
         filtered.sort((a, b) => b.id - a.id);
         setNotifications(filtered);
@@ -74,7 +83,7 @@ export default function Navbar() {
     const savedUsers = localStorage.getItem('hima_users');
     if (savedUsers && currentUser) {
       const parsedUsers = JSON.parse(savedUsers);
-      const list = parsedUsers.filter(u => u.email?.toLowerCase() !== currentUser.email?.toLowerCase());
+      const list = parsedUsers.filter(u => normalizeEmail(u.email) !== normalizeEmail(currentUser.email));
       setChatUsers(list);
     }
 
@@ -83,14 +92,66 @@ export default function Navbar() {
       if (savedMsgs) {
         const parsedMsgs = JSON.parse(savedMsgs);
         const filtered = parsedMsgs.filter(m => 
-          (m.sender?.toLowerCase() === currentUser.email?.toLowerCase() && m.recipient?.toLowerCase() === activeChat.email?.toLowerCase()) ||
-          (m.sender?.toLowerCase() === activeChat.email?.toLowerCase() && m.recipient?.toLowerCase() === currentUser.email?.toLowerCase())
+          (normalizeEmail(m.sender) === normalizeEmail(currentUser.email) && normalizeEmail(m.recipient) === normalizeEmail(activeChat.email)) ||
+          (normalizeEmail(m.sender) === normalizeEmail(activeChat.email) && normalizeEmail(m.recipient) === normalizeEmail(currentUser.email))
         );
         setChatMessages(filtered);
+
+        // Update read timestamp for active chat to dismiss unread indicators
+        const savedReadTimes = localStorage.getItem('hima_chats_read_timestamps');
+        const readTimes = savedReadTimes ? JSON.parse(savedReadTimes) : {};
+        readTimes[normalizeEmail(activeChat.email)] = Date.now();
+        localStorage.setItem('hima_chats_read_timestamps', JSON.stringify(readTimes));
       } else {
         setChatMessages([]);
       }
     }
+  };
+
+  const getRecentConversations = () => {
+    if (!currentUser) return [];
+    
+    const savedChats = localStorage.getItem('hima_chats');
+    const allMsgs = savedChats ? JSON.parse(savedChats) : [];
+    
+    const savedReadTimes = localStorage.getItem('hima_chats_read_timestamps');
+    const readTimes = savedReadTimes ? JSON.parse(savedReadTimes) : {};
+    
+    // Find all unique participants we have chatted with
+    const participantsMap = {}; // normalizedEmail -> latestMessage
+    
+    allMsgs.forEach(msg => {
+      const senderNorm = normalizeEmail(msg.sender);
+      const recipientNorm = normalizeEmail(msg.recipient);
+      const currentNorm = normalizeEmail(currentUser.email);
+      
+      if (senderNorm === currentNorm) {
+        participantsMap[recipientNorm] = msg;
+      } else if (recipientNorm === currentNorm) {
+        participantsMap[senderNorm] = msg;
+      }
+    });
+    
+    const list = Object.keys(participantsMap).map(emailNorm => {
+      const user = chatUsers.find(u => normalizeEmail(u.email) === emailNorm);
+      const lastMsg = participantsMap[emailNorm];
+      const lastReadTime = readTimes[emailNorm] || 0;
+      const isUnread = normalizeEmail(lastMsg.sender) !== normalizeEmail(currentUser.email) && lastMsg.timestamp > lastReadTime;
+      
+      return {
+        user: user || { name: emailNorm, email: emailNorm, role: 'Pengguna' },
+        lastMsg,
+        isUnread
+      };
+    });
+    
+    list.sort((a, b) => b.lastMsg.timestamp - a.lastMsg.timestamp);
+    return list;
+  };
+
+  const getUnreadChatCount = () => {
+    const list = getRecentConversations();
+    return list.filter(c => c.isUnread).length;
   };
 
   useEffect(() => {
@@ -474,11 +535,15 @@ export default function Navbar() {
               <div className="relative mr-1.5" ref={chatRef}>
                 <button 
                   onClick={() => setIsChatOpen(!isChatOpen)}
-                  className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-205 text-slate-600 hover:text-slate-800 transition-all active:scale-95 relative cursor-pointer"
+                  className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-205 text-slate-650 hover:text-slate-800 transition-all active:scale-95 relative cursor-pointer"
                   title="Einstein Chat"
                 >
                   <MessageSquare className="w-4 h-4 text-gold-dark" />
-                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                  {getUnreadChatCount() > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-emerald-600 text-white font-bold text-[8px] w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                      {getUnreadChatCount()}
+                    </span>
+                  )}
                 </button>
 
                 {isChatOpen && (
@@ -489,6 +554,14 @@ export default function Navbar() {
                         <MessageCircle className="w-4 h-4 text-white" />
                         <span>Einstein Messenger</span>
                       </div>
+                      {activeChat && (
+                        <button 
+                          onClick={() => setActiveChat(null)}
+                          className="px-2 py-0.5 rounded bg-white/20 text-[9px] hover:bg-white/30 text-white font-bold transition-all"
+                        >
+                          Kembali
+                        </button>
+                      )}
                       <button onClick={() => setIsChatOpen(false)} className="p-1 hover:bg-white/10 rounded-lg text-white">
                         <X className="w-3.5 h-3.5 text-white" />
                       </button>
@@ -505,7 +578,7 @@ export default function Navbar() {
                         }}
                         className="flex-1 bg-transparent focus:outline-none font-bold text-slate-700 text-[10px] py-0.5 cursor-pointer font-sans"
                       >
-                        <option value="">-- Pilih Email Penerima --</option>
+                        <option value="">-- Tulis / Pilih Email Penerima --</option>
                         {chatUsers.map(user => (
                           <option key={user.email} value={user.email}>
                             {user.name} ({user.email})
@@ -515,13 +588,57 @@ export default function Navbar() {
                     </div>
 
                     {/* Chat Body */}
-                    <div className="flex-1 overflow-y-auto p-3 bg-slate-50 space-y-2">
+                    <div className="flex-1 overflow-y-auto p-2.5 bg-slate-50 space-y-2">
                       {!activeChat ? (
-                        <div className="text-center py-16 space-y-2 text-slate-400">
-                          <MessageCircle className="w-8 h-8 mx-auto text-slate-300 animate-pulse" />
-                          <p className="text-[10px] leading-normal px-4 font-light">
-                            Pilih email kontak di atas untuk mulai mengirim pesan internal HIMA.
-                          </p>
+                        /* RECENT CONVERSATIONS LIST */
+                        <div className="space-y-1.5 text-left">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1.5 mb-1.5">Percakapan Terbaru</p>
+                          {getRecentConversations().length === 0 ? (
+                            <div className="text-center py-16 space-y-2 text-slate-400">
+                              <MessageCircle className="w-8 h-8 mx-auto text-slate-300 animate-pulse" />
+                              <p className="text-[10px] leading-normal px-4 font-light">
+                                Belum ada obrolan. Pilih email kontak di atas untuk memulai percakapan internal.
+                              </p>
+                            </div>
+                          ) : (
+                            getRecentConversations().map(({ user, lastMsg, isUnread }) => (
+                              <div
+                                key={user.email}
+                                onClick={() => setActiveChat(user)}
+                                className={`p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                                  isUnread 
+                                    ? 'bg-emerald-50/50 border-emerald-300/40 hover:bg-emerald-50 shadow-sm' 
+                                    : 'bg-white border-slate-200 hover:border-gold hover:shadow-sm'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-1">
+                                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0 relative">
+                                    {user.photo ? (
+                                      <img src={user.photo} alt={user.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <User className="w-4 h-4 text-gold" />
+                                    )}
+                                    {isUnread && (
+                                      <span className="absolute top-0 right-0 w-2 h-2 bg-emerald-500 rounded-full border border-white" />
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center justify-between">
+                                      <h5 className={`text-[10px] truncate max-w-[120px] ${isUnread ? 'font-extrabold text-slate-900' : 'font-bold text-slate-800'}`}>
+                                        {user.name}
+                                      </h5>
+                                      <span className="text-[7px] text-slate-450 font-mono shrink-0">
+                                        {new Date(lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                      </span>
+                                    </div>
+                                    <p className={`text-[9px] truncate ${isUnread ? 'font-bold text-slate-800' : 'text-slate-500'}`}>
+                                      {lastMsg.message}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          )}
                         </div>
                       ) : (
                         <div className="space-y-2">
@@ -529,7 +646,7 @@ export default function Navbar() {
                             <p className="text-center py-16 text-[9px] text-slate-400 italic">Belum ada percakapan. Kirim pesan pertama!</p>
                           ) : (
                             chatMessages.map((msg) => {
-                              const isSelf = msg.sender?.toLowerCase() === currentUser.email?.toLowerCase();
+                              const isSelf = normalizeEmail(msg.sender) === normalizeEmail(currentUser.email);
                               return (
                                 <div key={msg.id} className={`flex ${isSelf ? 'justify-end' : 'justify-start'}`}>
                                   <div className={`max-w-[80%] rounded-2xl px-2.5 py-1.5 text-[10px] leading-relaxed shadow-sm ${
@@ -538,7 +655,7 @@ export default function Navbar() {
                                       : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
                                   }`}>
                                     <p>{msg.message}</p>
-                                    <span className={`text-[7px] block mt-0.5 text-right ${isSelf ? 'text-white/70' : 'text-slate-400'}`}>
+                                    <span className={`text-[7px] block mt-0.5 text-right ${isSelf ? 'text-white/70' : 'text-slate-450'}`}>
                                       {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                   </div>
