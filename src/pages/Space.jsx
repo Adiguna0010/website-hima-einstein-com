@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera, Calendar, User, IdCard, ShieldCheck, HelpCircle, ArrowRight } from 'lucide-react';
 import ScannerModal from '../components/ScannerModal';
 
 export default function Space({ showToast }) {
-  const [instruments, setInstruments] = useState([
+  const DEFAULT_INSTRUMENTS = [
     {
       id: 'HIMA-MULT-002',
       name: 'Digital Multimeter Sanwa CD800a',
@@ -25,7 +25,19 @@ export default function Space({ showToast }) {
       image: '🔌',
       desc: 'Kit modul development mikrokontroler lengkap beserta modul sensor dasar.'
     }
-  ]);
+  ];
+
+  const [instruments, setInstruments] = useState([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('hima_instruments');
+    if (saved) {
+      setInstruments(JSON.parse(saved));
+    } else {
+      localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
+      setInstruments(DEFAULT_INSTRUMENTS);
+    }
+  }, []);
 
   const [scannerOpen, setScannerOpen] = useState(false);
   const [activeToolId, setActiveToolId] = useState('');
@@ -59,11 +71,29 @@ export default function Space({ showToast }) {
       return;
     }
 
+    // Save borrow request to localStorage
+    const newRequest = {
+      id: `req-${Date.now()}`,
+      borrowerName,
+      borrowerNim,
+      instrumentId: selectedToolId,
+      instrumentName: selectedToolName,
+      status: 'Pending',
+      date: new Date().toLocaleDateString('id-ID')
+    };
+
+    const savedRequests = localStorage.getItem('hima_borrow_requests');
+    const requests = savedRequests ? JSON.parse(savedRequests) : [];
+    const updatedRequests = [newRequest, ...requests];
+    localStorage.setItem('hima_borrow_requests', JSON.stringify(updatedRequests));
+
     // Build WA URL
     const text = `Halo Admin Logistik HIMPUNAN EINSTEN.COM! 📦\n\nSaya ingin mengajukan permohonan peminjaman alat laboratorium:\n- Nama Alat: ${selectedToolName}\n- ID Alat: ${selectedToolId}\n\nData Peminjam:\n- Nama: ${borrowerName}\n- NIM: ${borrowerNim}\n\n*Reservasi terdaftar melalui Portal Einstein Space.* Mohon konfirmasi pengambilan alat. Terima kasih!`;
     const waNumber = '6285175420692';
     const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
+
+    showToast('Permohonan peminjaman berhasil diajukan! Menghubungkan ke WhatsApp...', 'success');
 
     // Reset Form
     setShowForm(false);

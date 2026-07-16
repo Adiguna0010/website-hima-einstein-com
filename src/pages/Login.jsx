@@ -25,7 +25,7 @@ export default function Login({ showToast }) {
       } else if (user.role === 'Operator Ristek') {
         navigate('/sphere');
       } else if (user.role === 'Operator Logistik') {
-        navigate('/space');
+        navigate('/dashboard/logistik');
       } else {
         navigate('/');
       }
@@ -123,7 +123,7 @@ export default function Login({ showToast }) {
         {/* Demo login tips */}
         <div className="mt-6 p-4 rounded-xl border border-slate-200 bg-slate-50 text-left space-y-1.5 shadow-sm">
           <p className="text-[10px] font-bold text-gold-dark uppercase tracking-widest">💡 Akun Demo Pengujian:</p>
-          <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-500">
+          <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-500">
             <div>
               <p className="font-bold text-slate-800">Master Admin:</p>
               <p>Email: admin@einstein.com</p>
@@ -132,6 +132,11 @@ export default function Login({ showToast }) {
             <div>
               <p className="font-bold text-slate-800">Operator Danus:</p>
               <p>Email: budi@einstein.com</p>
+              <p>Sandi: user123</p>
+            </div>
+            <div>
+              <p className="font-bold text-slate-800">Operator Logistik:</p>
+              <p>Email: ahmad@einstein.com</p>
               <p>Sandi: user123</p>
             </div>
           </div>
