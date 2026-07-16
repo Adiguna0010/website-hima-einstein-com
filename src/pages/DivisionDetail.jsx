@@ -311,7 +311,7 @@ export default function DivisionDetail({ showToast }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-white border border-gold-border rounded-2xl flex flex-col justify-between text-left space-y-3 shadow-sm hover:border-gold/30 transition-all">
               <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
-                <img src="/Media/Media yg dijual/Baju PDH Elins 180.000/pdh-elins.png" alt="Baju PDH Elins" className="w-full h-full object-cover" />
+                <img src="/Media/Media yg dijual/Baju PDH Elins 180.000/PDH Einsten.png" alt="Baju PDH Elins" className="w-full h-full object-cover" />
               </div>
               <span className="text-xs font-bold text-slate-800 truncate">Baju PDH Elins</span>
               <span className="text-xs text-gold-dark font-semibold">Rp 180.000</span>

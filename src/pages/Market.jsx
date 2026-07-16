@@ -12,7 +12,7 @@ export default function Market({ showToast }) {
       id: 'prod-pdh',
       name: 'Baju PDH Elins',
       price: 180000,
-      image: '/Media/Media yg dijual/Baju PDH Elins 180.000/pdh-elins.png',
+      image: '/Media/Media yg dijual/Baju PDH Elins 180.000/PDH Einsten.png',
       desc: 'Pakaian Dinas Harian resmi mahasiswa Elektronika Instrumentasi dengan bahan Premium Drill dingin.'
     },
     {
