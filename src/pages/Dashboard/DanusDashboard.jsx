@@ -5,8 +5,8 @@ export default function DanusDashboard({ showToast }) {
   const [orders, setOrders] = useState([]);
 
   const DEFAULT_ORDERS = [
-    { id: 1, name: 'Zacky Elins', items: 'PDH EINSTEIN 2026 (1x)', total: 135000, file: 'bukti_zacky.png', status: 'Active' },
-    { id: 2, name: 'Dian Pratama', items: 'Bomber Phótisma (1x), Gantungan Kunci (2x)', total: 215000, file: 'bukti_dian.jpg', status: 'Pending' }
+    { id: 1, name: 'Zacky Elins', items: 'Baju PDH Elins (1x)', total: 180000, file: 'bukti_zacky.png', status: 'Active' },
+    { id: 2, name: 'Dian Pratama', items: 'Magic Com (1x), Meja Belajar (1x)', total: 270000, file: 'bukti_dian.jpg', status: 'Pending' }
   ];
 
   useEffect(() => {

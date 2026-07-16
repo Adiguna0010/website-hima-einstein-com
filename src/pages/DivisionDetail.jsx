@@ -304,21 +304,21 @@ export default function DivisionDetail({ showToast }) {
       title: 'Dana Usaha',
       icon: '🛒',
       iconComponent: <ShoppingCart className="w-8 h-8 text-gold" />,
-      desc: 'Wirausaha mandiri Himpunan. Pembelian produk eksklusif PDH, bomber, dan merchandise resmi HIMA EINSTEIN.',
+      desc: 'Wirausaha mandiri Himpunan. Pembelian produk eksklusif PDH, barang dagangan, dan merchandise resmi HIMA EINSTEIN.',
       renderContent: () => (
         <div className="space-y-6 max-w-xl mx-auto">
           <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-left">Produk Populer Danus</h4>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-white border border-gold-border rounded-2xl flex flex-col justify-between text-left space-y-3 shadow-sm hover:border-gold/30 transition-all">
               <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
-                <img src="/Media/Baju PDH Elins/pdh-elins.png" alt="PDH HIMA" className="w-full h-full object-cover" />
+                <img src="/Media/Media yg dijual/Baju PDH Elins 180.000/pdh-elins.png" alt="Baju PDH Elins" className="w-full h-full object-cover" />
               </div>
-              <span className="text-xs font-bold text-slate-800 truncate">PDH HIMA 2026</span>
-              <span className="text-xs text-gold-dark font-semibold">Rp 135.000</span>
+              <span className="text-xs font-bold text-slate-800 truncate">Baju PDH Elins</span>
+              <span className="text-xs text-gold-dark font-semibold">Rp 180.000</span>
               <button 
                 onClick={() => {
-                  addToCart('PDH EINSTEIN 2026', 135000);
-                  showToast('PDH HIMA ditambahkan ke keranjang!', 'success');
+                  addToCart('Baju PDH Elins', 180000);
+                  showToast('Baju PDH Elins ditambahkan ke keranjang!', 'success');
                 }}
                 className="w-full py-2 bg-gold text-white text-xs font-bold rounded-xl hover:brightness-110 transition-all active:scale-95"
               >
@@ -326,15 +326,15 @@ export default function DivisionDetail({ showToast }) {
               </button>
             </div>
             <div className="p-4 bg-white border border-gold-border rounded-2xl flex flex-col justify-between text-left space-y-3 shadow-sm hover:border-gold/30 transition-all">
-              <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shadow-inner">
-                <Shirt className="w-8 h-8 text-slate-400" />
+              <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
+                <img src="/Media/Media yg dijual/Magiccom 120.000/magiccom.png" alt="Magic Com" className="w-full h-full object-cover" />
               </div>
-              <span className="text-xs font-bold text-slate-800 truncate">Bomber Phótisma</span>
-              <span className="text-xs text-gold-dark font-semibold">Rp 185.000</span>
+              <span className="text-xs font-bold text-slate-800 truncate">Magic Com</span>
+              <span className="text-xs text-gold-dark font-semibold">Rp 120.000</span>
               <button 
                 onClick={() => {
-                  addToCart('Bomber Phótisma', 185000);
-                  showToast('Bomber Phótisma ditambahkan ke keranjang!', 'success');
+                  addToCart('Magic Com', 120000);
+                  showToast('Magic Com ditambahkan ke keranjang!', 'success');
                 }}
                 className="w-full py-2 bg-gold text-white text-xs font-bold rounded-xl hover:brightness-110 transition-all active:scale-95"
               >

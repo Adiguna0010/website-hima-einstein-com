@@ -10,31 +10,10 @@ export default function Market({ showToast }) {
   const products = [
     {
       id: 'prod-pdh',
-      name: 'PDH EINSTEIN 2026',
-      price: 135000,
-      image: '/Media/Baju PDH Elins/pdh-elins.png',
+      name: 'Baju PDH Elins',
+      price: 180000,
+      image: '/Media/Media yg dijual/Baju PDH Elins 180.000/pdh-elins.png',
       desc: 'Pakaian Dinas Harian resmi mahasiswa Elektronika Instrumentasi dengan bahan Premium Drill dingin.'
-    },
-    {
-      id: 'prod-bomber',
-      name: 'Bomber Phótisma',
-      price: 185000,
-      icon: Shirt,
-      desc: 'Jaket Bomber eksklusif edisi Kabinet Phótisma dilengkapi bordir logo bersinar.'
-    },
-    {
-      id: 'prod-tshirt',
-      name: 'T-Shirt Phótisma',
-      price: 85000,
-      icon: Shirt,
-      desc: 'Kaos katun Combed 30s premium dengan sablon plastisol grafis Phótisma.'
-    },
-    {
-      id: 'prod-keychain',
-      name: 'Gantungan Kunci Acrylic',
-      price: 15000,
-      icon: Key,
-      desc: 'Gantungan kunci akrilik double-sided logo HIMA EINSTEIN.'
     },
     {
       id: 'prod-magiccom',

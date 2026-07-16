@@ -40,7 +40,7 @@ export default function Sphere() {
       key: 'danus',
       title: 'Dana Usaha',
       iconComponent: <ShoppingCart className="w-6 h-6 text-gold" />,
-      desc: 'Wirausaha mandiri Himpunan. Pembelian produk eksklusif PDH, bomber, dan merchandise resmi HIMA EINSTEIN.',
+      desc: 'Wirausaha mandiri Himpunan. Pembelian produk eksklusif PDH, barang dagangan, dan merchandise resmi HIMA EINSTEIN.',
     },
     {
       key: 'kominfo',
