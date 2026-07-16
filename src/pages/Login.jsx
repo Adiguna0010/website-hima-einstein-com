@@ -67,9 +67,9 @@ export default function Login({ showToast }) {
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
                 <input
-                  type="email"
+                  type="text"
                   required
-                  placeholder="name@example.com"
+                  placeholder="nama@einsten.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
@@ -125,19 +125,19 @@ export default function Login({ showToast }) {
           <p className="text-[10px] font-bold text-gold-dark uppercase tracking-widest">💡 Akun Demo Pengujian:</p>
           <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-500">
             <div>
-              <p className="font-bold text-slate-800">Master Admin:</p>
-              <p>Email: admin@einstein.com</p>
-              <p>Sandi: admin123</p>
+              <p className="font-bold text-slate-800">Master Admin (Kahim):</p>
+              <p className="truncate" title="M. Iqbal Nur Huda@einsten.com">Email: M. Iqbal Nur Huda@einsten.com</p>
+              <p>Sandi: 022400042</p>
             </div>
             <div>
-              <p className="font-bold text-slate-800">Operator Danus:</p>
-              <p>Email: budi@einstein.com</p>
-              <p>Sandi: user123</p>
+              <p className="font-bold text-slate-800">Operator Danus (Kadiv):</p>
+              <p className="truncate" title="Rabbany Al-Malika Ifadzla@einsten.com">Email: Rabbany Al-Malika Ifadzla@einsten.com</p>
+              <p>Sandi: 022400006</p>
             </div>
             <div>
-              <p className="font-bold text-slate-800">Operator Logistik:</p>
-              <p>Email: ahmad@einstein.com</p>
-              <p>Sandi: user123</p>
+              <p className="font-bold text-slate-800">Operator Logistik (Kadiv):</p>
+              <p className="truncate" title="Rakan Ibrahim Widjisasono@einsten.com">Email: Rakan Ibrahim Widjisasono@einsten.com</p>
+              <p>Sandi: 022400031</p>
             </div>
           </div>
         </div>

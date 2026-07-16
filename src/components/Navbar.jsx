@@ -305,8 +305,12 @@ export default function Navbar() {
             
             {currentUser ? (
               <div className="flex items-center gap-3 bg-slate-50 border border-gold-border rounded-xl px-3 py-1.5 pl-2 relative" ref={adminRef}>
-                <div className="w-8 h-8 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center cursor-pointer" onClick={() => setIsAdminOpen(!isAdminOpen)}>
-                  <User className="w-4 h-4 text-gold" />
+                <div className="w-8 h-8 rounded-lg overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center cursor-pointer" onClick={() => setIsAdminOpen(!isAdminOpen)}>
+                  {currentUser.photo ? (
+                    <img src={currentUser.photo} alt={currentUser.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-4 h-4 text-gold" />
+                  )}
                 </div>
                 <div className="flex flex-col text-left cursor-pointer" onClick={() => setIsAdminOpen(!isAdminOpen)}>
                   <span className="text-xs font-bold text-slate-800 max-w-[100px] truncate">{currentUser.name}</span>
@@ -501,8 +505,12 @@ export default function Navbar() {
               {currentUser ? (
                 <div className="space-y-3 text-left">
                   <div className="flex items-center gap-3 px-3 py-2">
-                    <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
-                      <User className="w-5 h-5 text-gold" />
+                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center">
+                      {currentUser.photo ? (
+                        <img src={currentUser.photo} alt={currentUser.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-5 h-5 text-gold" />
+                      )}
                     </div>
                     <div>
                       <h4 className="text-sm font-bold text-slate-800">{currentUser.name}</h4>

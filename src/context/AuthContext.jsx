@@ -4,43 +4,48 @@ const AuthContext = createContext();
 
 const DEFAULT_USERS = [
   {
-    name: 'Admin BPH',
-    nim: '197001',
-    email: 'admin@einstein.com',
-    password: 'admin123',
+    name: 'M. Iqbal Nur Huda',
+    nim: '022400042',
+    email: 'M. Iqbal Nur Huda@einsten.com',
+    password: '022400042',
     role: 'Master Admin',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Kahim_M. Iqbal Nur Huda - 022400042.JPG',
     status: 'Active'
   },
   {
-    name: 'Dian Ristek',
-    nim: '240011',
-    email: 'dian@einstein.com',
-    password: 'user123',
+    name: 'Adiguna Nugroho Halomoan',
+    nim: '022400025',
+    email: 'Adiguna Nugroho Halomoan@einsten.com',
+    password: '022400025',
     role: 'Operator Ristek',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Ristek/Kepala Divisi Riset dan Teknologi_Adiguna Nugroho Halomoan - 022400025.JPG',
     status: 'Active'
   },
   {
-    name: 'Budi Danus',
-    nim: '240022',
-    email: 'budi@einstein.com',
-    password: 'user123',
+    name: 'Rabbany Al-Malika Ifadzla',
+    nim: '022400006',
+    email: 'Rabbany Al-Malika Ifadzla@einsten.com',
+    password: '022400006',
     role: 'Operator Danus',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Dana Usaha/Kepala Divisi Dana Usaha_Rabbany Al-Malika Ifadzla - 022400006.JPG',
     status: 'Active'
   },
   {
-    name: 'Ahmad Logistik',
-    nim: '240033',
-    email: 'ahmad@einstein.com',
-    password: 'user123',
+    name: 'Rakan Ibrahim Widjisasono',
+    nim: '022400031',
+    email: 'Rakan Ibrahim Widjisasono@einsten.com',
+    password: '022400031',
     role: 'Operator Logistik',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Aset Dan Logistik/Kepala Divisi Aset dan Logistik_Rakan Ibrahim Widjisasono - 022400031.JPG',
     status: 'Active'
   },
   {
-    name: 'Siti Sekum',
-    nim: '240044',
-    email: 'siti@einstein.com',
-    password: 'user123',
+    name: 'Nailah Qarirah',
+    nim: '022400051',
+    email: 'Nailah Qarirah@einsten.com',
+    password: '022400051',
     role: 'Sekretaris Umum',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Sekretaris 1_Nailah Qarirah - 022400051.JPG',
     status: 'Active'
   },
   {
@@ -65,15 +70,21 @@ export const AuthProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
+  // Robust email normalization (lowercase, strips all spaces, and handles domain aliases)
+  const normalizeEmail = (emailStr) => {
+    if (!emailStr) return '';
+    return emailStr
+      .toLowerCase()
+      .replace(/\s+/g, '')
+      .replace(/einstein\.com$/, 'einsten.com');
+  };
+
   // Initialize DB from LocalStorage
   useEffect(() => {
-    const localUsers = localStorage.getItem('hima_users');
-    if (localUsers) {
-      setUsers(JSON.parse(localUsers));
-    } else {
-      localStorage.setItem('hima_users', JSON.stringify(DEFAULT_USERS));
-      setUsers(DEFAULT_USERS);
-    }
+    // Clear and force update the initial user database to ensure the new Kadiv accounts are loaded
+    localStorage.removeItem('hima_users');
+    localStorage.setItem('hima_users', JSON.stringify(DEFAULT_USERS));
+    setUsers(DEFAULT_USERS);
 
     const savedUser = localStorage.getItem('hima_current_user');
     if (savedUser) {
@@ -83,7 +94,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = (name, nim, email, password) => {
     return new Promise((resolve, reject) => {
-      const emailExists = users.some(u => u.email.toLowerCase() === email.toLowerCase());
+      const emailExists = users.some(u => normalizeEmail(u.email) === normalizeEmail(email));
       const nimExists = users.some(u => u.nim === nim);
 
       if (emailExists) {
@@ -96,7 +107,7 @@ export const AuthProvider = ({ children }) => {
       const newUser = {
         name,
         nim,
-        email: email.toLowerCase(),
+        email: email.trim(),
         password,
         role: 'Anggota Biasa',
         status: 'Pending'
@@ -112,7 +123,7 @@ export const AuthProvider = ({ children }) => {
   const login = (email, password) => {
     return new Promise((resolve, reject) => {
       const user = users.find(
-        u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+        u => normalizeEmail(u.email) === normalizeEmail(email) && u.password === password
       );
 
       if (!user) {
@@ -141,7 +152,7 @@ export const AuthProvider = ({ children }) => {
   // Admin and management actions
   const updateUserStatus = (email, status) => {
     const updatedUsers = users.map(u => {
-      if (u.email.toLowerCase() === email.toLowerCase()) {
+      if (normalizeEmail(u.email) === normalizeEmail(email)) {
         return { ...u, status };
       }
       return u;
@@ -150,7 +161,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
     // If active user is updated, keep their local state synchronized
-    if (currentUser && currentUser.email.toLowerCase() === email.toLowerCase()) {
+    if (currentUser && normalizeEmail(currentUser.email) === normalizeEmail(email)) {
       const updatedSelf = { ...currentUser, status };
       setCurrentUser(updatedSelf);
       localStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
@@ -159,7 +170,7 @@ export const AuthProvider = ({ children }) => {
 
   const updateUserRole = (email, role) => {
     const updatedUsers = users.map(u => {
-      if (u.email.toLowerCase() === email.toLowerCase()) {
+      if (normalizeEmail(u.email) === normalizeEmail(email)) {
         return { ...u, role };
       }
       return u;
@@ -168,7 +179,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
     // Synchronize if current logged in user role was changed
-    if (currentUser && currentUser.email.toLowerCase() === email.toLowerCase()) {
+    if (currentUser && normalizeEmail(currentUser.email) === normalizeEmail(email)) {
       const updatedSelf = { ...currentUser, role };
       setCurrentUser(updatedSelf);
       localStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
