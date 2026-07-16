@@ -14,6 +14,21 @@ export default function DivisionDetail({ showToast }) {
   // Form states
   const [extForm, setExtForm] = useState({ name: '', email: '', desc: '' });
   const [ristekForm, setRistekForm] = useState({ name: '', role: 'murid', subject: '', wa: '' });
+  const [vaultItems, setVaultItems] = useState([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('hima_vault');
+    if (saved) {
+      setVaultItems(JSON.parse(saved));
+    } else {
+      const DEFAULT_VAULT = [
+        { id: 1, title: 'UTS: Mikroprosesor & Mikrokontroler', size: '2.4 MB', type: 'Dokumen', url: '#' },
+        { id: 2, title: 'Modul Praktikum: Detektor Radiasi Nuklir', size: '4.8 MB', type: 'Dokumen', url: '#' }
+      ];
+      localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_VAULT));
+      setVaultItems(DEFAULT_VAULT);
+    }
+  }, []);
 
   const divisions = {
     bph: {
@@ -168,31 +183,44 @@ export default function DivisionDetail({ showToast }) {
             {/* Tab: Vault */}
             {ristekTab === 'vault' && (
               <div className="space-y-3 text-left">
-                <div className="p-4 bg-white border border-gold-border rounded-2xl flex items-center justify-between shadow-sm hover:border-gold/30 transition-colors">
-                  <div>
-                    <h5 className="text-xs font-bold text-slate-800">UTS: Mikroprosesor & Mikrokontroler</h5>
-                    <p className="text-[10px] text-slate-500 mt-0.5">Format: PDF • Ukuran: 2.4 MB</p>
+                {vaultItems.length === 0 ? (
+                  <div className="text-center py-10 bg-white border border-gold-border rounded-2xl text-slate-450 shadow-sm">
+                    Belum ada modul atau software terunggah di Vault.
                   </div>
-                  <button 
-                    onClick={() => showToast('Mengunduh soal UTS...', 'success')}
-                    className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 transition-colors"
-                  >
-                    <Download className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="p-4 bg-white border border-gold-border rounded-2xl flex items-center justify-between shadow-sm hover:border-gold/30 transition-colors">
-                  <div>
-                    <h5 className="text-xs font-bold text-slate-800">Modul Praktikum: Detektor Radiasi Nuklir</h5>
-                    <p className="text-[10px] text-slate-500 mt-0.5">Format: PDF • Ukuran: 4.8 MB</p>
-                  </div>
-                  <button 
-                    onClick={() => showToast('Mengunduh Modul...', 'success')}
-                    className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 transition-colors"
-                  >
-                    <Download className="w-4 h-4" />
-                  </button>
-                </div>
+                ) : (
+                  vaultItems.map((item) => (
+                    <div 
+                      key={item.id} 
+                      className="p-4 bg-white border border-gold-border rounded-2xl flex items-center justify-between hover:border-gold/30 shadow-sm transition-all group"
+                    >
+                      <div className="space-y-1">
+                        <h5 className="text-xs font-bold text-slate-800 group-hover:text-gold-dark transition-colors">
+                          {item.title}
+                        </h5>
+                        <p className="text-[10px] text-slate-500 font-mono">
+                          Tipe: {item.type || 'Dokumen'} • Ukuran: {item.size}
+                        </p>
+                        {item.url && item.url !== '#' && (
+                          <p className="text-[9px] text-slate-400 truncate max-w-[280px]">Link: {item.url}</p>
+                        )}
+                      </div>
+                      <button 
+                        onClick={() => {
+                          if (item.url && item.url !== '#') {
+                            window.open(item.url, '_blank');
+                            showToast(`Mengunduh file: ${item.title}...`, 'success');
+                          } else {
+                            showToast(`Mengunduh berkas: ${item.title}...`, 'success');
+                          }
+                        }}
+                        className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-gold hover:border-gold hover:text-white text-slate-700 transition-all active:scale-95 shadow-sm"
+                        title="Download Berkas"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
             )}
 

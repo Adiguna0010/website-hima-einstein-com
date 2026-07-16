@@ -1,14 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Info, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
 
 export default function Calendar({ showToast }) {
-  // Calendar Event Data
-  const events = {
+  const DEFAULT_EVENTS = {
     '2026-07-15': { title: 'Einstein Festival (E-Fest) 🚀', type: 'hima', desc: 'Festival teknologi, seminar instrumentasi nuklir, dan pameran proyek IoT mahasiswa Elins.' },
     '2026-07-20': { title: 'Ristek Mengajar Sebaya 🔬', type: 'hima', desc: 'Bimbingan belajar internal pemrograman C++ dan Elektronika dasar untuk mahasiswa baru.' },
     '2026-07-24': { title: 'Musyawarah Perwakilan Mahasiswa 🏛️', type: 'ormawa', desc: 'Sidang evaluasi program kerja ormawa eksternal kampus Politeknik Teknologi Nuklir Indonesia.' },
     '2026-07-28': { title: 'Evaluasi Tengah Tahun Kabinet 🪙', type: 'hima', desc: 'Pemaparan laporan pertanggungjawaban setengah tahun Kabinet Phótisma.' }
   };
+
+  const [events, setEvents] = useState({});
+
+  useEffect(() => {
+    const saved = localStorage.getItem('hima_calendar_events');
+    if (saved) {
+      setEvents(JSON.parse(saved));
+    } else {
+      localStorage.setItem('hima_calendar_events', JSON.stringify(DEFAULT_EVENTS));
+      setEvents(DEFAULT_EVENTS);
+    }
+  }, []);
 
   const [activeDate, setActiveDate] = useState('2026-07-15');
   const [currentYear, setCurrentYear] = useState(2026);
