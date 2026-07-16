@@ -97,6 +97,7 @@ export default function Secretariat({ showToast }) {
       category,
       subject,
       status: 'Pending',
+      userEmail: currentUser?.email || 'guest@einstein.com',
       letterNumber: '',
       fileUrl: ''
     };
@@ -124,6 +125,8 @@ export default function Secretariat({ showToast }) {
       return;
     }
 
+    const req = letters.find(l => l.id === accLetterId);
+
     const updated = letters.map(item => {
       if (item.id === accLetterId) {
         return { 
@@ -138,6 +141,22 @@ export default function Secretariat({ showToast }) {
 
     setLetters(updated);
     localStorage.setItem('hima_letters', JSON.stringify(updated));
+
+    // Send notification bell alert
+    if (req) {
+      const newNotification = {
+        id: Date.now(),
+        recipientEmail: req.userEmail || 'guest@einstein.com',
+        message: `Pengajuan ${req.category} (${req.subject}) Anda telah DISETUJUI (ACC) dengan Nomor Surat: ${inputLetterNumber}!`,
+        read: false,
+        timestamp: Date.now()
+      };
+      const savedNotifs = localStorage.getItem('hima_notifications');
+      const notifsList = savedNotifs ? JSON.parse(savedNotifs) : [];
+      notifsList.push(newNotification);
+      localStorage.setItem('hima_notifications', JSON.stringify(notifsList));
+    }
+
     showToast('Surat berhasil disetujui (ACC) dengan Nomor Surat!', 'success');
     setAccLetterId(null);
   };

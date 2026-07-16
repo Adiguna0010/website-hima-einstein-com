@@ -107,6 +107,19 @@ export default function LogistikDashboard({ showToast }) {
     setInstruments(updatedInsts);
     localStorage.setItem('hima_instruments', JSON.stringify(updatedInsts));
 
+    // Send notification bell alert to borrower
+    const newNotification = {
+      id: Date.now(),
+      recipientEmail: req.userEmail || 'guest@einstein.com',
+      message: `Peminjaman alat "${req.instrumentName}" Anda telah DISETUJUI (ACC) oleh Operator Logistik! Silakan ambil alat di Laboratorium.`,
+      read: false,
+      timestamp: Date.now()
+    };
+    const savedNotifs = localStorage.getItem('hima_notifications');
+    const notifsList = savedNotifs ? JSON.parse(savedNotifs) : [];
+    notifsList.push(newNotification);
+    localStorage.setItem('hima_notifications', JSON.stringify(notifsList));
+
     showToast(`Permohonan peminjaman oleh ${req.borrowerName} disetujui (ACC)!`, 'success');
   };
 

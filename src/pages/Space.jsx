@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Calendar, User, IdCard, ShieldCheck, HelpCircle, ArrowRight } from 'lucide-react';
 import ScannerModal from '../components/ScannerModal';
+import { useAuth } from '../context/AuthContext';
 
 export default function Space({ showToast }) {
+  const { currentUser } = useAuth();
   const DEFAULT_INSTRUMENTS = [
     {
       id: 'HIMA-MULT-002',
@@ -45,10 +47,17 @@ export default function Space({ showToast }) {
   
   // Reservation Form State
   const [showForm, setShowForm] = useState(false);
-  const [borrowerName, setBorrowerName] = useState('');
-  const [borrowerNim, setBorrowerNim] = useState('');
+  const [borrowerName, setBorrowerName] = useState(currentUser?.name || '');
+  const [borrowerNim, setBorrowerNim] = useState(currentUser?.nim || '');
   const [selectedToolId, setSelectedToolId] = useState('');
   const [selectedToolName, setSelectedToolName] = useState('');
+
+  useEffect(() => {
+    if (currentUser) {
+      setBorrowerName(currentUser.name || '');
+      setBorrowerNim(currentUser.nim || '');
+    }
+  }, [currentUser]);
 
   const handleOpenScanner = (tool) => {
     setActiveToolId(tool.id);
@@ -76,6 +85,7 @@ export default function Space({ showToast }) {
       id: `req-${Date.now()}`,
       borrowerName,
       borrowerNim,
+      userEmail: currentUser?.email || 'guest@einstein.com',
       instrumentId: selectedToolId,
       instrumentName: selectedToolName,
       status: 'Pending',

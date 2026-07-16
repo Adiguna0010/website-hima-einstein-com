@@ -31,6 +31,7 @@ export default function Navbar() {
   const suiteRef = useRef(null);
   const adminRef = useRef(null);
   const notifRef = useRef(null);
+  const chatRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -162,6 +163,9 @@ export default function Navbar() {
       }
       if (notifRef.current && !notifRef.current.contains(event.target)) {
         setIsNotifOpen(false);
+      }
+      if (chatRef.current && !chatRef.current.contains(event.target)) {
+        setIsChatOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -466,6 +470,107 @@ export default function Navbar() {
               </div>
             )}
 
+            {currentUser && (
+              <div className="relative mr-1.5" ref={chatRef}>
+                <button 
+                  onClick={() => setIsChatOpen(!isChatOpen)}
+                  className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-205 text-slate-600 hover:text-slate-800 transition-all active:scale-95 relative cursor-pointer"
+                  title="Einstein Chat"
+                >
+                  <MessageSquare className="w-4 h-4 text-gold-dark" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                </button>
+
+                {isChatOpen && (
+                  <div className="absolute right-0 top-full mt-3 w-80 h-[380px] bg-white border border-gold-border shadow-xl flex flex-col overflow-hidden rounded-2xl z-55 animate-slide-in">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-gold to-gold-light text-white px-4 py-2.5 flex items-center justify-between shrink-0">
+                      <div className="flex items-center gap-1.5 text-xs font-bold">
+                        <MessageCircle className="w-4 h-4 text-white" />
+                        <span>Einstein Messenger</span>
+                      </div>
+                      <button onClick={() => setIsChatOpen(false)} className="p-1 hover:bg-white/10 rounded-lg text-white">
+                        <X className="w-3.5 h-3.5 text-white" />
+                      </button>
+                    </div>
+
+                    {/* Recipient Selector (To: email) - Gmail style */}
+                    <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-100 text-[10px] shrink-0 bg-slate-50/50">
+                      <span className="text-slate-400 font-bold font-sans">Kepada:</span>
+                      <select 
+                        value={activeChat ? activeChat.email : ''}
+                        onChange={(e) => {
+                          const selectedUser = chatUsers.find(u => u.email === e.target.value);
+                          setActiveChat(selectedUser || null);
+                        }}
+                        className="flex-1 bg-transparent focus:outline-none font-bold text-slate-700 text-[10px] py-0.5 cursor-pointer font-sans"
+                      >
+                        <option value="">-- Pilih Email Penerima --</option>
+                        {chatUsers.map(user => (
+                          <option key={user.email} value={user.email}>
+                            {user.name} ({user.email})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Chat Body */}
+                    <div className="flex-1 overflow-y-auto p-3 bg-slate-50 space-y-2">
+                      {!activeChat ? (
+                        <div className="text-center py-16 space-y-2 text-slate-400">
+                          <MessageCircle className="w-8 h-8 mx-auto text-slate-300 animate-pulse" />
+                          <p className="text-[10px] leading-normal px-4 font-light">
+                            Pilih email kontak di atas untuk mulai mengirim pesan internal HIMA.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {chatMessages.length === 0 ? (
+                            <p className="text-center py-16 text-[9px] text-slate-400 italic">Belum ada percakapan. Kirim pesan pertama!</p>
+                          ) : (
+                            chatMessages.map((msg) => {
+                              const isSelf = msg.sender?.toLowerCase() === currentUser.email?.toLowerCase();
+                              return (
+                                <div key={msg.id} className={`flex ${isSelf ? 'justify-end' : 'justify-start'}`}>
+                                  <div className={`max-w-[80%] rounded-2xl px-2.5 py-1.5 text-[10px] leading-relaxed shadow-sm ${
+                                    isSelf 
+                                      ? 'bg-gold text-white rounded-tr-none' 
+                                      : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
+                                  }`}>
+                                    <p>{msg.message}</p>
+                                    <span className={`text-[7px] block mt-0.5 text-right ${isSelf ? 'text-white/70' : 'text-slate-400'}`}>
+                                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Chat Input Footer */}
+                    {activeChat && (
+                      <form onSubmit={handleSendChatMessage} className="p-2 border-t border-slate-200 bg-white flex items-center gap-1.5 shrink-0">
+                        <input
+                          type="text"
+                          required
+                          placeholder="Tulis pesan..."
+                          value={chatInput}
+                          onChange={(e) => setChatInput(e.target.value)}
+                          className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-[10px] text-slate-850 focus:outline-none focus:border-gold"
+                        />
+                        <button type="submit" className="p-1.5 bg-gold hover:bg-gold-light text-white rounded-xl active:scale-95 transition-all">
+                          <Send className="w-3 h-3 text-white" />
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {currentUser ? (
               <div className="flex items-center gap-3 bg-slate-50 border border-gold-border rounded-xl px-3 py-1.5 pl-2 relative" ref={adminRef}>
                 <div className="w-8 h-8 rounded-lg overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center cursor-pointer" onClick={() => setIsAdminOpen(!isAdminOpen)}>
@@ -715,141 +820,6 @@ export default function Navbar() {
               )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Floating Chat Widget */}
-      {currentUser && (
-        <div className="fixed bottom-6 right-6 z-55 text-slate-800 text-left font-sans">
-          {/* Chat Bubble Toggle Button */}
-          <button
-            onClick={() => setIsChatOpen(!isChatOpen)}
-            className="w-14 h-14 rounded-full bg-gradient-to-r from-gold to-gold-light text-white shadow-2xl flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-all relative"
-            title="Einstein Chat"
-          >
-            <MessageSquare className="w-6 h-6 text-white" />
-            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full animate-pulse" />
-          </button>
-
-          {/* Chat Window Panel */}
-          {isChatOpen && (
-            <div className="fixed bottom-24 right-6 w-80 h-96 bg-white border border-gold-border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-in">
-              {/* Header */}
-              <div className="bg-gradient-to-r from-gold to-gold-light text-white px-4 py-3 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-2">
-                  {activeChat ? (
-                    <button 
-                      onClick={() => setActiveChat(null)}
-                      className="p-1 hover:bg-white/10 rounded-lg transition-colors text-white"
-                    >
-                      <ArrowLeft className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <MessageCircle className="w-4 h-4" />
-                  )}
-                  <div>
-                    <h4 className="text-xs font-bold truncate max-w-[150px]">
-                      {activeChat ? activeChat.name : 'Einstein Messenger'}
-                    </h4>
-                    <p className="text-[8px] text-white/80 uppercase font-semibold">
-                      {activeChat ? activeChat.role : 'Obrolan Internal'}
-                    </p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setIsChatOpen(false)}
-                  className="p-1 hover:bg-white/10 rounded-lg transition-colors text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Chat Body */}
-              <div className="flex-1 overflow-y-auto p-3 bg-slate-50 space-y-2.5">
-                {!activeChat ? (
-                  /* CONTACTS LIST VIEW */
-                  <div className="space-y-1.5">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">Kontak Pengurus</p>
-                    {chatUsers.map((user) => (
-                      <div
-                        key={user.email}
-                        onClick={() => setActiveChat(user)}
-                        className="p-2.5 bg-white border border-slate-150 rounded-xl flex items-center gap-3 cursor-pointer hover:border-gold hover:shadow-sm transition-all"
-                      >
-                        <div className="w-8 h-8 rounded-lg overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
-                          {user.photo ? (
-                            <img src={user.photo} alt={user.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <User className="w-4 h-4 text-gold" />
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h5 className="text-[11px] font-bold text-slate-800 truncate">{user.name}</h5>
-                          <p className="text-[9px] text-gold-dark font-medium uppercase truncate">{user.role}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  /* CHAT ROOM VIEW */
-                  <div className="space-y-2">
-                    {chatMessages.length === 0 ? (
-                      <div className="text-center py-10 space-y-2">
-                        <MessageCircle className="w-8 h-8 mx-auto text-slate-300 animate-pulse" />
-                        <p className="text-[10px] text-slate-400 font-light leading-normal">
-                          Belum ada obrolan. Kirim pesan pertama untuk memulai percakapan.
-                        </p>
-                      </div>
-                    ) : (
-                      chatMessages.map((msg) => {
-                        const isSelf = msg.sender?.toLowerCase() === currentUser.email?.toLowerCase();
-                        return (
-                          <div
-                            key={msg.id}
-                            className={`flex ${isSelf ? 'justify-end' : 'justify-start'}`}
-                          >
-                            <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-[10px] leading-relaxed shadow-sm ${
-                              isSelf 
-                                ? 'bg-gold text-white rounded-tr-none' 
-                                : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
-                            }`}>
-                              <p>{msg.message}</p>
-                              <span className={`text-[7px] block mt-1 text-right ${isSelf ? 'text-white/70' : 'text-slate-400'}`}>
-                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Chat Footer Input */}
-              {activeChat && (
-                <form 
-                  onSubmit={handleSendChatMessage}
-                  className="p-2 border-t border-slate-200 bg-white flex items-center gap-1.5 shrink-0"
-                >
-                  <input
-                    type="text"
-                    required
-                    placeholder="Tulis pesan..."
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[10px] text-slate-800 focus:outline-none focus:border-gold"
-                  />
-                  <button
-                    type="submit"
-                    className="p-2 bg-gold hover:bg-gold-light text-white rounded-xl transition-colors active:scale-95 flex items-center justify-center"
-                  >
-                    <Send className="w-3.5 h-3.5 text-white" />
-                  </button>
-                </form>
-              )}
-            </div>
-          )}
         </div>
       )}
     </nav>
