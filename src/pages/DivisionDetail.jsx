@@ -38,33 +38,161 @@ export default function DivisionDetail({ showToast }) {
       icon: '⚡',
       iconComponent: <Users className="w-8 h-8 text-gold" />,
       desc: 'Pilar komando pusat, administrasi kesekretariatan, pengarsipan surat resmi, serta transparansi pengelolaan anggaran keuangan Himpunan.',
-      renderContent: () => (
-        <div className="space-y-6">
-          <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider text-left">Struktur Organisasi Inti</h4>
-          <div className="space-y-4 max-w-xl mx-auto">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-white border border-gold-border rounded-2xl text-center shadow-sm">
-                <span className="block text-sm font-bold text-gold-dark">KAHIM</span>
-                <span className="block text-xs text-slate-500 mt-1">Ketua Himpunan</span>
-              </div>
-              <div className="p-4 bg-white border border-gold-border rounded-2xl text-center shadow-sm">
-                <span className="block text-sm font-bold text-gold-dark">WAKAHIM</span>
-                <span className="block text-xs text-slate-500 mt-1">Wakil Ketua Himpunan</span>
+      renderContent: () => {
+        const bphCore = [
+          {
+            name: 'M. Iqbal Nur Huda',
+            nim: '022400042',
+            role: 'Ketua Himpunan',
+            photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Kahim_M. Iqbal Nur Huda - 022400042.JPG'
+          },
+          {
+            name: 'Rafie Asfa Raditya Aryanto',
+            nim: '022500041',
+            role: 'Wakil Ketua Himpunan',
+            photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Wakahim_Rafie Asfa Raditya Aryanto - 022500041.JPG'
+          },
+          {
+            name: 'Nailah Qarirah',
+            nim: '022400051',
+            role: 'Sekretaris I',
+            photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Sekretaris 1_Nailah Qarirah - 022400051.JPG'
+          },
+          {
+            name: 'Bunga Nafisya Putri',
+            nim: '022500009',
+            role: 'Sekretaris II',
+            photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Sekretaris 2_Bunga Nafisya Putri - 022500009.JPG'
+          },
+          {
+            name: 'Relvina',
+            nim: '022400039',
+            role: 'Bendahara I',
+            photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Bendahara 1_Relvina - 022400039.JPG'
+          },
+          {
+            name: 'Rizkiana Ramadhani',
+            nim: '022500046',
+            role: 'Bendahara II',
+            photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Bendahara 2_Rizkiana Ramadhani - 022500046.JPG'
+          }
+        ];
+
+        const kadivList = [
+          {
+            name: 'Adiguna Nugroho Halomoan',
+            nim: '022400025',
+            role: 'Kadiv Riset & Teknologi',
+            photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Ristek/Kepala Divisi Riset dan Teknologi_Adiguna Nugroho Halomoan - 022400025.JPG'
+          },
+          {
+            name: 'Rabbany Al-Malika Ifadzla',
+            nim: '022400006',
+            role: 'Kadiv Dana Usaha',
+            photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Dana Usaha/Kepala Divisi Dana Usaha_Rabbany Al-Malika Ifadzla - 022400006.JPG'
+          },
+          {
+            name: 'Rakan Ibrahim Widjisasono',
+            nim: '022400031',
+            role: 'Kadiv Aset & Logistik',
+            photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Aset Dan Logistik/Kepala Divisi Aset dan Logistik_Rakan Ibrahim Widjisasono - 022400031.JPG'
+          },
+          {
+            name: 'Kunti Aisyatuzzahra',
+            nim: '022400045',
+            role: 'Kadiv Hubungan Eksternal',
+            photo: '/Media/Pengurus Hima Kabinet Photisma 2026/External/Kepala Divisi Eksternal_Kunti Aisyatuzzahra - 022400045.JPG'
+          },
+          {
+            name: 'Hafizh Maulana Wijaya',
+            nim: '022400019',
+            role: 'Kadiv Hubungan Internal',
+            photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Internal/Kepala Divisi Internal_Hafizh Maulana Wijaya - 022400019.JPG'
+          },
+          {
+            name: 'Sunniy',
+            nim: '022400041',
+            role: 'Kadiv Komunikasi & Informasi',
+            photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Kominfo/Kepala Divisi Komunikasi dan Informasi_Sunniy - 022400041.JPG'
+          },
+          {
+            name: 'Farrelega Zhafran Vito Ardhana',
+            nim: '022400038',
+            role: 'Kadiv Pengembangan Mahasiswa',
+            photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Pema/Kepala Divisi Pengembangan Mahasiswa_Farrelega Zhafran Vito Ardhana - 022400038.JPG'
+          }
+        ];
+
+        return (
+          <div className="space-y-10 text-left">
+            {/* Core BPH Section */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest border-l-2 border-gold pl-2">
+                Struktur Organisasi Inti (BPH Core)
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {bphCore.map((p) => (
+                  <div 
+                    key={p.nim}
+                    className="bg-white border border-gold-border rounded-2xl overflow-hidden hover:scale-[1.03] hover:shadow-md hover:border-gold transition-all duration-300 flex flex-col group shadow-sm"
+                  >
+                    <div className="aspect-[3/4] bg-slate-100 overflow-hidden relative border-b border-slate-100">
+                      <img 
+                        src={p.photo} 
+                        alt={p.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          e.target.src = "https://placehold.co/150x200/fffbeb/d97706?text=" + encodeURIComponent(p.name);
+                        }}
+                      />
+                    </div>
+                    <div className="p-3 flex-1 flex flex-col justify-between">
+                      <div className="space-y-0.5">
+                        <span className="block text-[8px] font-extrabold text-gold-dark uppercase tracking-widest">{p.role}</span>
+                        <h5 className="text-[10px] font-bold text-slate-800 line-clamp-2 leading-snug">{p.name}</h5>
+                      </div>
+                      <span className="block text-[8px] text-slate-400 font-mono mt-1">NIM: {p.nim}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-white border border-gold-border rounded-2xl text-center shadow-sm">
-                <span className="block text-sm font-bold text-slate-700">SEKRETARIS I & II</span>
-                <span className="block text-[11px] text-slate-500 mt-1">Administrasi & Persuratan</span>
-              </div>
-              <div className="p-4 bg-white border border-gold-border rounded-2xl text-center shadow-sm">
-                <span className="block text-sm font-bold text-slate-700">BENDAHARA I & II</span>
-                <span className="block text-[11px] text-slate-500 mt-1">Keuangan & Anggaran</span>
+
+            {/* Division Heads Section */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest border-l-2 border-gold pl-2">
+                Jajaran Kepala Divisi (Kadiv) Himpunan
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                {kadivList.map((p) => (
+                  <div 
+                    key={p.nim}
+                    className="bg-white border border-gold-border rounded-2xl overflow-hidden hover:scale-[1.03] hover:shadow-md hover:border-gold transition-all duration-300 flex flex-col group shadow-sm"
+                  >
+                    <div className="aspect-[3/4] bg-slate-100 overflow-hidden relative border-b border-slate-100">
+                      <img 
+                        src={p.photo} 
+                        alt={p.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          e.target.src = "https://placehold.co/150x200/fffbeb/d97706?text=" + encodeURIComponent(p.name);
+                        }}
+                      />
+                    </div>
+                    <div className="p-2.5 flex-1 flex flex-col justify-between">
+                      <div className="space-y-0.5">
+                        <span className="block text-[7px] font-extrabold text-gold-dark uppercase tracking-widest leading-none mb-1">{p.role}</span>
+                        <h5 className="text-[9px] font-bold text-slate-800 line-clamp-2 leading-tight">{p.name}</h5>
+                      </div>
+                      <span className="block text-[7px] text-slate-400 font-mono mt-1 leading-none">NIM: {p.nim}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-        </div>
-      )
+        );
+      }
     },
     internal: {
       title: 'Internal',
