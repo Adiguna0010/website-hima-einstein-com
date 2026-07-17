@@ -16,9 +16,9 @@ export default function Investor() {
 
         <div className="space-y-3">
           <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Investasi & Dukungan</span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">INVESTOR EINSTEIN</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">INVESTOR EINSTEN</h1>
           <p className="text-slate-500 text-sm leading-relaxed font-light max-w-lg mx-auto">
-            Halaman investor HIMA EINSTEIN sedang dalam tahap pengembangan. 
+            Halaman investor HIMA EINSTEN sedang dalam tahap pengembangan. 
             Kami mengundang para pendukung untuk berpartisipasi dalam pertumbuhan organisasi kami.
           </p>
         </div>

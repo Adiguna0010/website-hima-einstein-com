@@ -110,7 +110,7 @@ export default function LogistikDashboard({ showToast }) {
     // Send notification bell alert to borrower
     const newNotification = {
       id: Date.now(),
-      recipientEmail: req.userEmail || 'guest@einstein.com',
+      recipientEmail: req.userEmail || 'guest@einsten.com',
       message: `Peminjaman alat "${req.instrumentName}" Anda telah DISETUJUI (ACC) oleh Operator Logistik! Silakan ambil alat di Laboratorium.`,
       read: false,
       timestamp: Date.now()

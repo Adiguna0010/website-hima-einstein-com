@@ -37,13 +37,13 @@ export default function Footer() {
                 <Link to="/" className="text-slate-600 hover:text-gold-dark transition-colors font-medium">Beranda</Link>
               </li>
               <li>
-                <Link to="/sphere" className="text-slate-600 hover:text-gold-dark transition-colors font-medium">Einstein Sphere</Link>
+                <Link to="/sphere" className="text-slate-600 hover:text-gold-dark transition-colors font-medium">Einsten Sphere</Link>
               </li>
               <li>
-                <Link to="/market" className="text-slate-600 hover:text-gold-dark transition-colors font-medium">Einstein Market</Link>
+                <Link to="/market" className="text-slate-600 hover:text-gold-dark transition-colors font-medium">Einsten Market</Link>
               </li>
               <li>
-                <Link to="/space" className="text-slate-600 hover:text-gold-dark transition-colors font-medium">Einstein Space</Link>
+                <Link to="/space" className="text-slate-600 hover:text-gold-dark transition-colors font-medium">Einsten Space</Link>
               </li>
             </ul>
           </div>
@@ -77,7 +77,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-slate-200 mt-10 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500">
-          <p>&copy; {new Date().getFullYear()} HIMPUNAN EINSTEIN.COM Kabinet Phótisma. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} HIMPUNAN EINSTEN.COM Kabinet Phótisma. All Rights Reserved.</p>
           <p className="mt-2 md:mt-0 flex items-center gap-1">
             <span>Powered by BRIN Yogyakarta</span>
           </p>

@@ -22,7 +22,7 @@ export default function Sphere() {
       key: 'external',
       title: 'External Division',
       iconComponent: <Globe className="w-6 h-6 text-gold" />,
-      desc: 'Menghubungkan HIMA EINSTEIN dengan alumni, korporasi industri nuklir/kesehatan, BRIN, serta himpunan mahasiswa luar.',
+      desc: 'Menghubungkan HIMA EINSTEN dengan alumni, korporasi industri nuklir/kesehatan, BRIN, serta himpunan mahasiswa luar.',
     },
     {
       key: 'ristek',
@@ -40,13 +40,13 @@ export default function Sphere() {
       key: 'danus',
       title: 'Dana Usaha',
       iconComponent: <ShoppingCart className="w-6 h-6 text-gold" />,
-      desc: 'Wirausaha mandiri Himpunan. Pembelian produk eksklusif PDH, barang dagangan, dan merchandise resmi HIMA EINSTEIN.',
+      desc: 'Wirausaha mandiri Himpunan. Pembelian produk eksklusif PDH, barang dagangan, dan merchandise resmi HIMA EINSTEN.',
     },
     {
       key: 'kominfo',
       title: 'Komunikasi & Informasi',
       iconComponent: <Radio className="w-6 h-6 text-gold" />,
-      desc: 'Media publikasi berita sains nuklir, dokumentasi kegiatan, rilis buletin triwulan EINSTEIN, dan podcast audio visual.',
+      desc: 'Media publikasi berita sains nuklir, dokumentasi kegiatan, rilis buletin triwulan EINSTEN, dan podcast audio visual.',
     },
     {
       key: 'logistik',
@@ -67,7 +67,7 @@ export default function Sphere() {
 
       <div className="text-center max-w-2xl mx-auto space-y-3">
         <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Sektor Kepengurusan</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">EINSTEIN SPHERE</h1>
+        <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">EINSTEN SPHERE</h1>
         <p className="text-slate-500 text-xs sm:text-sm leading-relaxed font-light">
           Pusat koordinasi 8 divisi Kabinet Phótisma. Pilih divisi di bawah untuk membuka halaman informasi dan program kerja resmi.
         </p>

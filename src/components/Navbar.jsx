@@ -16,7 +16,7 @@ export default function Navbar() {
     return emailStr
       .toLowerCase()
       .replace(/\s+/g, '')
-      .replace(/einstein\.com$/, 'einsten.com');
+      .replace(/einsten\.com$/, 'einsten.com');
   };
 
   const [isOpen, setIsOpen] = useState(false);
@@ -288,10 +288,10 @@ export default function Navbar() {
           <div className="flex-shrink-0 cursor-pointer flex items-center" onClick={() => navigate('/')}>
             <img 
               src="/Media/Logo HIma/logo hima warna (3)_page-0001.jpg" 
-              alt="HIMPUNAN EINSTEIN.COM Logo" 
-              className="h-11 w-auto object-contain"
+              alt="HIMPUNAN EINSTEN.COM Logo" 
+              className="h-14 sm:h-18 w-auto object-contain"
               onError={(e) => {
-                e.target.src = "https://placehold.co/180x45/ffffff/000000?text=EINSTEIN";
+                e.target.src = "https://placehold.co/180x45/ffffff/000000?text=EINSTEN";
               }}
             />
           </div>
@@ -307,7 +307,7 @@ export default function Navbar() {
               Beranda
             </Link>
 
-            {/* Einstein Suite Mega-Dropdown */}
+            {/* Einsten Suite Mega-Dropdown */}
             <div className="relative" ref={suiteRef}>
               <button
                 onClick={() => setIsSuiteOpen(!isSuiteOpen)}
@@ -317,18 +317,18 @@ export default function Navbar() {
                     : 'text-slate-600 hover:text-gold-dark font-medium'
                 }`}
               >
-                Einstein Suite 
+                Einsten Suite 
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isSuiteOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isSuiteOpen && (
                 <div className="absolute left-1/2 -translate-x-1/2 mt-3 w-[560px] rounded-2xl bg-white border border-gold-border shadow-xl p-5 z-50 animate-slide-in grid grid-cols-12 gap-5 text-left">
                   
-                  {/* Left Column: Einstein Sphere Divisions */}
+                  {/* Left Column: Einsten Sphere Divisions */}
                   <div className="col-span-6 border-r border-slate-100 pr-5">
                     <div className="flex items-center gap-2 text-xs font-semibold text-slate-850 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3 font-bold">
                       <Compass className="w-4 h-4 text-gold" />
-                      <span>Einstein Sphere</span>
+                      <span>Einsten Sphere</span>
                     </div>
                     
                     <p className="text-[10px] text-slate-405 mb-3 font-light leading-relaxed">
@@ -361,7 +361,7 @@ export default function Navbar() {
                   {/* Right Column: Other Suite Apps */}
                   <div className="col-span-6 flex flex-col justify-between">
                     <div className="space-y-4">
-                      {/* Einstein Market */}
+                      {/* Einsten Market */}
                       <Link 
                         to="/market" 
                         onClick={() => setIsSuiteOpen(false)}
@@ -372,7 +372,7 @@ export default function Navbar() {
                         </div>
                         <div>
                           <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                            Einstein Market
+                            Einsten Market
                             {totalQty > 0 && (
                               <span className="bg-gold text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
                                 {totalQty}
@@ -385,7 +385,7 @@ export default function Navbar() {
                         </div>
                       </Link>
 
-                      {/* Einstein Quest */}
+                      {/* Einsten Quest */}
                       <Link 
                         to="/quest" 
                         onClick={() => setIsSuiteOpen(false)}
@@ -395,14 +395,14 @@ export default function Navbar() {
                           <History className="w-4 h-4 text-slate-600 group-hover:text-gold" />
                         </div>
                         <div>
-                          <h4 className="text-xs font-bold text-slate-800">Einstein Quest</h4>
+                          <h4 className="text-xs font-bold text-slate-800">Einsten Quest</h4>
                           <p className="text-[10px] text-slate-500 font-light mt-0.5 leading-snug">
                             Linimasa sejarah, dokumentasi & alumni.
                           </p>
                         </div>
                       </Link>
 
-                      {/* Einstein Space */}
+                      {/* Einsten Space */}
                       <Link 
                         to="/space" 
                         onClick={() => setIsSuiteOpen(false)}
@@ -412,7 +412,7 @@ export default function Navbar() {
                           <Cpu className="w-4 h-4 text-slate-600 group-hover:text-gold" />
                         </div>
                         <div>
-                          <h4 className="text-xs font-bold text-slate-800">Einstein Space</h4>
+                          <h4 className="text-xs font-bold text-slate-800">Einsten Space</h4>
                           <p className="text-[10px] text-slate-500 font-light mt-0.5 leading-snug">
                             Peminjaman instrumen lab via QR Scanner.
                           </p>
@@ -464,22 +464,22 @@ export default function Navbar() {
 
           {/* Desktop Right Controls (Auth & Instansi Logos) */}
           <div className="hidden lg:flex items-center space-x-3 text-left">
-            {/* Instansi Penaung Logos (Poltek Nuklir & BRIN) */}
+            {/* Instansi Penaung Logos (BRIN & Poltek Nuklir) */}
             <div className="flex items-center gap-3 border-r border-slate-200 pr-4 mr-2 h-7 shrink-0">
-              <img 
-                src="/Media/Logo Instansi/Logo Poltek (benar).png" 
-                alt="Logo Poltek Nuklir" 
-                className="h-8 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
-                onError={(e) => {
-                  e.target.src = "https://placehold.co/80x25/ffffff/000000?text=Poltek+Nuklir";
-                }}
-              />
               <img 
                 src="/Media/Logo Instansi/logo brin warna_landscape.jpg" 
                 alt="Logo BRIN" 
                 className="h-8 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
                 onError={(e) => {
                   e.target.src = "https://placehold.co/80x25/ffffff/000000?text=BRIN";
+                }}
+              />
+              <img 
+                src="/Media/Logo Instansi/Logo Poltek (benar).png" 
+                alt="Logo Poltek Nuklir" 
+                className="h-8 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                onError={(e) => {
+                  e.target.src = "https://placehold.co/80x25/ffffff/000000?text=Poltek+Nuklir";
                 }}
               />
             </div>
@@ -536,7 +536,7 @@ export default function Navbar() {
                 <button 
                   onClick={() => setIsChatOpen(!isChatOpen)}
                   className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-205 text-slate-650 hover:text-slate-800 transition-all active:scale-95 relative cursor-pointer"
-                  title="Einstein Chat"
+                  title="Einsten Chat"
                 >
                   <MessageSquare className="w-4 h-4 text-gold-dark" />
                   {getUnreadChatCount() > 0 && (
@@ -552,7 +552,7 @@ export default function Navbar() {
                     <div className="bg-gradient-to-r from-gold to-gold-light text-white px-4 py-2.5 flex items-center justify-between shrink-0">
                       <div className="flex items-center gap-1.5 text-xs font-bold">
                         <MessageCircle className="w-4 h-4 text-white" />
-                        <span>Einstein Messenger</span>
+                        <span>Einsten Messenger</span>
                       </div>
                       {activeChat && (
                         <button 
@@ -790,13 +790,13 @@ export default function Navbar() {
               Beranda
             </Link>
 
-            {/* Einstein Suite Accordion in Mobile */}
+            {/* Einsten Suite Accordion in Mobile */}
             <div className="py-1 border-t border-b border-slate-100 my-2">
               <button
                 onClick={() => setIsMobileSuiteOpen(!isMobileSuiteOpen)}
                 className="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 hover:text-gold transition-colors"
               >
-                <span>Einstein Suite</span>
+                <span>Einsten Suite</span>
                 <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isMobileSuiteOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -806,7 +806,7 @@ export default function Navbar() {
                     to="/sphere"
                     className="block py-1 text-xs text-slate-600 hover:text-gold font-semibold"
                   >
-                    Einstein Sphere Hub
+                    Einsten Sphere Hub
                   </Link>
                   <div className="grid grid-cols-2 gap-1 pl-2 border-l border-slate-200 py-1">
                     {divisions.map((div) => (
@@ -826,7 +826,7 @@ export default function Navbar() {
                     to="/market"
                     className="block py-1 text-xs text-slate-600 hover:text-gold font-medium flex items-center gap-1.5"
                   >
-                    Einstein Market
+                    Einsten Market
                     {totalQty > 0 && (
                       <span className="bg-gold text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full">
                         {totalQty}
@@ -837,13 +837,13 @@ export default function Navbar() {
                     to="/quest"
                     className="block py-1 text-xs text-slate-600 hover:text-gold font-medium"
                   >
-                    Einstein Quest (Sejarah)
+                    Einsten Quest (Sejarah)
                   </Link>
                   <Link
                     to="/space"
                     className="block py-1 text-xs text-slate-600 hover:text-gold font-medium"
                   >
-                    Einstein Space (Scan QR)
+                    Einsten Space (Scan QR)
                   </Link>
                 </div>
               )}

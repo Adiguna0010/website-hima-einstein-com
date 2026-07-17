@@ -215,7 +215,7 @@ export default function DivisionDetail({ showToast }) {
       title: 'External Division',
       icon: '🌐',
       iconComponent: <Globe className="w-8 h-8 text-gold" />,
-      desc: 'Menghubungkan HIMA EINSTEIN dengan alumni, korporasi industri nuklir/kesehatan, BRIN, serta himpunan mahasiswa luar.',
+      desc: 'Menghubungkan HIMA EINSTEN dengan alumni, korporasi industri nuklir/kesehatan, BRIN, serta himpunan mahasiswa luar.',
       renderContent: () => {
         const handleExtSubmit = (e) => {
           e.preventDefault();
@@ -285,7 +285,7 @@ export default function DivisionDetail({ showToast }) {
           const newRequest = {
             id: Date.now(),
             requesterName: ristekForm.name,
-            userEmail: currentUser?.email || 'guest@einstein.com',
+            userEmail: currentUser?.email || 'guest@einsten.com',
             type: 'Ristek Mengajar',
             role: ristekForm.role,
             subject: ristekForm.subject,
@@ -310,7 +310,7 @@ export default function DivisionDetail({ showToast }) {
                   ristekTab === 'vault' ? 'text-gold border-b-2 border-gold' : 'text-slate-400 hover:text-slate-700'
                 }`}
               >
-                Einstein Vault
+                Einsten Vault
               </button>
               <button 
                 onClick={() => setRistekTab('les')}
@@ -509,7 +509,7 @@ export default function DivisionDetail({ showToast }) {
                     const newRequest = {
                       id: Date.now(),
                       requesterName: name,
-                      userEmail: currentUser?.email || 'guest@einstein.com',
+                      userEmail: currentUser?.email || 'guest@einsten.com',
                       type: 'Proyek Collab',
                       role: 'Anggota',
                       subject: 'Geiger-Müller ESP32',
@@ -589,7 +589,7 @@ export default function DivisionDetail({ showToast }) {
       title: 'Dana Usaha',
       icon: '🛒',
       iconComponent: <ShoppingCart className="w-8 h-8 text-gold" />,
-      desc: 'Wirausaha mandiri Himpunan. Pembelian produk eksklusif PDH, barang dagangan, dan merchandise resmi HIMA EINSTEIN.',
+      desc: 'Wirausaha mandiri Himpunan. Pembelian produk eksklusif PDH, barang dagangan, dan merchandise resmi HIMA EINSTEN.',
       renderContent: () => (
         <div className="space-y-6 max-w-xl mx-auto">
           <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-left">Produk Populer Danus</h4>
@@ -632,7 +632,7 @@ export default function DivisionDetail({ showToast }) {
               to="/market"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-gold hover:underline"
             >
-              Buka Halaman Einstein Market Lengkap
+              Buka Halaman Einsten Market Lengkap
             </Link>
           </div>
         </div>
@@ -642,7 +642,7 @@ export default function DivisionDetail({ showToast }) {
       title: 'Komunikasi & Informasi',
       icon: '📢',
       iconComponent: <Radio className="w-8 h-8 text-gold" />,
-      desc: 'Media publikasi berita sains nuklir, dokumentasi kegiatan, rilis buletin triwulan EINSTEIN, dan podcast audio visual.',
+      desc: 'Media publikasi berita sains nuklir, dokumentasi kegiatan, rilis buletin triwulan EINSTEN, dan podcast audio visual.',
       renderContent: () => (
         <div className="max-w-md mx-auto space-y-4">
           <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-left mb-3">Podcast Terbaru</h4>

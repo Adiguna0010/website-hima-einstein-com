@@ -231,6 +231,12 @@ export default function Home() {
               Profil Hima
             </a>
             <Link 
+              to="/struktur" 
+              className="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl active:scale-95 transition-all text-sm shadow-md cursor-pointer flex items-center gap-2"
+            >
+              Lihat Struktur
+            </Link>
+            <Link 
               to="/sphere" 
               className="px-6 py-3.5 border border-gold/30 hover:bg-gold/5 text-gold-dark font-semibold rounded-xl active:scale-95 transition-all text-sm flex items-center gap-2"
             >
@@ -267,14 +273,14 @@ export default function Home() {
             <div className="relative bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md aspect-video sm:aspect-square">
               <img 
                 src="/Media Einsten/Media Umum/Foto Umum Beranda/DSC_7954.JPG" 
-                alt="Pengurus HIMPUNAN EINSTEIN.COM" 
+                alt="Pengurus HIMPUNAN EINSTEN.COM" 
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.target.src = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80";
                 }}
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-left">
-                <p className="text-xs font-semibold text-white">Pengurus HIMPUNAN EINSTEIN.COM</p>
+                <p className="text-xs font-semibold text-white">Pengurus HIMPUNAN EINSTEN.COM</p>
                 <p className="text-[10px] text-gold-light font-medium mt-0.5">Kabinet Phótisma 2026/2027</p>
               </div>
             </div>
@@ -284,7 +290,7 @@ export default function Home() {
           <div className="lg:col-span-7 space-y-6 text-left">
             <div>
               <span className="text-xs font-bold text-gold-dark uppercase tracking-widest block">Tentang Kami</span>
-              <h2 className="text-3xl font-extrabold uppercase text-slate-900 mt-1">HIMPUNAN EINSTEIN.COM</h2>
+              <h2 className="text-3xl font-extrabold uppercase text-slate-900 mt-1">HIMPUNAN EINSTEN.COM</h2>
             </div>
             
             <p className="text-slate-650 text-sm leading-relaxed font-light">
@@ -373,144 +379,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= STRUKTUR KABINET SECTION ================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-200 pt-20">
-        <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
-          <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Struktur Kabinet</span>
-          <h2 className="text-3xl font-extrabold uppercase text-slate-900">STRUKTUR ORGANISASI KABINET</h2>
-          <p className="text-xs text-slate-500 font-light font-sans">
-            Sinergi pembimbing, pimpinan, dan pelaksana program kerja Himpunan Elektronika Instrumentasi.
-          </p>
-        </div>
-
-        <div className="space-y-16">
-          {/* Pembimbing Organisasi */}
-          <div className="space-y-6">
-            <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-center">Pembimbing Organisasi</h4>
-            <div className="max-w-md mx-auto bg-white border border-gold-border rounded-3xl p-6 shadow-md hover:scale-[1.02] hover:shadow-lg transition-all duration-300 text-center relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-gold via-gold-light to-gold-dark"></div>
-              
-              <div className="w-20 h-20 rounded-full bg-gold/10 border-2 border-gold/20 flex items-center justify-center mx-auto mb-4 relative overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                <User className="w-10 h-10 text-gold-dark" />
-              </div>
-
-              <span className="block text-[9px] font-extrabold text-gold-dark uppercase tracking-widest font-sans">Pembimbing Organisasi</span>
-              <h4 className="text-sm font-bold text-slate-800 mt-1 font-sans">{pembimbing.name}</h4>
-              <p className="text-[10px] text-slate-500 font-semibold mt-0.5 font-sans">Ketua Program Studi {pembimbing.detail}</p>
-              <p className="text-[9px] text-slate-400 font-mono mt-1">NIP. {pembimbing.nip}</p>
-              
-              <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-slate-100 opacity-80 hover:opacity-100 transition-opacity">
-                <img src="/Media/Logo Instansi/logo brin warna_landscape.jpg" alt="BRIN Logo" className="h-6 w-auto object-contain" />
-                <img src="/Media/Logo Instansi/Logo Poltek (benar).png" alt="Poltek Logo" className="h-6 w-auto object-contain" />
-              </div>
-            </div>
-          </div>
-
-          {/* Core BPH */}
-          <div className="space-y-6 pt-4">
-            <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-center">Badan Pengurus Harian (BPH Core)</h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {bphCore.map((p) => (
-                <div 
-                  key={p.nim}
-                  className="bg-white border border-gold-border rounded-2xl overflow-hidden hover:scale-[1.03] hover:shadow-md hover:border-gold transition-all duration-300 flex flex-col group shadow-sm text-left"
-                >
-                  <div className="aspect-[3/4] bg-slate-100 overflow-hidden relative border-b border-slate-105">
-                    <img 
-                      src={p.photo} 
-                      alt={p.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => {
-                        e.target.src = "https://placehold.co/150x200/fffbeb/d97706?text=" + encodeURIComponent(p.name);
-                      }}
-                    />
-                  </div>
-                  <div className="p-3 flex-1 flex flex-col justify-between">
-                    <div className="space-y-0.5">
-                      <span className="block text-[8px] font-extrabold text-gold-dark uppercase tracking-widest leading-none mb-1">{p.role}</span>
-                      <h5 className="text-[10px] font-bold text-slate-800 line-clamp-2 leading-snug font-sans">{p.name}</h5>
-                    </div>
-                    <span className="block text-[8px] text-slate-400 font-mono mt-1 leading-none">NIM: {p.nim}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Jajaran Kepala Divisi & Anggota (Struktur Pohon) */}
-          <div className="space-y-12 pt-4">
-            <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-center border-b border-slate-200 pb-4">
-              Jajaran Divisi & Anggota Kabinet
-            </h4>
-            
-            {divisionsData.map((div, divIdx) => (
-              <div key={divIdx} className="space-y-6 p-6 bg-slate-50/50 border border-slate-200/60 rounded-3xl">
-                {/* Division Title */}
-                <h5 className="text-xs font-bold text-gold-dark uppercase tracking-widest text-center font-sans">
-                  {div.title}
-                </h5>
-
-                {/* Kepala Divisi (Atas, Centered) */}
-                <div className="flex justify-center">
-                  <div className="bg-white border border-gold-border rounded-2xl overflow-hidden hover:scale-[1.03] hover:shadow-md hover:border-gold transition-all duration-300 flex flex-col group shadow-sm text-left w-44">
-                    <div className="aspect-[3/4] bg-slate-100 overflow-hidden relative border-b border-slate-105">
-                      <img 
-                        src={div.kadiv.photo} 
-                        alt={div.kadiv.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        onError={(e) => {
-                          e.target.src = "https://placehold.co/150x200/fffbeb/d97706?text=" + encodeURIComponent(div.kadiv.name);
-                        }}
-                      />
-                    </div>
-                    <div className="p-3 flex-1 flex flex-col justify-between">
-                      <div className="space-y-0.5">
-                        <span className="block text-[7px] font-extrabold text-gold-dark uppercase tracking-widest leading-none mb-1">Kepala Divisi</span>
-                        <h5 className="text-[9px] font-bold text-slate-800 line-clamp-2 leading-tight font-sans">{div.kadiv.name}</h5>
-                      </div>
-                      <span className="block text-[8px] text-slate-400 font-mono mt-1 leading-none">NIM: {div.kadiv.nim}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Anggota Divisi (Bawah) */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 max-w-5xl mx-auto pt-2">
-                  {div.members.map((m) => (
-                    <div 
-                      key={m.nim}
-                      className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-between text-center hover:border-gold hover:shadow-sm transition-all duration-300 group shadow-sm"
-                    >
-                      <div className="w-12 h-12 rounded-full bg-gold/5 border border-gold/15 flex items-center justify-center text-gold-dark text-xs font-bold font-mono mb-2.5 relative group-hover:scale-105 transition-transform duration-300">
-                        {getInitials(m.name)}
-                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border border-white flex items-center justify-center text-[6px] text-white">✓</span>
-                      </div>
-                      <div className="space-y-1">
-                        <h6 className="text-[9px] font-bold text-slate-800 line-clamp-2 leading-tight font-sans">{m.name}</h6>
-                        <span className="block text-[8px] text-slate-400 font-sans">Anggota Divisi</span>
-                      </div>
-                      <span className="block text-[8px] text-slate-450 font-mono mt-2 leading-none">NIM: {m.nim}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ================= EMBEDDED VIDEO SECTION ================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-200 pt-20">
         <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
           <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Video Profil</span>
           <h2 className="text-3xl font-extrabold uppercase text-slate-900">OFFICIAL TEASER PROFILE</h2>
-          <p className="text-xs text-slate-500 font-light">Saksikan sekilas profil dan kegiatan HIMPUNAN EINSTEIN.COM</p>
+          <p className="text-xs text-slate-500 font-light">Saksikan sekilas profil dan kegiatan HIMPUNAN EINSTEN.COM</p>
         </div>
 
         <div className="max-w-4xl mx-auto bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md relative aspect-video">
           <iframe 
             className="w-full h-full"
             src="https://www.youtube.com/embed/rlw_VDUuNOk" 
-            title="Teaser Profile HIMPUNAN EINSTEIN.COM"
+            title="Teaser Profile HIMPUNAN EINSTEN.COM"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
             allowFullScreen

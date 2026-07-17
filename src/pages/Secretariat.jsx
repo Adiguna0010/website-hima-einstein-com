@@ -48,7 +48,7 @@ export default function Secretariat({ showToast }) {
   ];
 
   const DEFAULT_EVENTS = {
-    '2026-07-15': { title: 'Einstein Festival (E-Fest) 🚀', type: 'hima', desc: 'Festival teknologi, seminar instrumentasi nuklir, dan pameran proyek IoT mahasiswa Elins.' },
+    '2026-07-15': { title: 'Einsten Festival (E-Fest) 🚀', type: 'hima', desc: 'Festival teknologi, seminar instrumentasi nuklir, dan pameran proyek IoT mahasiswa Elins.' },
     '2026-07-20': { title: 'Ristek Mengajar Sebaya 🔬', type: 'hima', desc: 'Bimbingan belajar internal pemrograman C++ dan Elektronika dasar untuk mahasiswa baru.' },
     '2026-07-24': { title: 'Musyawarah Perwakilan Mahasiswa 🏛️', type: 'ormawa', desc: 'Sidang evaluasi program kerja ormawa eksternal kampus Politeknik Teknologi Nuklir Indonesia.' },
     '2026-07-28': { title: 'Evaluasi Tengah Tahun Kabinet 🪙', type: 'hima', desc: 'Pemaparan laporan pertanggungjawaban setengah tahun Kabinet Phótisma.' }
@@ -97,7 +97,7 @@ export default function Secretariat({ showToast }) {
       category,
       subject,
       status: 'Pending',
-      userEmail: currentUser?.email || 'guest@einstein.com',
+      userEmail: currentUser?.email || 'guest@einsten.com',
       letterNumber: '',
       fileUrl: ''
     };
@@ -146,7 +146,7 @@ export default function Secretariat({ showToast }) {
     if (req) {
       const newNotification = {
         id: Date.now(),
-        recipientEmail: req.userEmail || 'guest@einstein.com',
+        recipientEmail: req.userEmail || 'guest@einsten.com',
         message: `Pengajuan ${req.category} (${req.subject}) Anda telah DISETUJUI (ACC) dengan Nomor Surat: ${inputLetterNumber}!`,
         read: false,
         timestamp: Date.now()
@@ -273,7 +273,7 @@ export default function Secretariat({ showToast }) {
               Secretariat Dashboard
             </h1>
             <p className="text-xs text-slate-500 font-light">
-              Kelola nomor surat BPH, arsipkan dokumen portal, dan daftarkan jadwal program kerja pada Einstein Kalender.
+              Kelola nomor surat BPH, arsipkan dokumen portal, dan daftarkan jadwal program kerja pada Einsten Kalender.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -656,7 +656,7 @@ export default function Secretariat({ showToast }) {
                       onChange={(e) => setEventType(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
                     >
-                      <option value="hima">Internal HIMA EINSTEIN</option>
+                      <option value="hima">Internal HIMA EINSTEN</option>
                       <option value="ormawa">Ormawa Kampus Eksternal</option>
                     </select>
                   </div>

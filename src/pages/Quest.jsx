@@ -14,7 +14,7 @@ export default function Quest() {
     {
       year: '2023',
       title: 'Deklarasi Resmi & Legalitas',
-      desc: 'Pengesahan nama HIMA EINSTEIN.COM secara hukum sebagai Organisasi Mahasiswa resmi di bawah koordinasi kampus yang bertransformasi menjadi Politeknik Teknologi Nuklir Indonesia.',
+      desc: 'Pengesahan nama HIMA EINSTEN.COM secara hukum sebagai Organisasi Mahasiswa resmi di bawah koordinasi kampus yang bertransformasi menjadi Politeknik Teknologi Nuklir Indonesia.',
       icon: <Landmark className="w-5 h-5 text-amber-550" />
     },
     {
@@ -70,7 +70,7 @@ export default function Quest() {
         <span className="text-xs font-mono font-semibold text-amber-500 uppercase tracking-widest block">
           [ ARCHIVE 01.0 // HISTORY QUEST ]
         </span>
-        <h1 className="text-4xl font-serif text-zinc-900 tracking-tight">EINSTEIN QUEST</h1>
+        <h1 className="text-4xl font-serif text-zinc-900 tracking-tight">EINSTEN QUEST</h1>
         <p className="text-zinc-500 text-xs sm:text-sm leading-relaxed font-light font-sans max-w-xl">
           Menelusuri linimasa sejarah peradaban digital, pengabdian sosial, dan riset teknologi Himpunan Elektronika Instrumentasi.
         </p>
@@ -128,7 +128,7 @@ export default function Quest() {
               <iframe 
                 className="absolute inset-2 w-[calc(105%_-_16px)] h-[calc(105%_-_16px)] border border-gray-150"
                 src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" 
-                title="Dokumenter Sejarah HIMA EINSTEIN"
+                title="Dokumenter Sejarah HIMA EINSTEN"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                 allowFullScreen
@@ -167,7 +167,7 @@ export default function Quest() {
             [ ARCHIVE 02.0 // HISTORICAL FIGURES & ALUMNI ]
           </span>
           <h2 className="text-2xl font-serif text-zinc-900 tracking-tight flex items-center gap-2">
-            <Image className="w-5 h-5 text-amber-500" /> JEJAK TOKOH & ALUMNI EINSTEIN
+            <Image className="w-5 h-5 text-amber-500" /> JEJAK TOKOH & ALUMNI EINSTEN
           </h2>
           <p className="text-xs text-zinc-500 font-sans font-light max-w-xl">
             Para pionir angkatan terdahulu yang berkontribusi mendirikan pondasi riset elektronika nuklir serta digitalisasi Himpunan.

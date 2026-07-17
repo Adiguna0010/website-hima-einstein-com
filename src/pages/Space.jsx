@@ -85,7 +85,7 @@ export default function Space({ showToast }) {
       id: `req-${Date.now()}`,
       borrowerName,
       borrowerNim,
-      userEmail: currentUser?.email || 'guest@einstein.com',
+      userEmail: currentUser?.email || 'guest@einsten.com',
       instrumentId: selectedToolId,
       instrumentName: selectedToolName,
       status: 'Pending',
@@ -98,7 +98,7 @@ export default function Space({ showToast }) {
     localStorage.setItem('hima_borrow_requests', JSON.stringify(updatedRequests));
 
     // Build WA URL
-    const text = `Halo Admin Logistik HIMPUNAN EINSTEN.COM! 📦\n\nSaya ingin mengajukan permohonan peminjaman alat laboratorium:\n- Nama Alat: ${selectedToolName}\n- ID Alat: ${selectedToolId}\n\nData Peminjam:\n- Nama: ${borrowerName}\n- NIM: ${borrowerNim}\n\n*Reservasi terdaftar melalui Portal Einstein Space.* Mohon konfirmasi pengambilan alat. Terima kasih!`;
+    const text = `Halo Admin Logistik HIMPUNAN EINSTEN.COM! 📦\n\nSaya ingin mengajukan permohonan peminjaman alat laboratorium:\n- Nama Alat: ${selectedToolName}\n- ID Alat: ${selectedToolId}\n\nData Peminjam:\n- Nama: ${borrowerName}\n- NIM: ${borrowerNim}\n\n*Reservasi terdaftar melalui Portal Einsten Space.* Mohon konfirmasi pengambilan alat. Terima kasih!`;
     const waNumber = '6285175420692';
     const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
@@ -118,7 +118,7 @@ export default function Space({ showToast }) {
       
       <div className="text-center max-w-2xl mx-auto space-y-3">
         <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Layanan Praktikum & Riset</span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">EINSTEIN SPACE</h1>
+        <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">EINSTEN SPACE</h1>
         <p className="text-slate-555 text-xs sm:text-sm leading-relaxed font-light">
           Portal peminjaman instrumen laboratorium elektronika milik Himpunan. Scan Barcode/QR Code pada alat fisik untuk pengisian formulir instan.
         </p>

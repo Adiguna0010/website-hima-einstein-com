@@ -21,7 +21,7 @@ export default function Mitra() {
           [ SPONSORSHIP // COLLABORATION ]
         </span>
         <h1 className="text-4xl font-serif text-zinc-900 tracking-tight flex items-center gap-2">
-          <Handshake className="w-8 h-8 text-amber-500" /> MITRA EINSTEIN
+          <Handshake className="w-8 h-8 text-amber-500" /> MITRA EINSTEN
         </h1>
         <p className="text-zinc-500 text-xs sm:text-sm leading-relaxed font-light font-sans max-w-xl">
           Membangun integrasi antara riset kemahasiswaan Politeknik Teknologi Nuklir Indonesia dengan lembaga riset nasional serta sektor industri penunjang.

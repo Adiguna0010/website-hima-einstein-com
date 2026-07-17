@@ -21,6 +21,7 @@ import LogistikDashboard from './pages/Dashboard/LogistikDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { Toast } from './components/Toast';
+import CabinetStructure from './pages/CabinetStructure';
 
 // Route Guarding Component
 function ProtectedRoute({ children, allowedRoles }) {
@@ -87,6 +88,7 @@ export default function App() {
                 <Route path="/calendar" element={<Calendar showToast={showToast} />} />
                 <Route path="/mitra" element={<Mitra />} />
                 <Route path="/investor" element={<Investor />} />
+                <Route path="/struktur" element={<CabinetStructure />} />
                 
                 {/* Auth Routes */}
                 <Route path="/login" element={<Login showToast={showToast} />} />

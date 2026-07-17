@@ -53,7 +53,7 @@ export default function RistekDashboard({ showToast }) {
     const updated = [...vaultItems, newItem];
     setVaultItems(updated);
     localStorage.setItem('hima_vault', JSON.stringify(updated));
-    showToast('File baru berhasil ditambahkan ke Einstein Vault!', 'success');
+    showToast('File baru berhasil ditambahkan ke Einsten Vault!', 'success');
     
     setTitle('');
     setSize('');
@@ -66,7 +66,7 @@ export default function RistekDashboard({ showToast }) {
       const updated = vaultItems.filter(item => item.id !== id);
       setVaultItems(updated);
       localStorage.setItem('hima_vault', JSON.stringify(updated));
-      showToast('File berhasil dihapus dari Einstein Vault.', 'info');
+      showToast('File berhasil dihapus dari Einsten Vault.', 'info');
     }
   };
 
@@ -130,7 +130,7 @@ export default function RistekDashboard({ showToast }) {
             <BookOpen className="w-3.5 h-3.5 text-gold" /> RISTEK OPERATOR CONSOLE
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 uppercase tracking-wider">
-            Einstein Ristek Dashboard
+            Einsten Ristek Dashboard
           </h1>
           <p className="text-xs text-slate-500 font-light">
             Pengelolaan file modul, bank soal, pendaftaran tutor sebaya, dan kolaborasi proyek IoT otonom.

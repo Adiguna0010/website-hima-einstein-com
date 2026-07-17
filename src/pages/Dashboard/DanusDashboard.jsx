@@ -46,7 +46,7 @@ export default function DanusDashboard({ showToast }) {
             Merchandise & Sales Board
           </h1>
           <p className="text-xs text-slate-500 font-light">
-            Pengelolaan pesanan merchandise resmi HIMA EINSTEIN dan validasi bukti transaksi keuangan QRIS.
+            Pengelolaan pesanan merchandise resmi HIMA EINSTEN dan validasi bukti transaksi keuangan QRIS.
           </p>
         </div>
       </div>

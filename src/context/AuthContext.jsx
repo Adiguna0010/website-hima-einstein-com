@@ -51,7 +51,7 @@ const DEFAULT_USERS = [
   {
     name: 'Regular Member',
     nim: '240055',
-    email: 'member@einstein.com',
+    email: 'member@einsten.com',
     password: 'user123',
     role: 'Anggota Biasa',
     status: 'Active'
@@ -59,7 +59,7 @@ const DEFAULT_USERS = [
   {
     name: 'Calon Anggota',
     nim: '240066',
-    email: 'calon@einstein.com',
+    email: 'calon@einsten.com',
     password: 'user123',
     role: 'Anggota Biasa',
     status: 'Pending'
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
     return emailStr
       .toLowerCase()
       .replace(/\s+/g, '')
-      .replace(/einstein\.com$/, 'einsten.com');
+      .replace(/einsten\.com$/, 'einsten.com');
   };
 
   // Initialize DB from LocalStorage

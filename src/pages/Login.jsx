@@ -48,10 +48,10 @@ export default function Login({ showToast }) {
           <Link to="/" className="inline-block">
             <img 
               src="/Media Einsten/Media Umum/logo kabinet hitam (horizontal) (1).png" 
-              alt="HIMA EINSTEIN" 
+              alt="HIMA EINSTEN" 
               className="h-12 w-auto mx-auto object-contain"
               onError={(e) => {
-                e.target.src = "https://placehold.co/180x45/ffffff/000000?text=EINSTEIN";
+                e.target.src = "https://placehold.co/180x45/ffffff/000000?text=EINSTEN";
               }}
             />
           </Link>
