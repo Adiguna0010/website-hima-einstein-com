@@ -1,12 +1,103 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, Award, Target } from 'lucide-react';
+import { Sparkles, ArrowRight, Award, Target, User } from 'lucide-react';
 
 export default function Home() {
   const metrics = [
     { value: '120+', label: 'Mahasiswa Aktif', highlight: false },
     { value: '100%', label: 'Komitmen Sinergis', highlight: false },
     { value: '8+', label: 'Proyek Riset & IoT', highlight: true }
+  ];
+
+  const pembimbing = {
+    name: 'Budi Suhendro, S.ST., M.KOM',
+    nip: '197206071992121004',
+    role: 'Pembimbing Organisasi / Ketua Program Studi',
+    detail: 'Elektronika Instrumentasi'
+  };
+
+  const bphCore = [
+    {
+      name: 'M. Iqbal Nur Huda',
+      nim: '022400042',
+      role: 'Ketua Himpunan',
+      photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Kahim_M. Iqbal Nur Huda - 022400042.JPG'
+    },
+    {
+      name: 'Rafie Asfa Raditya Aryanto',
+      nim: '022500041',
+      role: 'Wakil Ketua Himpunan',
+      photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Wakahim_Rafie Asfa Raditya Aryanto - 022500041.JPG'
+    },
+    {
+      name: 'Nailah Qarirah',
+      nim: '022400051',
+      role: 'Sekretaris I',
+      photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Sekretaris 1_Nailah Qarirah - 022400051.JPG'
+    },
+    {
+      name: 'Bunga Nafisya Putri',
+      nim: '022500009',
+      role: 'Sekretaris II',
+      photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Sekretaris 2_Bunga Nafisya Putri - 022500009.JPG'
+    },
+    {
+      name: 'Relvina',
+      nim: '022400039',
+      role: 'Bendahara I',
+      photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Bendahara 1_Relvina - 022400039.JPG'
+    },
+    {
+      name: 'Rizkiana Ramadhani',
+      nim: '022500046',
+      role: 'Bendahara II',
+      photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Bendahara 2_Rizkiana Ramadhani - 022500046.JPG'
+    }
+  ];
+
+  const kadivList = [
+    {
+      name: 'Adiguna Nugroho Halomoan',
+      nim: '022400025',
+      role: 'Kadiv Riset & Teknologi',
+      photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Ristek/Kepala Divisi Riset dan Teknologi_Adiguna Nugroho Halomoan - 022400025.JPG'
+    },
+    {
+      name: 'Rabbany Al-Malika Ifadzla',
+      nim: '022400006',
+      role: 'Kadiv Dana Usaha',
+      photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Dana Usaha/Kepala Divisi Dana Usaha_Rabbany Al-Malika Ifadzla - 022400006.JPG'
+    },
+    {
+      name: 'Rakan Ibrahim Widjisasono',
+      nim: '022400031',
+      role: 'Kadiv Aset & Logistik',
+      photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Aset Dan Logistik/Kepala Divisi Aset dan Logistik_Rakan Ibrahim Widjisasono - 022400031.JPG'
+    },
+    {
+      name: 'Kunti Aisyatuzzahra',
+      nim: '022400045',
+      role: 'Kadiv Hubungan Eksternal',
+      photo: '/Media/Pengurus Hima Kabinet Photisma 2026/External/Kepala Divisi Eksternal_Kunti Aisyatuzzahra - 022400045.JPG'
+    },
+    {
+      name: 'Hafizh Maulana Wijaya',
+      nim: '022400019',
+      role: 'Kadiv Hubungan Internal',
+      photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Internal/Kepala Divisi Internal_Hafizh Maulana Wijaya - 022400019.JPG'
+    },
+    {
+      name: 'Sunniy',
+      nim: '022400041',
+      role: 'Kadiv Komunikasi & Informasi',
+      photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Kominfo/Kepala Divisi Komunikasi dan Informasi_Sunniy - 022400041.JPG'
+    },
+    {
+      name: 'Farrelega Zhafran Vito Ardhana',
+      nim: '022400038',
+      role: 'Kadiv Pengembangan Mahasiswa',
+      photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Pema/Kepala Divisi Pengembangan Mahasiswa_Farrelega Zhafran Vito Ardhana - 022400038.JPG'
+    }
   ];
 
   return (
@@ -180,6 +271,103 @@ export default function Home() {
                   <span>Mengoptimalkan kemandirian finansial organisasi melalui program kewirausahaan kreatif Dana Usaha.</span>
                 </li>
               </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= STRUKTUR KABINET SECTION ================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-200 pt-20">
+        <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
+          <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Struktur Kabinet</span>
+          <h2 className="text-3xl font-extrabold uppercase text-slate-900">STRUKTUR ORGANISASI KABINET</h2>
+          <p className="text-xs text-slate-500 font-light font-sans">
+            Sinergi pembimbing, pimpinan, dan pelaksana program kerja Himpunan Elektronika Instrumentasi.
+          </p>
+        </div>
+
+        <div className="space-y-16">
+          {/* Pembimbing Organisasi */}
+          <div className="space-y-6">
+            <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-center">Pembimbing Organisasi</h4>
+            <div className="max-w-md mx-auto bg-white border border-gold-border rounded-3xl p-6 shadow-md hover:scale-[1.02] hover:shadow-lg transition-all duration-300 text-center relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-gold via-gold-light to-gold-dark"></div>
+              
+              <div className="w-20 h-20 rounded-full bg-gold/10 border-2 border-gold/20 flex items-center justify-center mx-auto mb-4 relative overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                <User className="w-10 h-10 text-gold-dark" />
+              </div>
+
+              <span className="block text-[9px] font-extrabold text-gold-dark uppercase tracking-widest font-sans">Pembimbing Organisasi</span>
+              <h4 className="text-sm font-bold text-slate-800 mt-1 font-sans">{pembimbing.name}</h4>
+              <p className="text-[10px] text-slate-500 font-semibold mt-0.5 font-sans">Ketua Program Studi {pembimbing.detail}</p>
+              <p className="text-[9px] text-slate-400 font-mono mt-1">NIP. {pembimbing.nip}</p>
+              
+              <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-slate-100 opacity-80 hover:opacity-100 transition-opacity">
+                <img src="/Media/Logo Instansi/logo brin warna_landscape.jpg" alt="BRIN Logo" className="h-6 w-auto object-contain" />
+                <img src="/Media/Logo Instansi/Logo Poltek (benar).png" alt="Poltek Logo" className="h-6 w-auto object-contain" />
+              </div>
+            </div>
+          </div>
+
+          {/* Core BPH */}
+          <div className="space-y-6 pt-4">
+            <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-center">Badan Pengurus Harian (BPH Core)</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {bphCore.map((p) => (
+                <div 
+                  key={p.nim}
+                  className="bg-white border border-gold-border rounded-2xl overflow-hidden hover:scale-[1.03] hover:shadow-md hover:border-gold transition-all duration-300 flex flex-col group shadow-sm text-left"
+                >
+                  <div className="aspect-[3/4] bg-slate-100 overflow-hidden relative border-b border-slate-105">
+                    <img 
+                      src={p.photo} 
+                      alt={p.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => {
+                        e.target.src = "https://placehold.co/150x200/fffbeb/d97706?text=" + encodeURIComponent(p.name);
+                      }}
+                    />
+                  </div>
+                  <div className="p-3 flex-1 flex flex-col justify-between">
+                    <div className="space-y-0.5">
+                      <span className="block text-[8px] font-extrabold text-gold-dark uppercase tracking-widest leading-none mb-1">{p.role}</span>
+                      <h5 className="text-[10px] font-bold text-slate-800 line-clamp-2 leading-snug font-sans">{p.name}</h5>
+                    </div>
+                    <span className="block text-[8px] text-slate-400 font-mono mt-1 leading-none">NIM: {p.nim}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Jajaran Kepala Divisi */}
+          <div className="space-y-6 pt-4">
+            <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-center">Jajaran Kepala Divisi (Kadiv)</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              {kadivList.map((p) => (
+                <div 
+                  key={p.nim}
+                  className="bg-white border border-gold-border rounded-2xl overflow-hidden hover:scale-[1.03] hover:shadow-md hover:border-gold transition-all duration-300 flex flex-col group shadow-sm text-left"
+                >
+                  <div className="aspect-[3/4] bg-slate-100 overflow-hidden relative border-b border-slate-105">
+                    <img 
+                      src={p.photo} 
+                      alt={p.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => {
+                        e.target.src = "https://placehold.co/150x200/fffbeb/d97706?text=" + encodeURIComponent(p.name);
+                      }}
+                    />
+                  </div>
+                  <div className="p-2.5 flex-1 flex flex-col justify-between">
+                    <div className="space-y-0.5">
+                      <span className="block text-[7px] font-extrabold text-gold-dark uppercase tracking-widest leading-none mb-1">{p.role}</span>
+                      <h5 className="text-[9px] font-bold text-slate-800 line-clamp-2 leading-tight font-sans">{p.name}</h5>
+                    </div>
+                    <span className="block text-[7px] text-slate-400 font-mono mt-1 leading-none">NIM: {p.nim}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
