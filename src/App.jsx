@@ -22,6 +22,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { Toast } from './components/Toast';
 import CabinetStructure from './pages/CabinetStructure';
+import Election from './pages/Election';
 
 // Redirect to home page on F5 refresh / initial mount
 function RefreshRedirect() {
@@ -104,6 +105,7 @@ export default function App() {
                 <Route path="/mitra" element={<Mitra />} />
                 <Route path="/investor" element={<Investor />} />
                 <Route path="/struktur" element={<CabinetStructure />} />
+                <Route path="/pemilihan" element={<Election showToast={showToast} />} />
                 
                 {/* Auth Routes */}
                 <Route path="/login" element={<Login showToast={showToast} />} />

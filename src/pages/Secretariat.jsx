@@ -26,6 +26,7 @@ export default function Secretariat({ showToast }) {
   const [eventTitle, setEventTitle] = useState('');
   const [eventType, setEventType] = useState('hima');
   const [eventDesc, setEventDesc] = useState('');
+  const [eventLocation, setEventLocation] = useState('');
 
   // Letter ACC Form states (for operator)
   const [accLetterId, setAccLetterId] = useState(null);
@@ -48,10 +49,10 @@ export default function Secretariat({ showToast }) {
   ];
 
   const DEFAULT_EVENTS = {
-    '2026-07-15': { title: 'Einsten Festival (E-Fest) 🚀', type: 'hima', desc: 'Festival teknologi, seminar instrumentasi nuklir, dan pameran proyek IoT mahasiswa Elins.' },
-    '2026-07-20': { title: 'Ristek Mengajar Sebaya 🔬', type: 'hima', desc: 'Bimbingan belajar internal pemrograman C++ dan Elektronika dasar untuk mahasiswa baru.' },
-    '2026-07-24': { title: 'Musyawarah Perwakilan Mahasiswa 🏛️', type: 'ormawa', desc: 'Sidang evaluasi program kerja ormawa eksternal kampus Politeknik Teknologi Nuklir Indonesia.' },
-    '2026-07-28': { title: 'Evaluasi Tengah Tahun Kabinet 🪙', type: 'hima', desc: 'Pemaparan laporan pertanggungjawaban setengah tahun Kabinet Phótisma.' }
+    '2026-07-15': { title: 'Einsten Festival (E-Fest) 🚀', type: 'hima', desc: 'Festival teknologi, seminar instrumentasi nuklir, dan pameran proyek IoT mahasiswa Elins.', location: 'Auditorium Poltek Nuklir' },
+    '2026-07-20': { title: 'Ristek Mengajar Sebaya 🔬', type: 'hima', desc: 'Bimbingan belajar internal pemrograman C++ dan Elektronika dasar untuk mahasiswa baru.', location: 'Lab Kendali Industri' },
+    '2026-07-24': { title: 'Musyawarah Perwakilan Mahasiswa 🏛️', type: 'ormawa', desc: 'Sidang evaluasi program kerja ormawa eksternal kampus Politeknik Teknologi Nuklir Indonesia.', location: 'Ruang Rapat KSTE A. Baiquni' },
+    '2026-07-28': { title: 'Evaluasi Tengah Tahun Kabinet 🪙', type: 'hima', desc: 'Pemaparan laporan pertanggungjawaban setengah tahun Kabinet Phótisma.', location: 'Sekretariat HIMA Einsten' }
   };
 
   useEffect(() => {
@@ -221,7 +222,7 @@ export default function Secretariat({ showToast }) {
   // Backoffice: Manage Calendar Events (Add / Delete)
   const handleAddEvent = (e) => {
     e.preventDefault();
-    if (!eventDate || !eventTitle || !eventDesc) {
+    if (!eventDate || !eventTitle || !eventDesc || !eventLocation) {
       showToast('Lengkapi seluruh detail event kalender!', 'error');
       return;
     }
@@ -231,7 +232,8 @@ export default function Secretariat({ showToast }) {
       [eventDate]: {
         title: eventTitle,
         type: eventType,
-        desc: eventDesc
+        desc: eventDesc,
+        location: eventLocation
       }
     };
 
@@ -241,6 +243,7 @@ export default function Secretariat({ showToast }) {
 
     setEventTitle('');
     setEventDesc('');
+    setEventLocation('');
   };
 
   const handleDeleteEvent = (dateKey) => {
@@ -605,6 +608,11 @@ export default function Secretariat({ showToast }) {
                           </div>
                           <h4 className="text-xs font-bold text-slate-850">{ev.title}</h4>
                           <p className="text-[10px] text-slate-500 font-light leading-relaxed">{ev.desc}</p>
+                          {ev.location && (
+                            <p className="text-[9px] text-slate-400 font-semibold font-sans mt-0.5">
+                              Tempat: <span className="text-slate-600">{ev.location}</span>
+                            </p>
+                          )}
                         </div>
                         <button
                           onClick={() => handleDeleteEvent(dateStr)}
@@ -659,6 +667,17 @@ export default function Secretariat({ showToast }) {
                       <option value="hima">Internal HIMA EINSTEN</option>
                       <option value="ormawa">Ormawa Kampus Eksternal</option>
                     </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Tempat / Lokasi</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Lab Kendali Industri / Zoom Meeting"
+                      value={eventLocation}
+                      onChange={(e) => setEventLocation(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                    />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Deskripsi Singkat</label>
