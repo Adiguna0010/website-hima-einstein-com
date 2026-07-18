@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Award, Timer, Vote, HelpCircle, ArrowRight, Sparkles, Send } from 'lucide-react';
+import { Award, ArrowRight, Sparkles } from 'lucide-react';
 
 export default function Election({ showToast }) {
   const navigate = useNavigate();
-  const [nomineeName, setNomineeName] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Countdown timer to a simulated future election date
   const [timeLeft, setTimeLeft] = useState({
@@ -34,45 +32,6 @@ export default function Election({ showToast }) {
 
     return () => clearInterval(timer);
   }, []);
-
-  const handleNominateSubmit = (e) => {
-    e.preventDefault();
-    if (!nomineeName.trim()) {
-      showToast('Please enter a valid candidate name!', 'error');
-      return;
-    }
-
-    setIsSubmitting(true);
-    setTimeout(() => {
-      showToast(`Thank you! Your recommendation for "${nomineeName}" has been submitted to the Election Committee.`, 'success');
-      setNomineeName('');
-      setIsSubmitting(false);
-    }, 800);
-  };
-
-  const timelinePhases = [
-    {
-      num: '01',
-      title: 'Candidate Registration',
-      date: 'Aug 10 - Aug 25, 2026',
-      status: 'upcoming',
-      desc: 'Submission of formal registration, administrative verification, and eligibility checks.'
-    },
-    {
-      num: '02',
-      title: 'Campaign & Debates',
-      date: 'Sep 05 - Sep 20, 2026',
-      status: 'upcoming',
-      desc: 'Public declaration of vision, cabinet structure proposals, and open political debates.'
-    },
-    {
-      num: '03',
-      title: 'The Voting Day',
-      date: 'Oct 01, 2026',
-      status: 'upcoming',
-      desc: 'Secure digital voting open to all active HIMA Einsten student members.'
-    }
-  ];
 
   return (
     <div className="relative pt-24 pb-20 space-y-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-slate-800 overflow-hidden">
@@ -129,60 +88,6 @@ export default function Election({ showToast }) {
         <p className="text-xs text-slate-500 font-light max-w-md mx-auto leading-relaxed">
           The registration of Presidential candidates will officially open in a few weeks. Stay tuned to review their vision, mission, and structure.
         </p>
-      </div>
-
-      {/* Timeline Phases Section */}
-      <div className="max-w-4xl mx-auto space-y-6 text-left">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-3">
-          <Timer className="w-4.5 h-4.5 text-gold animate-spin-slow" /> ELECTION ROADMAP & TIMELINE
-        </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {timelinePhases.map((phase) => (
-            <div key={phase.num} className="bg-white border border-slate-200 hover:border-gold/30 p-5 rounded-2xl shadow-sm space-y-3 transition-colors relative group">
-              <span className="absolute top-4 right-4 text-xs font-mono font-extrabold text-slate-250 group-hover:text-gold/20 select-none">
-                PH_{phase.num}
-              </span>
-              <span className="inline-block px-2 py-0.5 rounded bg-slate-50 border border-slate-200 text-[9px] font-mono text-slate-500">
-                {phase.date}
-              </span>
-              <h4 className="text-xs font-bold text-slate-900 uppercase">{phase.title}</h4>
-              <p className="text-[11px] text-slate-500 leading-relaxed font-light font-sans">{phase.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Interactive Recommendation Box */}
-      <div className="max-w-4xl mx-auto bg-slate-50 border border-slate-200 rounded-3xl p-6 sm:p-8 text-left grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-        <div className="md:col-span-7 space-y-2">
-          <h3 className="text-sm font-bold text-slate-900 uppercase flex items-center gap-1.5">
-            <Vote className="w-4 h-4 text-gold" /> Who is your choice?
-          </h3>
-          <p className="text-[11px] text-slate-500 font-light leading-relaxed font-sans max-w-lg">
-            Do you have a potential candidate in mind for President of HIMA Einsten 2027? Recommend them to the Election Committee so we can contact them for verification.
-          </p>
-        </div>
-
-        <div className="md:col-span-5 w-full">
-          <form onSubmit={handleNominateSubmit} className="flex gap-2 w-full">
-            <input 
-              type="text" 
-              required
-              placeholder="Candidate's Name..."
-              value={nomineeName}
-              onChange={(e) => setNomineeName(e.target.value)}
-              className="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold transition-colors font-sans"
-            />
-            <button 
-              type="submit"
-              disabled={isSubmitting}
-              className="px-4 py-2.5 bg-gold text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all flex items-center gap-1 shadow-md shadow-gold/20 shrink-0 uppercase tracking-wider"
-            >
-              Submit <Send className="w-3 h-3" />
-            </button>
-          </form>
-        </div>
       </div>
 
       {/* Navigation Return CTA */}
