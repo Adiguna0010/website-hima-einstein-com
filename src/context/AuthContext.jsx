@@ -109,7 +109,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('hima_users', JSON.stringify(loadedUsers));
     setUsers(loadedUsers);
 
-    const savedUser = localStorage.getItem('hima_current_user');
+    const savedUser = sessionStorage.getItem('hima_current_user');
     if (savedUser) {
       setCurrentUser(JSON.parse(savedUser));
     }
@@ -162,14 +162,14 @@ export const AuthProvider = ({ children }) => {
       }
 
       setCurrentUser(user);
-      localStorage.setItem('hima_current_user', JSON.stringify(user));
+      sessionStorage.setItem('hima_current_user', JSON.stringify(user));
       resolve(user);
     });
   };
 
   const logout = () => {
     setCurrentUser(null);
-    localStorage.removeItem('hima_current_user');
+    sessionStorage.removeItem('hima_current_user');
   };
 
   // Admin and management actions
@@ -187,7 +187,7 @@ export const AuthProvider = ({ children }) => {
     if (currentUser && normalizeEmail(currentUser.email) === normalizeEmail(email)) {
       const updatedSelf = { ...currentUser, status };
       setCurrentUser(updatedSelf);
-      localStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
+      sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
   };
 
@@ -205,7 +205,7 @@ export const AuthProvider = ({ children }) => {
     if (currentUser && normalizeEmail(currentUser.email) === normalizeEmail(email)) {
       const updatedSelf = { ...currentUser, role };
       setCurrentUser(updatedSelf);
-      localStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
+      sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
   };
 
