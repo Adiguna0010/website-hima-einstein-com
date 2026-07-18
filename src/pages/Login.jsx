@@ -125,27 +125,6 @@ export default function Login({ showToast }) {
           </div>
         </div>
 
-        {/* Demo login tips */}
-        <div className="mt-6 p-4 rounded-xl border border-slate-200 bg-slate-50 text-left space-y-1.5 shadow-sm">
-          <p className="text-[10px] font-bold text-gold-dark uppercase tracking-widest">💡 Akun Demo Pengujian:</p>
-          <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-500">
-            <div>
-              <p className="font-bold text-slate-800">Master Admin (Kahim):</p>
-              <p className="truncate" title="M. Iqbal Nur Huda@einsten.com">Email: M. Iqbal Nur Huda@einsten.com</p>
-              <p>Sandi: 022400042</p>
-            </div>
-            <div>
-              <p className="font-bold text-slate-800">Operator Danus (Kadiv):</p>
-              <p className="truncate" title="Rabbany Al-Malika Ifadzla@einsten.com">Email: Rabbany Al-Malika Ifadzla@einsten.com</p>
-              <p>Sandi: 022400006</p>
-            </div>
-            <div>
-              <p className="font-bold text-slate-800">Operator Logistik (Kadiv):</p>
-              <p className="truncate" title="Rakan Ibrahim Widjisasono@einsten.com">Email: Rakan Ibrahim Widjisasono@einsten.com</p>
-              <p>Sandi: 022400031</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
