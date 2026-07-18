@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -22,6 +22,20 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { Toast } from './components/Toast';
 import CabinetStructure from './pages/CabinetStructure';
+
+// Redirect to home page on F5 refresh / initial mount
+function RefreshRedirect() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname !== '/') {
+      navigate('/', { replace: true });
+    }
+  }, []);
+
+  return null;
+}
 
 // Route Guarding Component
 function ProtectedRoute({ children, allowedRoles }) {
@@ -71,6 +85,7 @@ export default function App() {
     <AuthProvider>
       <CartProvider>
         <Router>
+          <RefreshRedirect />
           <div className="flex flex-col min-h-screen">
             <Navbar />
             
