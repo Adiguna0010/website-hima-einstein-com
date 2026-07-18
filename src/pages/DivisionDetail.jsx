@@ -4,6 +4,20 @@ import { ArrowLeft, Users, Terminal, Globe, BookOpen, Rocket, ShoppingCart, Radi
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
+// Helper component for coming soon sections
+function ComingSoon({ title }) {
+  return (
+    <div className="space-y-3 text-center py-16 max-w-md mx-auto">
+      <h3 className="text-2xl font-extrabold text-slate-800 tracking-wider uppercase">
+        Segera Hadir
+      </h3>
+      <p className="text-xs text-slate-500 leading-relaxed font-light">
+        Halaman Divisi {title} sedang dalam proses persiapan dan akan segera diperbarui.
+      </p>
+    </div>
+  );
+}
+
 export default function DivisionDetail({ showToast }) {
   const { divisionKey } = useParams();
   const navigate = useNavigate();
@@ -14,7 +28,6 @@ export default function DivisionDetail({ showToast }) {
   const [ristekTab, setRistekTab] = useState('vault');
 
   // Form states
-  const [extForm, setExtForm] = useState({ name: '', email: '', desc: '' });
   const [ristekForm, setRistekForm] = useState({ name: currentUser?.name || '', role: 'murid', subject: '', wa: '' });
   const [vaultItems, setVaultItems] = useState([]);
 
@@ -199,76 +212,14 @@ export default function DivisionDetail({ showToast }) {
       icon: '🤝',
       iconComponent: <Users className="w-8 h-8 text-gold" />,
       desc: 'Fokus pada penyelarasan kekerabatan pengurus Himpunan, penampungan aspirasi internal, dan perumusan kegiatan kebersamaan.',
-      renderContent: () => (
-        <div className="space-y-4 text-center py-10 max-w-md mx-auto">
-          <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto text-gold mb-4 shadow-inner">
-            <Terminal className="w-8 h-8 animate-pulse" />
-          </div>
-          <h4 className="text-base font-bold text-slate-800">CONSOL SYSTEM ACTIVE</h4>
-          <p className="text-xs text-slate-500 leading-relaxed">
-            Rencana program kerja divisi Internal saat ini sedang dalam proses penyusunan dan sinkronisasi bersama perwakilan pengurus angkatan.
-          </p>
-        </div>
-      )
+      renderContent: () => <ComingSoon title="Internal" />
     },
     external: {
       title: 'External Division',
       icon: '🌐',
       iconComponent: <Globe className="w-8 h-8 text-gold" />,
       desc: 'Menghubungkan HIMA EINSTEN dengan alumni, korporasi industri nuklir/kesehatan, BRIN, serta himpunan mahasiswa luar.',
-      renderContent: () => {
-        const handleExtSubmit = (e) => {
-          e.preventDefault();
-          showToast(`Formulir kemitraan ${extForm.name} berhasil terkirim!`, 'success');
-          setExtForm({ name: '', email: '', desc: '' });
-        };
-        return (
-          <div className="max-w-md mx-auto">
-            <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-left mb-4">Pengajuan Kemitraan</h4>
-            <form onSubmit={handleExtSubmit} className="space-y-4 text-left p-6 bg-white border border-gold-border rounded-2xl shadow-sm">
-              <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Nama Instansi / Himpunan</label>
-                <input 
-                  type="text" 
-                  required
-                  placeholder="Contoh: HMTC ITS"
-                  value={extForm.name}
-                  onChange={(e) => setExtForm({ ...extForm, name: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs focus:outline-none focus:border-gold text-slate-800"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Email Kontak</label>
-                <input 
-                  type="email" 
-                  required
-                  placeholder="nama@domain.com"
-                  value={extForm.email}
-                  onChange={(e) => setExtForm({ ...extForm, email: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs focus:outline-none focus:border-gold text-slate-800"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Maksud Kolaborasi</label>
-                <textarea 
-                  required
-                  rows="3"
-                  placeholder="Terangkan maksud kunjungan atau kolaborasi secara ringkas..."
-                  value={extForm.desc}
-                  onChange={(e) => setExtForm({ ...extForm, desc: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs focus:outline-none focus:border-gold text-slate-800"
-                />
-              </div>
-              <button 
-                type="submit"
-                className="w-full py-3 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1 shadow-md shadow-gold/20"
-              >
-                Kirim Pengajuan <Send className="w-3.5 h-3.5" />
-              </button>
-            </form>
-          </div>
-        );
-      }
+      renderContent: () => <ComingSoon title="External" />
     },
     ristek: {
       title: 'Riset & Teknologi',
@@ -568,22 +519,7 @@ export default function DivisionDetail({ showToast }) {
       icon: '🚀',
       iconComponent: <Rocket className="w-8 h-8 text-gold" />,
       desc: 'Fasilitas sertifikasi industri, persiapan karir, rekrutmen magang, dan kompilasi info prestasi kemahasiswaan.',
-      renderContent: () => (
-        <div className="max-w-md mx-auto space-y-4">
-          <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-left mb-3">Agenda Prestasi & Sertifikasi</h4>
-          <div className="p-5 bg-white border border-gold-border rounded-2xl text-left space-y-3 shadow-sm">
-            <span className="inline-block px-2.5 py-0.5 rounded bg-gold/10 border border-gold/20 text-[9px] font-bold text-gold-dark uppercase tracking-wider">Sertifikasi</span>
-            <h5 className="text-sm font-bold text-slate-800">Pelatihan & Sertifikasi PLC Siemens S7-1200</h5>
-            <p className="text-xs text-slate-500">Jadwal: 25 Juli 2026 | Lokasi: Lab Kendali Industri Poltek Nuklir</p>
-            <button 
-              onClick={() => showToast('Pendaftaran Sertifikasi PLC berhasil!', 'success')}
-              className="px-4 py-2 bg-gold text-white text-xs font-bold rounded-xl hover:brightness-110 transition-all active:scale-95 shadow-sm"
-            >
-              Daftar Pelatihan
-            </button>
-          </div>
-        </div>
-      )
+      renderContent: () => <ComingSoon title="Pengembangan Mahasiswa" />
     },
     danus: {
       title: 'Dana Usaha',
@@ -643,22 +579,7 @@ export default function DivisionDetail({ showToast }) {
       icon: '📢',
       iconComponent: <Radio className="w-8 h-8 text-gold" />,
       desc: 'Media publikasi berita sains nuklir, dokumentasi kegiatan, rilis buletin triwulan EINSTEN, dan podcast audio visual.',
-      renderContent: () => (
-        <div className="max-w-md mx-auto space-y-4">
-          <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-left mb-3">Podcast Terbaru</h4>
-          <div className="p-5 bg-white border border-gold-border rounded-2xl text-left space-y-3 shadow-sm">
-            <span className="inline-block px-2.5 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 text-[9px] font-bold text-rose-500 uppercase tracking-wider">Audio Podcast</span>
-            <h5 className="text-sm font-bold text-slate-800">Eps 12: Masa Depan Small Modular Reactor di Indonesia</h5>
-            <p className="text-xs text-slate-500">Pembicara: Staf Ahli BRIN Yogyakarta</p>
-            <button 
-              onClick={() => showToast('Memutar podcast episode 12...', 'success')}
-              className="px-4 py-2 bg-gold text-white text-xs font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all shadow-sm"
-            >
-              Putar Podcast
-            </button>
-          </div>
-        </div>
-      )
+      renderContent: () => <ComingSoon title="Komunikasi & Informasi" />
     },
     logistik: {
       title: 'Logistik',

@@ -81,10 +81,33 @@ export const AuthProvider = ({ children }) => {
 
   // Initialize DB from LocalStorage
   useEffect(() => {
-    // Clear and force update the initial user database to ensure the new Kadiv accounts are loaded
-    localStorage.removeItem('hima_users');
-    localStorage.setItem('hima_users', JSON.stringify(DEFAULT_USERS));
-    setUsers(DEFAULT_USERS);
+    const stored = localStorage.getItem('hima_users');
+    let loadedUsers = DEFAULT_USERS;
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          // Merge to ensure new default accounts are loaded while preserving registered accounts
+          const userMap = new Map();
+          parsed.forEach(u => {
+            if (u && u.email) {
+              userMap.set(normalizeEmail(u.email), u);
+            }
+          });
+          DEFAULT_USERS.forEach(u => {
+            if (u && u.email) {
+              userMap.set(normalizeEmail(u.email), u);
+            }
+          });
+          loadedUsers = Array.from(userMap.values());
+        }
+      } catch (e) {
+        console.error('Failed to parse hima_users from localStorage:', e);
+      }
+    }
+
+    localStorage.setItem('hima_users', JSON.stringify(loadedUsers));
+    setUsers(loadedUsers);
 
     const savedUser = localStorage.getItem('hima_current_user');
     if (savedUser) {

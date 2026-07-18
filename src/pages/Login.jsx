@@ -59,9 +59,12 @@ export default function Login({ showToast }) {
           <p className="text-xs text-slate-500 mt-1">Kabinet Phótisma • Poltek Teknologi Nuklir Indonesia</p>
         </div>
 
-        {/* Card Panel */}
         <div className="glass-glow rounded-2xl p-8 relative overflow-hidden shadow-md">
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
+            {/* Fake inputs to prevent browser autofill */}
+            <input type="text" name="prevent_autofill_username" style={{ display: 'none' }} tabIndex={-1} />
+            <input type="password" name="prevent_autofill_password" style={{ display: 'none' }} tabIndex={-1} />
+
             <div className="space-y-1.5 text-left">
               <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Email Mahasiswa</label>
               <div className="relative">
@@ -72,6 +75,7 @@ export default function Login({ showToast }) {
                   placeholder="nama@einsten.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="off"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
                 />
               </div>
@@ -87,6 +91,7 @@ export default function Login({ showToast }) {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
                 />
               </div>

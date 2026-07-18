@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, Award, Target, User } from 'lucide-react';
+import { ArrowRight, Award, Target, User } from 'lucide-react';
 
 export default function Home() {
   const metrics = [
@@ -208,8 +208,8 @@ export default function Home() {
         <div className="flex flex-col items-center justify-center text-center space-y-8 py-8 lg:py-16">
           
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-gold/30 bg-gold/5 text-xs font-semibold text-gold-dark tracking-wider uppercase">
-            <Sparkles className="w-3.5 h-3.5 text-gold" /> Himpunan Elektronika Instrumentasi
+          <div className="inline-flex items-center px-3.5 py-1.5 rounded-full border border-gold/30 bg-gold/5 text-xs font-semibold text-gold-dark tracking-wider uppercase">
+            Himpunan Elektronika Instrumentasi
           </div>
           
           {/* Heading */}
