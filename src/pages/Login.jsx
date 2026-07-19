@@ -45,13 +45,22 @@ export default function Login({ showToast }) {
       <div className="w-full max-w-md relative z-10">
         {/* Branding header */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-block">
+          <Link to="/" className="inline-flex items-center justify-center gap-3">
             <img 
               src="/Media Einsten/Media Umum/logo kabinet hitam (horizontal) (1).png" 
-              alt="HIMA EINSTEN" 
-              className="h-12 w-auto mx-auto object-contain"
+              alt="Logo Kabinet Phótisma" 
+              className="h-12 w-auto object-contain"
               onError={(e) => {
-                e.target.src = "https://placehold.co/180x45/ffffff/000000?text=EINSTEN";
+                e.target.src = "https://placehold.co/180x45/ffffff/000000?text=PHÓTISMA";
+              }}
+            />
+            <div className="w-px h-8 bg-slate-300"></div>
+            <img 
+              src="/Media/Logo HIma/logo hima warna (3)_page-0001.jpg" 
+              alt="Logo HIMA EINSTEN" 
+              className="h-12 w-auto object-contain rounded-md"
+              onError={(e) => {
+                e.target.src = "https://placehold.co/120x45/ffffff/000000?text=EINSTEN";
               }}
             />
           </Link>
