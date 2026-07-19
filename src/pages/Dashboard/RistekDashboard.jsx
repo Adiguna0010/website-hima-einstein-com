@@ -36,6 +36,9 @@ export default function RistekDashboard({ showToast }) {
   const [progName, setProgName] = useState('');
   const [progDesc, setProgDesc] = useState('');
   const [progStatus, setProgStatus] = useState('Terencana');
+  const [progDate, setProgDate] = useState('');
+  const [progTime, setProgTime] = useState('');
+  const [progLocation, setProgLocation] = useState('');
   const [editingId, setEditingId] = useState(null);
 
   // REQUESTS STATE
@@ -112,7 +115,10 @@ export default function RistekDashboard({ showToast }) {
           id: 1,
           name: 'Program Kerja Unggulan Riset & Teknologi',
           desc: 'Pemaparan program kerja awal divisi Riset & Teknologi untuk menyelaraskan target Kabinet Photisma HIMA EINSTEN.',
-          status: 'Terencana'
+          status: 'Terencana',
+          date: '2026-07-20',
+          time: '15.30 - 17.00 WIB',
+          location: 'Lab Komputasi 3'
         }
       ];
       localStorage.setItem('hima_division_programs_ristek', JSON.stringify(DEFAULT_PROGS));
@@ -266,10 +272,32 @@ export default function RistekDashboard({ showToast }) {
     if (editingId) {
       updated = divPrograms.map(p => {
         if (p.id === editingId) {
-          return { ...p, name: progName, desc: progDesc, status: progStatus };
+          return { 
+            ...p, 
+            name: progName, 
+            desc: progDesc, 
+            status: progStatus,
+            date: progDate,
+            time: progTime,
+            location: progLocation
+          };
         }
         return p;
       });
+
+      // Update in HIMA Calendar too if date is filled
+      if (progDate) {
+        const savedEvents = localStorage.getItem('hima_calendar_events');
+        const events = savedEvents ? JSON.parse(savedEvents) : {};
+        events[progDate] = {
+          title: `${progName} 🚀`,
+          type: 'hima',
+          desc: `${progDesc} (Waktu: ${progTime || 'TBA'})`,
+          location: progLocation || 'TBA'
+        };
+        localStorage.setItem('hima_calendar_events', JSON.stringify(events));
+      }
+
       showToast('Program kerja berhasil diperbarui!', 'success');
       setEditingId(null);
     } else {
@@ -277,10 +305,28 @@ export default function RistekDashboard({ showToast }) {
         id: Date.now(),
         name: progName,
         desc: progDesc,
-        status: progStatus
+        status: progStatus,
+        date: progDate,
+        time: progTime,
+        location: progLocation
       };
       updated = [...divPrograms, newProg];
-      showToast('Program kerja baru berhasil ditambahkan!', 'success');
+
+      // Auto add to HIMA calendar if date is filled
+      if (progDate) {
+        const savedEvents = localStorage.getItem('hima_calendar_events');
+        const events = savedEvents ? JSON.parse(savedEvents) : {};
+        events[progDate] = {
+          title: `${progName} 🚀`,
+          type: 'hima',
+          desc: `${progDesc} (Waktu: ${progTime || 'TBA'})`,
+          location: progLocation || 'TBA'
+        };
+        localStorage.setItem('hima_calendar_events', JSON.stringify(events));
+        showToast('Program kerja ditambahkan & tersinkronisasi ke Kalender Himpunan!', 'success');
+      } else {
+        showToast('Program kerja baru berhasil ditambahkan!', 'success');
+      }
     }
 
     setDivPrograms(updated);
@@ -289,6 +335,9 @@ export default function RistekDashboard({ showToast }) {
     setProgName('');
     setProgDesc('');
     setProgStatus('Terencana');
+    setProgDate('');
+    setProgTime('');
+    setProgLocation('');
   };
 
   const handleEditProgramClick = (p) => {
@@ -296,6 +345,9 @@ export default function RistekDashboard({ showToast }) {
     setProgName(p.name);
     setProgDesc(p.desc);
     setProgStatus(p.status);
+    setProgDate(p.date || '');
+    setProgTime(p.time || '');
+    setProgLocation(p.location || '');
   };
 
   const handleDeleteProgram = (id) => {
@@ -310,6 +362,9 @@ export default function RistekDashboard({ showToast }) {
         setProgName('');
         setProgDesc('');
         setProgStatus('Terencana');
+        setProgDate('');
+        setProgTime('');
+        setProgLocation('');
       }
     }
   };
@@ -445,7 +500,7 @@ export default function RistekDashboard({ showToast }) {
             </h3>
             <div className="space-y-3">
               {vaultItems.length === 0 ? (
-                <div className="text-center py-10 bg-white border border-gold-border rounded-2xl text-slate-450 shadow-sm">
+                <div className="text-center py-10 bg-white border border-gold-border rounded-2xl text-slate-455 shadow-sm">
                   <p className="text-xs">Belum ada file di Vault.</p>
                 </div>
               ) : (
@@ -528,12 +583,12 @@ export default function RistekDashboard({ showToast }) {
             </h3>
             <div className="space-y-3">
               {schedules.length === 0 ? (
-                <div className="text-center py-10 bg-white border border-gold-border rounded-2xl text-slate-450 shadow-sm">
+                <div className="text-center py-10 bg-white border border-gold-border rounded-2xl text-slate-455 shadow-sm">
                   <p className="text-xs">Belum ada jadwal mengajar terdaftar.</p>
                 </div>
               ) : (
                 schedules.map((item) => (
-                  <div key={item.id} className="p-4 bg-white border border-gold-border rounded-2xl flex items-center justify-between hover:bg-slate-50/50 shadow-sm transition-colors">
+                  <div key={item.id} className="p-4 bg-white border border-gold-border rounded-2xl flex items-center justify-between hover:bg-slate-50/50 shadow-sm transition-colors font-sans text-slate-700">
                     <div className="space-y-1 text-left">
                       <h4 className="text-xs font-bold text-slate-800">{item.title}</h4>
                       <p className="text-[10px] text-slate-500 font-mono">
@@ -650,14 +705,14 @@ export default function RistekDashboard({ showToast }) {
             </h3>
             <div className="space-y-3">
               {projects.length === 0 ? (
-                <div className="text-center py-10 bg-white border border-gold-border rounded-2xl text-slate-450 shadow-sm">
+                <div className="text-center py-10 bg-white border border-gold-border rounded-2xl text-slate-455 shadow-sm">
                   <p className="text-xs">Belum ada proyek kolaborasi dibuka.</p>
                 </div>
               ) : (
                 projects.map((p) => (
-                  <div key={p.id} className="p-5 bg-white border border-gold-border rounded-2xl flex items-center justify-between hover:bg-slate-50/50 shadow-sm transition-colors text-left">
+                  <div key={p.id} className="p-5 bg-white border border-gold-border rounded-2xl flex items-center justify-between hover:bg-slate-50/50 shadow-sm transition-colors text-left font-sans text-slate-700">
                     <div className="space-y-1.5 flex-1 pr-4">
-                      <span className="inline-block px-2.5 py-0.5 rounded bg-gold/10 border border-gold/20 text-[9px] font-bold text-gold-dark uppercase tracking-wider">
+                      <span className="inline-block px-2.5 py-0.5 rounded bg-gold/10 border border-gold/20 text-[9px] font-bold text-gold-dark uppercase tracking-wider font-mono">
                         {p.tag}
                       </span>
                       <h4 className="text-xs font-bold text-slate-800">{p.title}</h4>
@@ -714,7 +769,7 @@ export default function RistekDashboard({ showToast }) {
 
       {/* TAB 4: Program Kerja (Pemaparan Program Kerja Ristek) */}
       {activeTab === 'programs' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-left animate-in fade-in duration-200">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-left animate-in fade-in duration-200 font-sans text-slate-700">
           {/* Form Input */}
           <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm h-fit space-y-5">
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
@@ -730,7 +785,7 @@ export default function RistekDashboard({ showToast }) {
                   placeholder="Contoh: Riset Radiasi Nuklir"
                   value={progName}
                   onChange={(e) => setProgName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold"
+                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold font-sans font-light"
                 />
               </div>
 
@@ -738,11 +793,44 @@ export default function RistekDashboard({ showToast }) {
                 <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Deskripsi Program</label>
                 <textarea
                   required
-                  rows={4}
+                  rows={3}
                   placeholder="Jelaskan detail tujuan dan rancangan dari program ini."
                   value={progDesc}
                   onChange={(e) => setProgDesc(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold resize-none font-sans font-light"
+                />
+              </div>
+
+              {/* DATE, TIME, LOCATION FIELDS */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Tanggal Pelaksanaan (Sync Kalender)</label>
+                <input
+                  type="date"
+                  value={progDate}
+                  onChange={(e) => setProgDate(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold font-mono"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Waktu / Jam Pelaksanaan</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: 08.00 - 12.00 WIB"
+                  value={progTime}
+                  onChange={(e) => setProgTime(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold font-sans font-light"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Tempat / Lokasi</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Auditorium Poltek Nuklir"
+                  value={progLocation}
+                  onChange={(e) => setProgLocation(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold font-sans font-light"
                 />
               </div>
 
@@ -751,7 +839,7 @@ export default function RistekDashboard({ showToast }) {
                 <select
                   value={progStatus}
                   onChange={(e) => setProgStatus(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold"
+                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold font-sans font-light"
                 >
                   <option value="Terencana">Terencana</option>
                   <option value="Sedang Berjalan">Sedang Berjalan</option>
@@ -768,6 +856,9 @@ export default function RistekDashboard({ showToast }) {
                       setProgName('');
                       setProgDesc('');
                       setProgStatus('Terencana');
+                      setProgDate('');
+                      setProgTime('');
+                      setProgLocation('');
                     }}
                     className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-655 font-bold rounded-xl text-xs uppercase tracking-wider transition-all"
                   >
@@ -776,7 +867,7 @@ export default function RistekDashboard({ showToast }) {
                 )}
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider active:scale-[0.98] transition-all"
+                  className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider active:scale-[0.98] transition-all cursor-pointer"
                 >
                   {editingId ? 'Simpan' : 'Tambah'}
                 </button>
@@ -791,13 +882,13 @@ export default function RistekDashboard({ showToast }) {
                 <CheckCircle className="w-4.5 h-4.5 text-gold" /> Daftar Program Kerja Terancang
               </h3>
               <p className="text-[11px] text-slate-400 font-light mt-0.5">
-                Program kerja berikut akan ditayangkan pada halaman publik divisi Riset & Teknologi.
+                Program kerja berikut akan ditayangkan pada halaman publik divisi Riset & Teknologi dan disinkronkan ke kalender ormawa.
               </p>
             </div>
 
             <div className="space-y-4">
               {divPrograms.length === 0 ? (
-                <div className="text-center py-10 border border-dashed border-slate-200 rounded-2xl text-slate-450">
+                <div className="text-center py-10 border border-dashed border-slate-200 rounded-2xl text-slate-455">
                   Belum ada program kerja yang didefinisikan.
                 </div>
               ) : (
@@ -819,9 +910,17 @@ export default function RistekDashboard({ showToast }) {
                         </span>
                         <h4 className="text-xs font-bold text-slate-800">{p.name}</h4>
                       </div>
-                      <p className="text-[10px] text-slate-500 font-light leading-relaxed">
+                      <p className="text-[10px] text-slate-555 font-light leading-relaxed font-sans">
                         {p.desc}
                       </p>
+
+                      {p.date && (
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[9px] text-slate-450 font-mono pt-1">
+                          <span>📅 {p.date}</span>
+                          {p.time && <span>🕒 {p.time}</span>}
+                          {p.location && <span>📍 {p.location}</span>}
+                        </div>
+                      )}
                     </div>
                     <div className="flex gap-2 shrink-0 justify-end">
                       <button
@@ -898,7 +997,7 @@ export default function RistekDashboard({ showToast }) {
                         <td className="px-6 py-4">
                           <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
                             req.status === 'ACC' 
-                              ? 'bg-emerald-50 text-emerald-600 border-emerald-500/20' 
+                              ? 'bg-emerald-50 text-emerald-600 border-emerald-55/20' 
                               : req.status === 'Ditolak'
                                 ? 'bg-rose-50 text-rose-600 border-rose-55/20'
                                 : 'bg-amber-50 text-amber-600 border-amber-55/20'

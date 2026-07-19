@@ -36,6 +36,9 @@ export default function DivisionDashboard({ showToast }) {
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
   const [status, setStatus] = useState('Terencana'); // 'Terencana', 'Sedang Berjalan', 'Terlaksana'
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [location, setLocation] = useState('');
   const [editingId, setEditingId] = useState(null);
 
   // Load programs
@@ -51,7 +54,10 @@ export default function DivisionDashboard({ showToast }) {
             id: 1,
             name: `Program Kerja Unggulan ${divInfo.name}`,
             desc: `Pemaparan program kerja awal divisi ${divInfo.name} untuk menyelaraskan target Kabinet Photisma HIMA EINSTEN.`,
-            status: 'Terencana'
+            status: 'Terencana',
+            date: '2026-07-20',
+            time: '15.30 - 17.00 WIB',
+            location: 'Sekretariat HIMA Einsten'
           }
         ];
         localStorage.setItem(`hima_division_programs_${divInfo.key}`, JSON.stringify(starter));
@@ -72,10 +78,24 @@ export default function DivisionDashboard({ showToast }) {
       // Edit existing
       updated = programs.map(p => {
         if (p.id === editingId) {
-          return { ...p, name, desc, status };
+          return { ...p, name, desc, status, date, time, location };
         }
         return p;
       });
+
+      // Update in HIMA Calendar too if date is filled
+      if (date) {
+        const savedEvents = localStorage.getItem('hima_calendar_events');
+        const events = savedEvents ? JSON.parse(savedEvents) : {};
+        events[date] = {
+          title: `${name} 🚀`,
+          type: 'hima',
+          desc: `${desc} (Waktu: ${time || 'TBA'})`,
+          location: location || 'TBA'
+        };
+        localStorage.setItem('hima_calendar_events', JSON.stringify(events));
+      }
+
       showToast('Program kerja berhasil diperbarui!', 'success');
       setEditingId(null);
     } else {
@@ -84,10 +104,28 @@ export default function DivisionDashboard({ showToast }) {
         id: Date.now(),
         name,
         desc,
-        status
+        status,
+        date,
+        time,
+        location
       };
       updated = [...programs, newProg];
-      showToast('Program kerja baru berhasil ditambahkan!', 'success');
+
+      // Auto add to HIMA calendar if date is filled
+      if (date) {
+        const savedEvents = localStorage.getItem('hima_calendar_events');
+        const events = savedEvents ? JSON.parse(savedEvents) : {};
+        events[date] = {
+          title: `${name} 🚀`,
+          type: 'hima',
+          desc: `${desc} (Waktu: ${time || 'TBA'})`,
+          location: location || 'TBA'
+        };
+        localStorage.setItem('hima_calendar_events', JSON.stringify(events));
+        showToast('Program kerja ditambahkan & tersinkronisasi ke Kalender Himpunan!', 'success');
+      } else {
+        showToast('Program kerja baru berhasil ditambahkan!', 'success');
+      }
     }
 
     setPrograms(updated);
@@ -97,6 +135,9 @@ export default function DivisionDashboard({ showToast }) {
     setName('');
     setDesc('');
     setStatus('Terencana');
+    setDate('');
+    setTime('');
+    setLocation('');
   };
 
   const handleEditClick = (p) => {
@@ -104,6 +145,9 @@ export default function DivisionDashboard({ showToast }) {
     setName(p.name);
     setDesc(p.desc);
     setStatus(p.status);
+    setDate(p.date || '');
+    setTime(p.time || '');
+    setLocation(p.location || '');
   };
 
   const handleDeleteProgram = (id) => {
@@ -118,6 +162,9 @@ export default function DivisionDashboard({ showToast }) {
         setName('');
         setDesc('');
         setStatus('Terencana');
+        setDate('');
+        setTime('');
+        setLocation('');
       }
     }
   };
@@ -170,11 +217,43 @@ export default function DivisionDashboard({ showToast }) {
               <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Deskripsi Program</label>
               <textarea
                 required
-                rows={4}
+                rows={3}
                 placeholder="Jelaskan detail tujuan, program kerja, dan sasaran dari program ini."
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold resize-none"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Tanggal Pelaksanaan (Sync Kalender)</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold font-mono"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Waktu / Jam Pelaksanaan</label>
+              <input
+                type="text"
+                placeholder="Contoh: 08.00 - 12.00 WIB"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Tempat / Lokasi</label>
+              <input
+                type="text"
+                placeholder="Contoh: Auditorium Poltek Nuklir"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold"
               />
             </div>
 
@@ -200,6 +279,9 @@ export default function DivisionDashboard({ showToast }) {
                     setName('');
                     setDesc('');
                     setStatus('Terencana');
+                    setDate('');
+                    setTime('');
+                    setLocation('');
                   }}
                   className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-655 font-bold rounded-xl text-xs uppercase tracking-wider transition-all"
                 >
@@ -208,7 +290,7 @@ export default function DivisionDashboard({ showToast }) {
               )}
               <button
                 type="submit"
-                className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider active:scale-[0.98] transition-all"
+                className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider active:scale-[0.98] transition-all cursor-pointer"
               >
                 {editingId ? 'Simpan' : 'Tambah'}
               </button>
@@ -223,7 +305,7 @@ export default function DivisionDashboard({ showToast }) {
               <CheckCircle className="w-4.5 h-4.5 text-gold" /> Daftar Program Kerja Terancang
             </h3>
             <p className="text-[11px] text-slate-400 font-light mt-0.5">
-              Program kerja berikut akan langsung ditayangkan pada halaman publik divisi {divInfo.name}.
+              Program kerja berikut akan langsung ditayangkan pada halaman publik divisi {divInfo.name} dan disinkronkan ke kalender ormawa.
             </p>
           </div>
 
@@ -254,11 +336,19 @@ export default function DivisionDashboard({ showToast }) {
                     <p className="text-[10px] text-slate-500 font-light leading-relaxed">
                       {p.desc}
                     </p>
+
+                    {p.date && (
+                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[9px] text-slate-400 font-mono pt-1">
+                        <span>📅 {p.date}</span>
+                        {p.time && <span>🕒 {p.time}</span>}
+                        {p.location && <span>📍 {p.location}</span>}
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2 shrink-0 justify-end">
                     <button
                       onClick={() => handleEditClick(p)}
-                      className="p-1.5 text-slate-550 hover:bg-slate-100 rounded-lg hover:text-slate-700 transition-colors cursor-pointer"
+                      className="p-1.5 text-slate-555 hover:bg-slate-100 rounded-lg hover:text-slate-700 transition-colors cursor-pointer"
                       title="Edit Program"
                     >
                       <Edit className="w-3.5 h-3.5" />
@@ -274,13 +364,6 @@ export default function DivisionDashboard({ showToast }) {
                 </div>
               ))
             )}
-          </div>
-
-          <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex gap-2.5 items-start mt-4">
-            <Info className="w-4.5 h-4.5 text-amber-600 shrink-0 mt-0.5" />
-            <p className="text-[10px] text-amber-800 leading-relaxed font-light">
-              <strong>Info Publikasi:</strong> Perubahan yang Anda lakukan akan langsung disinkronkan ke dalam menu <strong>Einsten Sphere (Divisi Kerja)</strong> sehingga seluruh pengunjung website dapat memantau rancangan kerja divisi Anda.
-            </p>
           </div>
         </div>
       </div>

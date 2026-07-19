@@ -76,9 +76,17 @@ function DivisionProgramsView({ divisionKey, divisionName }) {
               {p.name}
             </h4>
 
-            <p className="text-[11px] text-slate-550 leading-relaxed font-light">
+            <p className="text-[11px] text-slate-555 leading-relaxed font-light">
               {p.desc}
             </p>
+
+            {p.date && (
+              <div className="border-t border-slate-100 pt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-[9px] text-slate-550 font-mono">
+                <span className="flex items-center gap-1">📅 {p.date}</span>
+                {p.time && <span className="flex items-center gap-1">🕒 {p.time}</span>}
+                {p.location && <span className="flex items-center gap-1">📍 {p.location}</span>}
+              </div>
+            )}
           </div>
         ))}
       </div>
