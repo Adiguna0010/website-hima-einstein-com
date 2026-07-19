@@ -41,14 +41,33 @@ export default function Profile({ showToast }) {
   const [submitting, setSubmitting] = useState(false);
   const proofRef = useRef(null);
 
+  const loadKasPayments = () => {
+    const saved = localStorage.getItem('hima_kas_payments');
+    setKasPayments(saved ? JSON.parse(saved) : []);
+  };
+
   useEffect(() => {
     if (!currentUser) { navigate('/login'); return; }
     setPreviewPhoto(currentUser.photo || '');
     setBio(currentUser.bio || '');
-
-    const saved = localStorage.getItem('hima_kas_payments');
-    if (saved) setKasPayments(JSON.parse(saved));
+    loadKasPayments();
   }, [currentUser]);
+
+  // Real-time sync: reload kas data whenever localStorage changes (from bendahara tab)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'hima_kas_payments') loadKasPayments();
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also poll every 3 seconds for same-tab updates
+    const interval = setInterval(loadKasPayments, 3000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
 
   if (!currentUser) return null;
 
