@@ -551,7 +551,7 @@ export default function Navbar() {
                     : 'text-slate-600 hover:text-gold-dark font-medium'
                 }`}
               >
-                Mitra & Investor
+                Kemitraan
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isPartnershipOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -1015,13 +1015,13 @@ export default function Navbar() {
               Kalender
             </Link>
 
-            {/* Mitra & Investor Accordion in Mobile */}
+            {/* Kemitraan Accordion in Mobile */}
             <div className="py-1 border-b border-slate-100 my-2">
               <button
                 onClick={() => setIsMobilePartnershipOpen(!isMobilePartnershipOpen)}
                 className="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 hover:text-gold transition-colors"
               >
-                <span>Mitra & Investor</span>
+                <span>Kemitraan</span>
                 <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isMobilePartnershipOpen ? 'rotate-180' : ''}`} />
               </button>
 
