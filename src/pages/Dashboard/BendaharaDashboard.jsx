@@ -626,9 +626,21 @@ export default function BendaharaDashboard({ showToast }) {
         const allUsers = JSON.parse(localStorage.getItem('hima_users') || '[]')
           .filter(u => u.status === 'Active');
 
+        const cashflow = JSON.parse(localStorage.getItem('hima_cashflow') || '[]');
+
         // Build member kas summary
         const memberSummary = allUsers.map(u => {
-          const payments = kasPayments.filter(p => p.nim === u.nim);
+          const payments = kasPayments
+            .map(p => {
+              if (p.status === 'Lunas' || p.status === 'Kurang') {
+                const existsInCashflow = cashflow.some(c => c.desc && (c.desc.includes(u.nim) || (u.name && c.desc.includes(u.name))));
+                if (!existsInCashflow) {
+                  return { ...p, status: 'Belum Bayar', verifiedBy: null, verifiedAt: null, remaining: null };
+                }
+              }
+              return p;
+            })
+            .filter(p => p.nim === u.nim);
           const semStatus = KAS_SEMESTERS.map(sem => {
             // Find latest payment for this semester (most recent)
             const semPayments = payments.filter(p => p.semId === sem.id);

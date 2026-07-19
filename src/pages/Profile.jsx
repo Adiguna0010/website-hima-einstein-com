@@ -43,7 +43,30 @@ export default function Profile({ showToast }) {
 
   const loadKasPayments = () => {
     const saved = localStorage.getItem('hima_kas_payments');
-    setKasPayments(saved ? JSON.parse(saved) : []);
+    const savedFlow = localStorage.getItem('hima_cashflow');
+    const cashflow = savedFlow ? JSON.parse(savedFlow) : [];
+
+    let payments = saved ? JSON.parse(saved) : [];
+
+    // Auto-sync: jika status 'Lunas' atau 'Kurang' tapi tidak ada entri transaksi di hima_cashflow, reset ke 'Belum Bayar'
+    let modified = false;
+    payments = payments.map(p => {
+      if (p.status === 'Lunas' || p.status === 'Kurang') {
+        const existsInCashflow = cashflow.some(c =>
+          c.desc && (c.desc.includes(p.nim) || (p.name && c.desc.includes(p.name)))
+        );
+        if (!existsInCashflow) {
+          modified = true;
+          return { ...p, status: 'Belum Bayar', verifiedBy: null, verifiedAt: null, remaining: null };
+        }
+      }
+      return p;
+    });
+
+    if (modified) {
+      localStorage.setItem('hima_kas_payments', JSON.stringify(payments));
+    }
+    setKasPayments(payments);
   };
 
   useEffect(() => {
@@ -525,7 +548,9 @@ export default function Profile({ showToast }) {
                 {myPayments.map(p => (
                   <div key={p.id} className="px-6 py-4 flex items-center justify-between gap-4">
                     <div className="text-left">
-                      <p className="text-xs font-bold text-slate-800">{p.semLabel}</p>
+                      <p className="text-xs font-bold text-slate-800">
+                        {p.semLabel ? p.semLabel.replace('Semester 1', 'Semester Awal').replace('Semester 2', 'Semester Akhir') : ''}
+                      </p>
                       <p className="text-[10px] text-slate-400">Dikirim: {formatDate(p.submittedAt)}</p>
                     </div>
                     <div className="text-right">
