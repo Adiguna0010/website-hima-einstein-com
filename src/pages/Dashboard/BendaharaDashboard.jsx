@@ -8,8 +8,8 @@ import {
 
 // ─── Kas Config ──────────────────────────────────────────────
 const KAS_SEMESTERS = [
-  { id: 'sem1-2026', label: 'Semester 1 — 2026', period: 'Januari – Juni 2026', fee: 70000 },
-  { id: 'sem2-2026', label: 'Semester 2 — 2026', period: 'Juli – Desember 2026', fee: 70000 },
+  { id: 'sem1-2026', label: 'Semester Awal — 2026', period: 'Januari – Juni 2026', fee: 70000 },
+  { id: 'sem2-2026', label: 'Semester Akhir — 2026', period: 'Juli – Desember 2026', fee: 70000 },
 ];
 const formatRupiahKas = (val) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
@@ -110,24 +110,28 @@ export default function BendaharaDashboard({ showToast }) {
   const handleDeleteTransaction = (id) => {
     if (window.confirm('Hapus entri transaksi ini?')) {
       const recordToDelete = records.find(r => r.id === id);
-      const updated = records.filter(r => r.id !== id);
-      setRecords(updated);
-      localStorage.setItem('hima_cashflow', JSON.stringify(updated));
+      const updatedRecords = records.filter(r => r.id !== id);
+      setRecords(updatedRecords);
+      localStorage.setItem('hima_cashflow', JSON.stringify(updatedRecords));
 
-      // Jika entri kas iuran anggota, reset status hima_kas_payments kembali ke 'Belum Bayar'
-      if (recordToDelete && recordToDelete.category === 'Iuran') {
-        const kasData = JSON.parse(localStorage.getItem('hima_kas_payments') || '[]');
-        // Cari payment yang cocok berdasarkan deskripsi (mengandung NIM)
-        const updatedKas = kasData.map(p => {
-          if (
-            p.status === 'Lunas' &&
-            recordToDelete.desc &&
-            recordToDelete.desc.includes(p.nim)
-          ) {
-            return { ...p, status: 'Belum Bayar', verifiedBy: null, verifiedAt: null };
-          }
-          return p;
-        });
+      // Reset status hima_kas_payments jika transaksi yang dihapus terkait kas/iuran
+      const kasData = JSON.parse(localStorage.getItem('hima_kas_payments') || '[]');
+      let hasKasChanges = false;
+      const updatedKas = kasData.map(p => {
+        const isMatched = recordToDelete && recordToDelete.desc && (
+          recordToDelete.desc.includes(p.nim) ||
+          recordToDelete.desc.includes(p.name)
+        );
+        const hasOtherCashflowRecords = updatedRecords.some(r => r.desc && (r.desc.includes(p.nim) || r.desc.includes(p.name)));
+
+        if ((isMatched || !hasOtherCashflowRecords) && (p.status === 'Lunas' || p.status === 'Kurang')) {
+          hasKasChanges = true;
+          return { ...p, status: 'Belum Bayar', verifiedBy: null, verifiedAt: null, remaining: null };
+        }
+        return p;
+      });
+
+      if (hasKasChanges) {
         setKasPayments(updatedKas);
         localStorage.setItem('hima_kas_payments', JSON.stringify(updatedKas));
       }
@@ -717,6 +721,13 @@ export default function BendaharaDashboard({ showToast }) {
           );
           setKasPayments(updated);
           localStorage.setItem('hima_kas_payments', JSON.stringify(updated));
+
+          // Hapus juga transaksi iuran kas terkait dari hima_cashflow
+          const savedFlow = JSON.parse(localStorage.getItem('hima_cashflow') || '[]');
+          const updatedFlow = savedFlow.filter(c => !(c.desc && c.desc.includes(nim)));
+          localStorage.setItem('hima_cashflow', JSON.stringify(updatedFlow));
+          setRecords(updatedFlow);
+
           showToast('Verifikasi kas berhasil dibatalkan. Status kembali ke Belum Bayar.', 'info');
         };
 
@@ -771,8 +782,8 @@ export default function BendaharaDashboard({ showToast }) {
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200">
                       <th className="px-5 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Anggota</th>
-                      <th className="px-4 py-3 text-center text-[10px] font-bold text-slate-500 uppercase">Semester 1</th>
-                      <th className="px-4 py-3 text-center text-[10px] font-bold text-slate-500 uppercase">Semester 2</th>
+                      <th className="px-4 py-3 text-center text-[10px] font-bold text-slate-500 uppercase">Semester Awal</th>
+                      <th className="px-4 py-3 text-center text-[10px] font-bold text-slate-500 uppercase">Semester Akhir</th>
                       <th className="px-4 py-3 text-right text-[10px] font-bold text-slate-500 uppercase">Tunggakan</th>
                     </tr>
                   </thead>

@@ -9,8 +9,8 @@ import {
 
 // ─── Kas Config ──────────────────────────────────────────────
 const KAS_SEMESTERS = [
-  { id: 'sem1-2026', label: 'Semester 1 — 2026', period: 'Januari – Juni 2026', fee: 70000, dueDate: '2026-06-30' },
-  { id: 'sem2-2026', label: 'Semester 2 — 2026', period: 'Juli – Desember 2026', fee: 70000, dueDate: '2026-12-31' },
+  { id: 'sem1-2026', label: 'Semester Awal — 2026', period: 'Januari – Juni 2026', fee: 70000, dueDate: '2026-06-30' },
+  { id: 'sem2-2026', label: 'Semester Akhir — 2026', period: 'Juli – Desember 2026', fee: 70000, dueDate: '2026-12-31' },
 ];
 const TOTAL_KAS = KAS_SEMESTERS.reduce((s, k) => s + k.fee, 0); // 140.000
 
