@@ -151,6 +151,16 @@ export default function App() {
                   } 
                 />
 
+                {/* Protected Operator Sekretaris Route */}
+                <Route 
+                  path="/dashboard/sekretaris" 
+                  element={
+                    <ProtectedRoute allowedRoles={['Master Admin', 'Sekretaris Umum']}>
+                      <Secretariat showToast={showToast} isDashboard={true} />
+                    </ProtectedRoute>
+                  } 
+                />
+
                 {/* Fallback redirect to Home */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

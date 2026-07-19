@@ -268,7 +268,7 @@ export default function Navbar() {
       case 'Operator Logistik':
         return '/dashboard/logistik';
       case 'Sekretaris Umum':
-        return '/secretariat';
+        return '/dashboard/sekretaris';
       default:
         return null;
     }

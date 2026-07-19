@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Download, Send, ListFilter, ClipboardCheck, AlertCircle, CheckCircle, XCircle, Plus, Trash2, Calendar, FileText, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-export default function Secretariat({ showToast }) {
+export default function Secretariat({ showToast, isDashboard = false }) {
   const { currentUser } = useAuth();
   
   // Data states
@@ -259,7 +259,7 @@ export default function Secretariat({ showToast }) {
   const isOperator = currentUser && (currentUser.role === 'Sekretaris Umum' || currentUser.role === 'Master Admin');
 
   // RENDER OPERATOR DASHBOARD VIEW
-  if (isOperator) {
+  if (isDashboard && isOperator) {
     const totalLettersPending = letters.filter(l => l.status === 'Pending').length;
     const totalEvents = Object.keys(events).length;
 
@@ -273,7 +273,7 @@ export default function Secretariat({ showToast }) {
               <ClipboardCheck className="w-3.5 h-3.5 text-gold" /> SECRETARY BACKOFFICE CONSOLE
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 uppercase tracking-wider">
-              Portal Sekretariat
+              Dashboard Sekretariat
             </h1>
             <p className="text-xs text-slate-500 font-light">
               Kelola nomor surat BPH, arsipkan dokumen portal, dan daftarkan jadwal program kerja pada Einsten Kalender.
