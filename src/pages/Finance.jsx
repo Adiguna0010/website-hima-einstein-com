@@ -1,33 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Coins, TrendingUp, TrendingDown, Calendar, FileSpreadsheet, Download, DollarSign, PieChart, Info, ArrowUpRight } from 'lucide-react';
 
 export default function Finance({ showToast }) {
-  // Dummy Financial Records Database
-  const initialCashFlow = [
-    { id: 1, date: '2026-07-18', desc: 'Dana Hibah Kampus Term I', type: 'in', amount: 5000000, category: 'Hibah' },
-    { id: 2, date: '2026-07-16', desc: 'Sponsorship CV. MultiTek', type: 'in', amount: 2500000, category: 'Sponsor' },
-    { id: 3, date: '2026-07-14', desc: 'Sewa Alat & Komponen (Danus)', type: 'in', amount: 620000, category: 'Danus' },
-    { id: 4, date: '2026-07-12', desc: 'Pembelian Arduino & Sensor Elins', type: 'out', amount: 1200000, category: 'Logistik' },
-    { id: 5, date: '2026-07-10', desc: 'Biaya Cetak Poster & Banner E-Fest', type: 'out', amount: 450000, category: 'Eksternal' },
-    { id: 6, date: '2026-07-08', desc: 'Iuran Wajib Pengurus Bulanan', type: 'in', amount: 980000, category: 'Iuran' },
-    { id: 7, date: '2026-07-05', desc: 'Konsumsi Rapat Pleno Tengah Tahun', type: 'out', amount: 600000, category: 'BPH' }
+  // Default values set to 0 as requested by the user
+  const defaultBudgets = [
+    { division: 'BPH (Badan Pengurus Harian)', allocated: 0, used: 0, color: 'bg-amber-500' },
+    { division: 'Dana Usaha (Danus)', allocated: 0, used: 0, color: 'bg-emerald-500' },
+    { division: 'Riset & Teknologi (Ristek)', allocated: 0, used: 0, color: 'bg-blue-500' },
+    { division: 'Pengembangan Mahasiswa (Pengma)', allocated: 0, used: 0, color: 'bg-purple-500' },
+    { division: 'Eksternal (Sponsorship & Humas)', allocated: 0, used: 0, color: 'bg-rose-500' }
   ];
 
-  const budgetDistribution = [
-    { division: 'BPH (Badan Pengurus Harian)', allocated: 3000000, used: 600000, color: 'bg-amber-500' },
-    { division: 'Dana Usaha (Danus)', allocated: 1500000, used: 0, color: 'bg-emerald-500' },
-    { division: 'Riset & Teknologi (Ristek)', allocated: 4500000, used: 1200000, color: 'bg-blue-500' },
-    { division: 'Pengembangan Mahasiswa (Pengma)', allocated: 2000000, used: 0, color: 'bg-purple-500' },
-    { division: 'Eksternal (Sponsorship & Humas)', allocated: 2000000, used: 450000, color: 'bg-rose-500' }
-  ];
+  const [records, setRecords] = useState([]);
+  const [budgets, setBudgets] = useState(defaultBudgets);
+
+  useEffect(() => {
+    // Load cash flow ledger
+    const savedFlow = localStorage.getItem('hima_cashflow');
+    if (savedFlow) {
+      setRecords(JSON.parse(savedFlow));
+    } else {
+      // By default, start with empty ledger (value = 0)
+      localStorage.setItem('hima_cashflow', JSON.stringify([]));
+      setRecords([]);
+    }
+
+    // Load budget allocations
+    const savedBudgets = localStorage.getItem('hima_budget_allocations');
+    if (savedBudgets) {
+      setBudgets(JSON.parse(savedBudgets));
+    } else {
+      // By default, start with all budgets allocated and used at 0
+      localStorage.setItem('hima_budget_allocations', JSON.stringify(defaultBudgets));
+      setBudgets(defaultBudgets);
+    }
+  }, []);
 
   const reportTemplates = [
     { id: 1, name: 'Laporan Keuangan Kuartal I - 2026', format: 'PDF', size: '1.2 MB', date: 'April 2026' },
     { id: 2, name: 'Buku Kas Umum Semester Ganjil - 2026', format: 'XLSX', size: '340 KB', date: 'Juli 2026' },
     { id: 3, name: 'Rencana Anggaran Biaya (RAB) Kabinet Photisma', format: 'PDF', size: '890 KB', date: 'Maret 2026' }
   ];
-
-  const [records, setRecords] = useState(initialCashFlow);
 
   // Compute totals
   const totalIn = records.filter(r => r.type === 'in').reduce((acc, curr) => acc + curr.amount, 0);
@@ -120,8 +133,8 @@ export default function Finance({ showToast }) {
           </div>
 
           <div className="space-y-5">
-            {budgetDistribution.map((item, idx) => {
-              const pct = Math.round((item.used / item.allocated) * 100);
+            {budgets.map((item, idx) => {
+              const pct = item.allocated > 0 ? Math.round((item.used / item.allocated) * 100) : 0;
               return (
                 <div key={idx} className="space-y-1.5">
                   <div className="flex justify-between text-xs">
@@ -213,23 +226,31 @@ export default function Finance({ showToast }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {records.map((record) => (
-                <tr key={record.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="py-3 px-4 font-mono text-slate-550">{record.date}</td>
-                  <td className="py-3 px-4 font-bold text-slate-800">{record.desc}</td>
-                  <td className="py-3 px-4">
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                      {record.category}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right font-mono text-emerald-600 font-bold">
-                    {record.type === 'in' ? '+' + formatRupiah(record.amount) : '-'}
-                  </td>
-                  <td className="py-3 px-4 text-right font-mono text-rose-600 font-bold">
-                    {record.type === 'out' ? '-' + formatRupiah(record.amount) : '-'}
+              {records.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-slate-400">
+                    Jurnal Buku Kas kosong (Rp 0).
                   </td>
                 </tr>
-              ))}
+              ) : (
+                records.map((record) => (
+                  <tr key={record.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="py-3 px-4 font-mono text-slate-550">{record.date}</td>
+                    <td className="py-3 px-4 font-bold text-slate-800">{record.desc}</td>
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                        {record.category}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-emerald-600 font-bold">
+                      {record.type === 'in' ? '+' + formatRupiah(record.amount) : '-'}
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-rose-600 font-bold">
+                      {record.type === 'out' ? '-' + formatRupiah(record.amount) : '-'}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

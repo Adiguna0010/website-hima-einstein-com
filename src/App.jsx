@@ -19,6 +19,7 @@ import MasterAdmin from './pages/Dashboard/MasterAdmin';
 import DanusDashboard from './pages/Dashboard/DanusDashboard';
 import RistekDashboard from './pages/Dashboard/RistekDashboard';
 import LogistikDashboard from './pages/Dashboard/LogistikDashboard';
+import BendaharaDashboard from './pages/Dashboard/BendaharaDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { Toast } from './components/Toast';
@@ -159,6 +160,16 @@ export default function App() {
                   element={
                     <ProtectedRoute allowedRoles={['Master Admin', 'Sekretaris Umum']}>
                       <Secretariat showToast={showToast} isDashboard={true} />
+                    </ProtectedRoute>
+                  } 
+                />
+
+                {/* Protected Bendahara Route */}
+                <Route 
+                  path="/dashboard/bendahara" 
+                  element={
+                    <ProtectedRoute allowedRoles={['Master Admin', 'Bendahara Umum']}>
+                      <BendaharaDashboard showToast={showToast} />
                     </ProtectedRoute>
                   } 
                 />

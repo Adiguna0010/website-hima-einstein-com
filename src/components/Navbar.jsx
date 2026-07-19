@@ -351,6 +351,8 @@ export default function Navbar() {
         return '/dashboard/logistik';
       case 'Sekretaris Umum':
         return '/dashboard/sekretaris';
+      case 'Bendahara Umum':
+        return '/dashboard/bendahara';
       default:
         return null;
     }

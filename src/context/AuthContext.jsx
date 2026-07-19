@@ -63,6 +63,14 @@ const DEFAULT_USERS = [
     password: 'user123',
     role: 'Anggota Biasa',
     status: 'Pending'
+  },
+  {
+    name: 'Bendahara Umum',
+    nim: '022400099',
+    email: 'bendahara@einsten.com',
+    password: 'bendahara123',
+    role: 'Bendahara Umum',
+    status: 'Active'
   }
 ];
 

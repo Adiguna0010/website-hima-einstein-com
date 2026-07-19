@@ -39,6 +39,8 @@ export default function Login({ showToast }) {
         navigate('/dashboard/logistik');
       } else if (user.role === 'Sekretaris Umum') {
         navigate('/dashboard/sekretaris');
+      } else if (user.role === 'Bendahara Umum') {
+        navigate('/dashboard/bendahara');
       } else {
         navigate('/');
       }
