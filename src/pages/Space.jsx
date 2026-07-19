@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Camera, Calendar, User, IdCard, ShieldCheck, HelpCircle, ArrowRight } from 'lucide-react';
 import ScannerModal from '../components/ScannerModal';
 import { useAuth } from '../context/AuthContext';
@@ -39,16 +40,29 @@ export default function Space({ showToast }) {
   const [instruments, setInstruments] = useState([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('hima_instruments');
-    if (saved && (saved.includes('HIMA-MULT-002') || saved.includes('HIMA-ARDU-011'))) {
-      localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
-      setInstruments(DEFAULT_INSTRUMENTS);
-    } else if (saved) {
-      setInstruments(JSON.parse(saved));
-    } else {
-      localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
-      setInstruments(DEFAULT_INSTRUMENTS);
-    }
+    const loadData = () => {
+      const saved = localStorage.getItem('hima_instruments');
+      if (saved && (saved.includes('HIMA-MULT-002') || saved.includes('HIMA-ARDU-011'))) {
+        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
+        setInstruments(DEFAULT_INSTRUMENTS);
+      } else if (saved) {
+        setInstruments(JSON.parse(saved));
+      } else {
+        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
+        setInstruments(DEFAULT_INSTRUMENTS);
+      }
+    };
+
+    loadData();
+
+    // Storage event listener for multi-tab real-time sync
+    const handleStorageChange = (e) => {
+      if (e.key === 'hima_instruments') {
+        loadData();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -85,17 +99,24 @@ export default function Space({ showToast }) {
 
   const handleReservationSubmit = (e) => {
     e.preventDefault();
-    if (!borrowerName || !borrowerNim || !selectedToolId) {
-      showToast('Mohon lengkapi seluruh kolom formulir!', 'error');
+    if (!currentUser) {
+      showToast('Anda harus masuk ke akun HIMA EINSTEN terlebih dahulu!', 'error');
       return;
     }
+    if (!selectedToolId) {
+      showToast('Mohon pilih alat yang ingin dipinjam!', 'error');
+      return;
+    }
+
+    const bName = currentUser.name || 'Anggota Hima';
+    const bNim = currentUser.nim || 'N/A';
 
     // Save borrow request to localStorage
     const newRequest = {
       id: `req-${Date.now()}`,
-      borrowerName,
-      borrowerNim,
-      userEmail: currentUser?.email || 'guest@einsten.com',
+      borrowerName: bName,
+      borrowerNim: bNim,
+      userEmail: currentUser.email,
       instrumentId: selectedToolId,
       instrumentName: selectedToolName,
       status: 'Pending',
@@ -107,8 +128,51 @@ export default function Space({ showToast }) {
     const updatedRequests = [newRequest, ...requests];
     localStorage.setItem('hima_borrow_requests', JSON.stringify(updatedRequests));
 
+    // Save notifications to notification bell
+    const newNotifications = [];
+    
+    // 1. Student / Borrower notification
+    newNotifications.push({
+      id: Date.now(),
+      recipientEmail: currentUser.email,
+      message: `Peminjaman berhasil diajukan! Permohonan peminjaman alat "${selectedToolName}" sedang menunggu persetujuan (ACC) dari Operator Logistik.`,
+      read: false,
+      timestamp: Date.now()
+    });
+
+    // 2. Operator Logistik notification
+    const savedUsers = localStorage.getItem('hima_users');
+    const usersList = savedUsers ? JSON.parse(savedUsers) : [];
+    const operators = usersList.filter(u => u.role === 'Operator Logistik');
+
+    if (operators.length === 0) {
+      // Fallback default operator Rakan
+      newNotifications.push({
+        id: Date.now() + 1,
+        recipientEmail: 'Rakan Ibrahim Widjisasono@einsten.com',
+        message: `Permohonan Baru! ${bName} (NIM: ${bNim}) mengajukan peminjaman alat "${selectedToolName}". Mohon segera ditinjau.`,
+        read: false,
+        timestamp: Date.now()
+      });
+    } else {
+      operators.forEach((op, index) => {
+        newNotifications.push({
+          id: Date.now() + 1 + index,
+          recipientEmail: op.email,
+          message: `Permohonan Baru! ${bName} (NIM: ${bNim}) mengajukan peminjaman alat "${selectedToolName}". Mohon segera ditinjau.`,
+          read: false,
+          timestamp: Date.now()
+        });
+      });
+    }
+
+    const savedNotifs = localStorage.getItem('hima_notifications');
+    const notifsList = savedNotifs ? JSON.parse(savedNotifs) : [];
+    const updatedNotifs = [...notifsList, ...newNotifications];
+    localStorage.setItem('hima_notifications', JSON.stringify(updatedNotifs));
+
     // Build WA URL
-    const text = `Halo Admin Logistik HIMPUNAN EINSTEN.COM! 📦\n\nSaya ingin mengajukan permohonan peminjaman alat laboratorium:\n- Nama Alat: ${selectedToolName}\n- ID Alat: ${selectedToolId}\n\nData Peminjam:\n- Nama: ${borrowerName}\n- NIM: ${borrowerNim}\n\n*Reservasi terdaftar melalui Portal Einsten Space.* Mohon konfirmasi pengambilan alat. Terima kasih!`;
+    const text = `Halo Admin Logistik HIMPUNAN EINSTEN.COM! 📦\n\nSaya ingin mengajukan permohonan peminjaman alat laboratorium:\n- Nama Alat: ${selectedToolName}\n- ID Alat: ${selectedToolId}\n\nData Peminjam:\n- Nama: ${bName}\n- NIM: ${bNim}\n- WhatsApp: ${currentUser.phone || ''}\n\n*Reservasi terdaftar melalui Portal Einsten Space.* Mohon konfirmasi pengambilan alat. Terima kasih!`;
     const waNumber = '6285175420692';
     const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
@@ -117,8 +181,6 @@ export default function Space({ showToast }) {
 
     // Reset Form
     setShowForm(false);
-    setBorrowerName('');
-    setBorrowerNim('');
   };
 
   return (
@@ -172,12 +234,30 @@ export default function Space({ showToast }) {
                 </div>
 
                 {inst.status === 'Available' ? (
-                  <button 
-                    onClick={() => handleOpenScanner(inst)}
-                    className="w-full py-2 bg-gold hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all mt-2 shadow-md shadow-gold/20"
-                  >
-                    <Camera className="w-3.5 h-3.5 text-white" /> Pinjam via Scan
-                  </button>
+                  currentUser ? (
+                    currentUser.phone ? (
+                      <button 
+                        onClick={() => handleOpenScanner(inst)}
+                        className="w-full py-2 bg-gold hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all mt-2 shadow-md shadow-gold/20"
+                      >
+                        <Camera className="w-3.5 h-3.5 text-white" /> Pinjam via Scan
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => showToast('Anda harus melengkapi nomor WhatsApp terlebih dahulu untuk meminjam alat!', 'warning')}
+                        className="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all mt-2 shadow-md"
+                      >
+                        Lengkapi WA untuk Pinjam
+                      </button>
+                    )
+                  ) : (
+                    <Link 
+                      to="/login"
+                      className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all mt-2 shadow-md border border-slate-700"
+                    >
+                      Login untuk Pinjam
+                    </Link>
+                  )
                 ) : (
                   <button 
                     disabled
@@ -214,11 +294,9 @@ export default function Space({ showToast }) {
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                     <input 
                       type="text" 
-                      required
-                      placeholder="Nama Lengkap Anda"
-                      value={borrowerName}
-                      onChange={(e) => setBorrowerName(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                      disabled
+                      value={currentUser?.name || ''}
+                      className="w-full bg-slate-100 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-500 focus:outline-none cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -229,11 +307,22 @@ export default function Space({ showToast }) {
                     <IdCard className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                     <input 
                       type="text" 
-                      required
-                      placeholder="NIM Anda"
-                      value={borrowerNim}
-                      onChange={(e) => setBorrowerNim(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                      disabled
+                      value={currentUser?.nim || ''}
+                      className="w-full bg-slate-100 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-500 focus:outline-none cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1 text-left">
+                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Nomor WhatsApp</label>
+                  <div className="relative">
+                    <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <input 
+                      type="text" 
+                      disabled
+                      value={currentUser?.phone || ''}
+                      className="w-full bg-slate-100 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-500 focus:outline-none cursor-not-allowed"
                     />
                   </div>
                 </div>

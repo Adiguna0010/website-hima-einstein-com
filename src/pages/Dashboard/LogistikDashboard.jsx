@@ -43,23 +43,38 @@ export default function LogistikDashboard({ showToast }) {
   ];
 
   useEffect(() => {
-    // Load instruments
-    const savedInst = localStorage.getItem('hima_instruments');
-    if (savedInst && (savedInst.includes('HIMA-MULT-002') || savedInst.includes('HIMA-ARDU-011'))) {
-      localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
-      setInstruments(DEFAULT_INSTRUMENTS);
-    } else if (savedInst) {
-      setInstruments(JSON.parse(savedInst));
-    } else {
-      localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
-      setInstruments(DEFAULT_INSTRUMENTS);
-    }
+    const loadData = () => {
+      // Load instruments
+      const savedInst = localStorage.getItem('hima_instruments');
+      if (savedInst && (savedInst.includes('HIMA-MULT-002') || savedInst.includes('HIMA-ARDU-011'))) {
+        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
+        setInstruments(DEFAULT_INSTRUMENTS);
+      } else if (savedInst) {
+        setInstruments(JSON.parse(savedInst));
+      } else {
+        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
+        setInstruments(DEFAULT_INSTRUMENTS);
+      }
 
-    // Load borrow requests
-    const savedReqs = localStorage.getItem('hima_borrow_requests');
-    if (savedReqs) {
-      setBorrowRequests(JSON.parse(savedReqs));
-    }
+      // Load borrow requests
+      const savedReqs = localStorage.getItem('hima_borrow_requests');
+      if (savedReqs) {
+        setBorrowRequests(JSON.parse(savedReqs));
+      } else {
+        setBorrowRequests([]);
+      }
+    };
+
+    loadData();
+
+    // Storage event listener for multi-tab real-time sync
+    const handleStorageChange = (e) => {
+      if (e.key === 'hima_instruments' || e.key === 'hima_borrow_requests') {
+        loadData();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const handleToggleStatus = (id) => {
