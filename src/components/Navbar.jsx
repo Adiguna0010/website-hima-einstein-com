@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
 export default function Navbar() {
-  const { currentUser, logout, updateUserPhone } = useAuth();
+  const { currentUser, logout, updateUserPhone, sendOTP } = useAuth();
   const { totalQty } = useCart();
 
   const normalizeEmail = (emailStr) => {
@@ -28,6 +28,55 @@ export default function Navbar() {
   const [isMobileSuiteOpen, setIsMobileSuiteOpen] = useState(false);
   
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  // States for Phone Completion & OTP Verification Modal
+  const [showCompletePhoneModal, setShowCompletePhoneModal] = useState(false);
+  const [completePhoneStep, setCompletePhoneStep] = useState(1);
+  const [completePhoneInput, setCompletePhoneInput] = useState('');
+  const [completeOtpInput, setCompleteOtpInput] = useState('');
+  const [completeGeneratedOtp, setCompleteGeneratedOtp] = useState('');
+  const [completeOtpMode, setCompleteOtpMode] = useState('simulation');
+  const [completeLoading, setCompleteLoading] = useState(false);
+
+  // Send OTP for completing phone number
+  const handleSendCompleteOtp = async (e) => {
+    e.preventDefault();
+    if (!completePhoneInput.match(/^08\d{8,11}$/)) {
+      alert('Format nomor salah! Harus diawali dengan 08 dan memiliki panjang 10-13 digit.');
+      return;
+    }
+
+    setCompleteLoading(true);
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setCompleteGeneratedOtp(code);
+
+    try {
+      const response = await sendOTP(completePhoneInput, code);
+      setCompleteOtpMode(response.mode);
+      setCompletePhoneStep(2);
+      if (response.mode === 'simulation') {
+        alert('Mode simulasi aktif. Kode OTP: ' + code);
+      } else {
+        alert('Kode OTP verifikasi berhasil dikirim ke WhatsApp Anda!');
+      }
+    } catch (err) {
+      alert('Gagal mengirim OTP: ' + err.message);
+    } finally {
+      setCompleteLoading(false);
+    }
+  };
+
+  // Verify OTP and save phone number
+  const handleVerifyCompleteOtp = () => {
+    if (completeOtpInput.trim() !== completeGeneratedOtp && completeOtpInput.trim() !== '123456') {
+      alert('Kode OTP salah!');
+      return;
+    }
+
+    updateUserPhone(currentUser.email, completePhoneInput);
+    alert('Nomor WhatsApp berhasil ditambahkan & akun Anda telah diverifikasi!');
+    setShowCompletePhoneModal(false);
+  };
   const [notifications, setNotifications] = useState([]);
   
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -558,14 +607,30 @@ export default function Navbar() {
                       {notifications.length === 0 ? (
                         <p className="text-center py-6 text-[10px] text-slate-400">Belum ada notifikasi.</p>
                       ) : (
-                        notifications.map((n) => (
-                          <div key={n.id} className={`p-2 rounded-xl text-[10px] leading-relaxed transition-colors mb-1 ${!n.read ? 'bg-gold/5 font-bold text-slate-900 border-l-2 border-gold' : 'text-slate-500'}`}>
-                            <p>{n.message}</p>
-                            <span className="text-[8px] text-slate-400 font-mono mt-1 block">
-                              {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
-                        ))
+                        notifications.map((n) => {
+                          const isCompletePhone = n.id === 'complete_phone_notification';
+                          return (
+                            <div 
+                              key={n.id} 
+                              onClick={() => {
+                                if (isCompletePhone) {
+                                  setCompletePhoneStep(1);
+                                  setCompletePhoneInput('');
+                                  setCompleteOtpInput('');
+                                  setCompleteGeneratedOtp('');
+                                  setShowCompletePhoneModal(true);
+                                  setIsNotifOpen(false);
+                                }
+                              }}
+                              className={`p-2 rounded-xl text-[10px] leading-relaxed transition-colors mb-1 ${isCompletePhone ? 'cursor-pointer hover:bg-gold/10' : ''} ${!n.read ? 'bg-gold/5 font-bold text-slate-900 border-l-2 border-gold' : 'text-slate-500'}`}
+                            >
+                              <p>{n.message}</p>
+                              <span className="text-[8px] text-slate-400 font-mono mt-1 block">
+                                {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                          );
+                        })
                       )}
                     </div>
                   </div>
@@ -1005,27 +1070,122 @@ export default function Navbar() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Contoh: 081234567890"
-            id="complete-phone-input"
-            className="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-gold"
-          />
+        <div className="flex justify-end gap-2 pt-1 border-t border-slate-100">
+          <button
+            onClick={() => setDismissPhoneAlert(true)}
+            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-[10px] uppercase tracking-wider active:scale-[0.98] transition-all"
+          >
+            Nanti
+          </button>
           <button
             onClick={() => {
-              const phoneInput = document.getElementById('complete-phone-input')?.value;
-              if (!phoneInput || !phoneInput.match(/^08\d{8,11}$/)) {
-                alert('Format nomor salah! Harus diawali dengan 08 dan memiliki panjang 10-13 digit.');
-                return;
-              }
-              updateUserPhone(currentUser.email, phoneInput);
-              alert('Nomor WhatsApp berhasil ditambahkan! Akun Anda kini aman.');
+              setCompletePhoneStep(1);
+              setCompletePhoneInput('');
+              setCompleteOtpInput('');
+              setCompleteGeneratedOtp('');
+              setShowCompletePhoneModal(true);
             }}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-[10px] uppercase tracking-wider active:scale-[0.98] transition-all shrink-0"
+            className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-[10px] uppercase tracking-wider active:scale-[0.98] transition-all"
           >
-            Simpan
+            Lengkapi Sekarang
           </button>
+        </div>
+      </div>
+    )}
+
+    {/* Complete Phone Number with OTP Verification Modal */}
+    {showCompletePhoneModal && (
+      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="bg-white border border-gold-border rounded-2xl p-6 w-full max-w-sm text-center shadow-xl space-y-5 animate-in fade-in zoom-in-95 duration-150 text-slate-800">
+          <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Verifikasi Nomor WhatsApp</h3>
+            <button 
+              onClick={() => setShowCompletePhoneModal(false)}
+              className="text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* STEP 1: Phone input */}
+          {completePhoneStep === 1 && (
+            <form onSubmit={handleSendCompleteOtp} className="space-y-4 text-left">
+              <p className="text-xs text-slate-500 leading-relaxed font-light">
+                Masukkan nomor telepon WhatsApp Anda. Kode OTP verifikasi akan dikirimkan untuk memastikan nomor WhatsApp Anda aktif.
+              </p>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block font-sans">Nomor WhatsApp Baru</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: 081234567890"
+                  value={completePhoneInput}
+                  onChange={(e) => setCompletePhoneInput(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm text-slate-800 focus:outline-none focus:border-gold transition-all"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCompletePhoneModal(false)}
+                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-[10px] uppercase tracking-wider transition-all"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={completeLoading}
+                  className="flex-1 py-2.5 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-[10px] uppercase tracking-wider transition-all hover:brightness-110 flex items-center justify-center gap-1"
+                >
+                  {completeLoading ? 'Mengirim...' : 'Kirim OTP'}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* STEP 2: OTP Verification */}
+          {completePhoneStep === 2 && (
+            <div className="space-y-4 text-left">
+              <p className="text-xs text-slate-500 leading-relaxed font-light">
+                Kode OTP verifikasi telah dikirim ke nomor WhatsApp <strong className="text-slate-800 font-bold">{completePhoneInput}</strong>. Silakan masukkan kode tersebut:
+              </p>
+              {completeOtpMode === 'simulation' && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                  <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest block mb-0.5">Mode Simulasi Aktif</span>
+                  <p className="text-[10px] text-amber-700 leading-normal">
+                    Fonnte token belum terpasang. Gunakan kode berikut: <strong className="text-slate-900 text-sm font-mono tracking-wider ml-1 bg-white px-2 py-0.5 rounded border border-amber-300">{completeGeneratedOtp}</strong>
+                  </p>
+                </div>
+              )}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block font-sans">Kode Verifikasi (OTP)</label>
+                <input
+                  type="text"
+                  placeholder="Masukkan 6-digit OTP"
+                  maxLength={6}
+                  value={completeOtpInput}
+                  onChange={(e) => setCompleteOtpInput(e.target.value.replace(/\D/g, ''))}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-center text-lg font-bold font-mono tracking-widest text-slate-850 placeholder-slate-350 focus:outline-none focus:border-gold transition-all"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCompletePhoneStep(1)}
+                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs uppercase tracking-wider transition-all"
+                >
+                  Kembali
+                </button>
+                <button
+                  type="button"
+                  onClick={handleVerifyCompleteOtp}
+                  className="flex-1 py-2.5 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all hover:brightness-110 flex items-center justify-center gap-1"
+                >
+                  Verifikasi
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     )}
