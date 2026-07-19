@@ -83,22 +83,38 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const stored = localStorage.getItem('hima_users');
     let loadedUsers = DEFAULT_USERS;
+    
+    // One-time migration to wipe all existing phone numbers for testing fresh
+    const hasWipedPhones = localStorage.getItem('hima_phone_wipe_v1');
+    
     if (stored) {
       try {
-        const parsed = JSON.parse(stored);
+        let parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
-          // Clean mock phone numbers from parsed data
-          const cleanedParsed = parsed.map(u => {
-            if (u && u.phone && u.phone.startsWith('08123456789')) {
-              const { phone, ...rest } = u;
-              return rest;
+          if (!hasWipedPhones) {
+            parsed = parsed.map(u => {
+              if (u) {
+                const { phone, ...rest } = u;
+                return rest;
+              }
+              return u;
+            });
+            localStorage.setItem('hima_phone_wipe_v1', 'true');
+            
+            // Also clean active session user
+            const savedUser = sessionStorage.getItem('hima_current_user');
+            if (savedUser) {
+              const parsedUser = JSON.parse(savedUser);
+              if (parsedUser) {
+                delete parsedUser.phone;
+                sessionStorage.setItem('hima_current_user', JSON.stringify(parsedUser));
+              }
             }
-            return u;
-          });
-
+          }
+          
           // Merge to ensure new default accounts are loaded while preserving registered accounts
           const userMap = new Map();
-          cleanedParsed.forEach(u => {
+          parsed.forEach(u => {
             if (u && u.email) {
               userMap.set(normalizeEmail(u.email), u);
             }
@@ -113,6 +129,10 @@ export const AuthProvider = ({ children }) => {
       } catch (e) {
         console.error('Failed to parse hima_users from localStorage:', e);
       }
+    } else {
+      if (!hasWipedPhones) {
+        localStorage.setItem('hima_phone_wipe_v1', 'true');
+      }
     }
 
     localStorage.setItem('hima_users', JSON.stringify(loadedUsers));
@@ -120,13 +140,7 @@ export const AuthProvider = ({ children }) => {
 
     const savedUser = sessionStorage.getItem('hima_current_user');
     if (savedUser) {
-      const parsedUser = JSON.parse(savedUser);
-      // Clean mock phone number from active session user if present
-      if (parsedUser && parsedUser.phone && parsedUser.phone.startsWith('08123456789')) {
-        delete parsedUser.phone;
-        sessionStorage.setItem('hima_current_user', JSON.stringify(parsedUser));
-      }
-      setCurrentUser(parsedUser);
+      setCurrentUser(JSON.parse(savedUser));
     }
   }, []);
 
