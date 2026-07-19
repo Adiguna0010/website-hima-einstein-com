@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Award, Target, User } from 'lucide-react';
+import { ArrowRight, Award, Target, User, Users } from 'lucide-react';
 
 export default function Home() {
   const metrics = [
@@ -198,27 +198,40 @@ export default function Home() {
   };
 
   return (
-    <div className="relative pt-24 space-y-24 overflow-hidden pb-16 text-slate-800">
+    <div className="relative overflow-hidden pb-16 text-slate-800 space-y-24">
       {/* Decorative Orbs */}
       <div className="absolute top-10 left-10 w-96 h-96 rounded-full bg-gold/5 glow-orb"></div>
       <div className="absolute top-80 right-10 w-[500px] h-[500px] rounded-full bg-gold/5 glow-orb"></div>
 
       {/* ================= HERO SECTION ================= */}
-      <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center justify-center text-center space-y-8 py-8 lg:py-16">
-          
+      <header className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden pt-24">
+        {/* Background Image with cover and dark overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/Media Einsten/Media Umum/Foto Umum Beranda/DSC_7954.JPG" 
+            alt="HIMA EINSTEN Kabinet Phótisma" 
+            className="w-full h-full object-cover object-center scale-105 filter brightness-[0.4]"
+            onError={(e) => {
+              e.target.src = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80";
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-900/60 to-slate-950/90 z-10"></div>
+        </div>
+
+        {/* Hero Content */}
+        <div className="relative z-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
           {/* Badge */}
-          <div className="inline-flex items-center px-3.5 py-1.5 rounded-full border border-gold/30 bg-gold/5 text-xs font-semibold text-gold-dark tracking-wider uppercase">
-            Himpunan Elektronika Instrumentasi
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-gold/30 bg-gold/15 text-[10px] sm:text-xs font-bold text-gold tracking-widest uppercase shadow-sm">
+            ✨ HIMPUNAN ELEKTRONIKA INSTRUMENTASI
           </div>
-          
+
           {/* Heading */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6.5xl font-extrabold uppercase tracking-tight text-slate-900 leading-none max-w-4xl">
-            KABINET <span className="bg-gradient-to-r from-gold via-gold-light to-gold-dark bg-clip-text text-transparent">PHÓTISMA</span>
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight max-w-4xl mx-auto uppercase">
+            Selamat Datang di Website Resmi <span className="bg-gradient-to-r from-gold via-gold-light to-gold-dark bg-clip-text text-transparent">HIMA EINSTEN</span> Poltek Nuklir
           </h1>
-          
+
           {/* Description */}
-          <p className="text-slate-650 text-base sm:text-lg max-w-2xl leading-relaxed font-light mx-auto">
+          <p className="text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed font-light mx-auto">
             Menyatukan pengembangan riset teknologi nuklir, instrumentasi otonom, dan kewirausahaan mandiri di bawah naungan Politeknik Teknologi Nuklir Indonesia.
           </p>
 
@@ -226,43 +239,44 @@ export default function Home() {
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
             <a 
               href="#profil" 
-              className="px-6 py-3.5 bg-gold text-white font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all text-sm shadow-md shadow-gold/25 cursor-pointer"
+              className="px-6 py-3.5 bg-gold text-white font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all text-xs uppercase tracking-wider shadow-md shadow-gold/25 cursor-pointer"
             >
-              Profil Hima
+              Tentang Kami
             </a>
             <Link 
               to="/struktur" 
-              className="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl active:scale-95 transition-all text-sm shadow-md cursor-pointer flex items-center gap-2"
+              className="px-6 py-3.5 border border-white/30 hover:bg-white/10 text-white font-bold rounded-xl active:scale-95 transition-all text-xs uppercase tracking-wider cursor-pointer flex items-center gap-2"
             >
-              Lihat Struktur
+              Lihat Struktur <Users className="w-4 h-4 text-white" />
             </Link>
             <Link 
               to="/sphere" 
-              className="px-6 py-3.5 border border-gold/30 hover:bg-gold/5 text-gold-dark font-semibold rounded-xl active:scale-95 transition-all text-sm flex items-center gap-2"
+              className="px-6 py-3.5 border border-gold/30 hover:bg-gold/10 text-gold font-bold rounded-xl active:scale-95 transition-all text-xs uppercase tracking-wider flex items-center gap-2"
             >
               Jelajahi Sphere <ArrowRight className="w-4 h-4 text-gold" />
             </Link>
           </div>
-
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-3 gap-4 pt-12 border-t border-slate-200 w-full max-w-3xl mx-auto">
-            {metrics.map((m, idx) => (
-              <div 
-                key={idx} 
-                className={`p-4 sm:p-5 rounded-2xl border text-center transition-all ${
-                  m.highlight 
-                    ? 'bg-gold/5 border-gold/20 shadow-sm' 
-                    : 'bg-slate-50 border-slate-200/60 shadow-sm'
-                }`}
-              >
-                <span className="block text-2xl sm:text-3.5xl font-extrabold text-gold-dark font-heading">{m.value}</span>
-                <span className="block text-[10px] sm:text-xs text-slate-500 font-medium tracking-wide mt-1.5">{m.label}</span>
-              </div>
-            ))}
-          </div>
-
         </div>
       </header>
+
+      {/* Floating Metrics Section */}
+      <section className="relative z-30 max-w-4xl mx-auto px-4 -mt-20 sm:-mt-24">
+        <div className="bg-white/95 backdrop-blur-md border border-gold-border rounded-2xl p-5 sm:p-6 shadow-xl grid grid-cols-3 gap-4">
+          {metrics.map((m, idx) => (
+            <div 
+              key={idx} 
+              className={`p-3 sm:p-4 rounded-xl border text-center transition-all ${
+                m.highlight 
+                  ? 'bg-gold/5 border-gold/20 shadow-sm' 
+                  : 'bg-slate-50 border-slate-200/60 shadow-sm'
+              }`}
+            >
+              <span className="block text-xl sm:text-3xl font-extrabold text-gold-dark font-heading">{m.value}</span>
+              <span className="block text-[9px] sm:text-xs text-slate-500 font-medium tracking-wide mt-1">{m.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* ================= PROFIL SECTION ================= */}
       <section id="profil" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-200 pt-20">
