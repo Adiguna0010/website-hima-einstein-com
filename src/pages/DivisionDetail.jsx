@@ -396,6 +396,14 @@ export default function DivisionDetail({ showToast }) {
               >
                 Proyek Collab
               </button>
+              <button 
+                onClick={() => setRistekTab('programs')}
+                className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition-colors ${
+                  ristekTab === 'programs' ? 'text-gold border-b-2 border-gold' : 'text-slate-400 hover:text-slate-700'
+                }`}
+              >
+                Program Kerja
+              </button>
             </div>
 
             {/* Tab: Vault */}
@@ -632,6 +640,9 @@ export default function DivisionDetail({ showToast }) {
                   ))
                 )}
               </div>
+            )}
+            {ristekTab === 'programs' && (
+              <DivisionProgramsView divisionKey="ristek" divisionName="Riset & Teknologi" />
             )}
           </div>
         );

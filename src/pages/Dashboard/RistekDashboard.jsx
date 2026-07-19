@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, Plus, Trash2, ShieldCheck, FileText, Download, CheckCircle, 
-  XCircle, Users, Activity, Calendar, Sparkles, Code, Server, MapPin
+  XCircle, Users, Activity, Calendar, Sparkles, Code, Server, MapPin, Edit
 } from 'lucide-react';
 
 export default function RistekDashboard({ showToast }) {
-  const [activeTab, setActiveTab] = useState('vault'); // 'vault', 'schedule', 'projects', 'requests'
+  const [activeTab, setActiveTab] = useState('vault'); // 'vault', 'schedule', 'projects', 'requests', 'programs'
 
   // VAULT STATE
   const [vaultItems, setVaultItems] = useState([]);
@@ -23,13 +23,20 @@ export default function RistekDashboard({ showToast }) {
   const [schedTutor, setSchedTutor] = useState('');
   const [schedRoom, setSchedRoom] = useState('');
   const [addToCalendar, setAddToCalendar] = useState(false);
-  const [calDateInput, setCalDateInput] = useState(new Date().toISOString().split('T')[0]); // Fallback ISO date for calendar key
+  const [calDateInput, setCalDateInput] = useState(new Date().toISOString().split('T')[0]);
 
   // PROJECTS STATE
   const [projects, setProjects] = useState([]);
   const [projTag, setProjTag] = useState('IoT & Nuklir');
   const [projTitle, setProjTitle] = useState('');
   const [projDesc, setProjDesc] = useState('');
+
+  // PROGRAMS STATE (Pemaparan Program Kerja Ristek)
+  const [divPrograms, setDivPrograms] = useState([]);
+  const [progName, setProgName] = useState('');
+  const [progDesc, setProgDesc] = useState('');
+  const [progStatus, setProgStatus] = useState('Terencana');
+  const [editingId, setEditingId] = useState(null);
 
   // REQUESTS STATE
   const [requests, setRequests] = useState([]);
@@ -95,7 +102,24 @@ export default function RistekDashboard({ showToast }) {
       setProjects(DEFAULT_PROJECTS);
     }
 
-    // Requests (Activity registrations)
+    // Division programs
+    const savedProgs = localStorage.getItem('hima_division_programs_ristek');
+    if (savedProgs) {
+      setDivPrograms(JSON.parse(savedProgs));
+    } else {
+      const DEFAULT_PROGS = [
+        {
+          id: 1,
+          name: 'Program Kerja Unggulan Riset & Teknologi',
+          desc: 'Pemaparan program kerja awal divisi Riset & Teknologi untuk menyelaraskan target Kabinet Photisma HIMA EINSTEN.',
+          status: 'Terencana'
+        }
+      ];
+      localStorage.setItem('hima_division_programs_ristek', JSON.stringify(DEFAULT_PROGS));
+      setDivPrograms(DEFAULT_PROGS);
+    }
+
+    // Requests
     const savedRequests = localStorage.getItem('hima_ristek_requests');
     if (savedRequests) {
       setRequests(JSON.parse(savedRequests));
@@ -230,6 +254,66 @@ export default function RistekDashboard({ showToast }) {
     }
   };
 
+  // Handlers: Program Kerja Ristek
+  const handleSaveProgram = (e) => {
+    e.preventDefault();
+    if (!progName || !progDesc) {
+      showToast('Lengkapi nama dan deskripsi program kerja!', 'error');
+      return;
+    }
+
+    let updated = [];
+    if (editingId) {
+      updated = divPrograms.map(p => {
+        if (p.id === editingId) {
+          return { ...p, name: progName, desc: progDesc, status: progStatus };
+        }
+        return p;
+      });
+      showToast('Program kerja berhasil diperbarui!', 'success');
+      setEditingId(null);
+    } else {
+      const newProg = {
+        id: Date.now(),
+        name: progName,
+        desc: progDesc,
+        status: progStatus
+      };
+      updated = [...divPrograms, newProg];
+      showToast('Program kerja baru berhasil ditambahkan!', 'success');
+    }
+
+    setDivPrograms(updated);
+    localStorage.setItem('hima_division_programs_ristek', JSON.stringify(updated));
+
+    setProgName('');
+    setProgDesc('');
+    setProgStatus('Terencana');
+  };
+
+  const handleEditProgramClick = (p) => {
+    setEditingId(p.id);
+    setProgName(p.name);
+    setProgDesc(p.desc);
+    setProgStatus(p.status);
+  };
+
+  const handleDeleteProgram = (id) => {
+    if (window.confirm('Hapus program kerja ini?')) {
+      const updated = divPrograms.filter(p => p.id !== id);
+      setDivPrograms(updated);
+      localStorage.setItem('hima_division_programs_ristek', JSON.stringify(updated));
+      showToast('Program kerja berhasil dihapus.', 'info');
+      
+      if (editingId === id) {
+        setEditingId(null);
+        setProgName('');
+        setProgDesc('');
+        setProgStatus('Terencana');
+      }
+    }
+  };
+
   // Handlers: Requests
   const handleApproveRequest = (request) => {
     const updated = requests.map(req => {
@@ -292,12 +376,12 @@ export default function RistekDashboard({ showToast }) {
             Dashboard Riset & Teknologi
           </h1>
           <p className="text-xs text-slate-500 font-light">
-            Pengelolaan Einsten Vault, penjadwalan kelas mengajar, proyek kolaborasi, dan persetujuan kegiatan anggota Himpunan.
+            Pengelolaan Einsten Vault, penjadwalan kelas mengajar, proyek kolaborasi, program kerja divisi, dan persetujuan kegiatan.
           </p>
         </div>
         {totalPending > 0 && (
           <span className="w-fit text-[10px] bg-rose-100 text-rose-700 border border-rose-200 font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider animate-pulse">
-            {totalPending} Permohonan Butuh ACC
+            {totalPending} Permohonan Bth ACC
           </span>
         )}
       </div>
@@ -327,6 +411,14 @@ export default function RistekDashboard({ showToast }) {
           }`}
         >
           Proyek Collab
+        </button>
+        <button
+          onClick={() => setActiveTab('programs')}
+          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 shrink-0 ${
+            activeTab === 'programs' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
+          }`}
+        >
+          Program Kerja
         </button>
         <button
           onClick={() => setActiveTab('requests')}
@@ -620,7 +712,142 @@ export default function RistekDashboard({ showToast }) {
         </div>
       )}
 
-      {/* TAB 4: Activity Requests (ACC Ristek) */}
+      {/* TAB 4: Program Kerja (Pemaparan Program Kerja Ristek) */}
+      {activeTab === 'programs' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-left animate-in fade-in duration-200">
+          {/* Form Input */}
+          <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm h-fit space-y-5">
+            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
+              <Sparkles className="w-4.5 h-4.5 text-gold" /> 
+              {editingId ? 'Edit Program Kerja' : 'Tambah Program Kerja'}
+            </h3>
+            <form onSubmit={handleSaveProgram} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Nama Program Kerja</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: Riset Radiasi Nuklir"
+                  value={progName}
+                  onChange={(e) => setProgName(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Deskripsi Program</label>
+                <textarea
+                  required
+                  rows={4}
+                  placeholder="Jelaskan detail tujuan dan rancangan dari program ini."
+                  value={progDesc}
+                  onChange={(e) => setProgDesc(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold resize-none font-sans font-light"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Status Program</label>
+                <select
+                  value={progStatus}
+                  onChange={(e) => setProgStatus(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold"
+                >
+                  <option value="Terencana">Terencana</option>
+                  <option value="Sedang Berjalan">Sedang Berjalan</option>
+                  <option value="Terlaksana">Terlaksana</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingId(null);
+                      setProgName('');
+                      setProgDesc('');
+                      setProgStatus('Terencana');
+                    }}
+                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-655 font-bold rounded-xl text-xs uppercase tracking-wider transition-all"
+                  >
+                    Batal
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider active:scale-[0.98] transition-all"
+                >
+                  {editingId ? 'Simpan' : 'Tambah'}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* List Program Kerja */}
+          <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm h-fit space-y-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <CheckCircle className="w-4.5 h-4.5 text-gold" /> Daftar Program Kerja Terancang
+              </h3>
+              <p className="text-[11px] text-slate-400 font-light mt-0.5">
+                Program kerja berikut akan ditayangkan pada halaman publik divisi Riset & Teknologi.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {divPrograms.length === 0 ? (
+                <div className="text-center py-10 border border-dashed border-slate-200 rounded-2xl text-slate-450">
+                  Belum ada program kerja yang didefinisikan.
+                </div>
+              ) : (
+                divPrograms.map((p) => (
+                  <div 
+                    key={p.id} 
+                    className="p-4 bg-slate-50/50 border border-slate-200 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-gold/30 hover:bg-white transition-all group"
+                  >
+                    <div className="space-y-1.5 text-left flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold border ${
+                          p.status === 'Terlaksana'
+                            ? 'bg-emerald-50 border-emerald-250 text-emerald-600'
+                            : p.status === 'Sedang Berjalan'
+                            ? 'bg-amber-55 border-amber-250 text-amber-600'
+                            : 'bg-slate-100 border-slate-205 text-slate-550'
+                        }`}>
+                          {p.status}
+                        </span>
+                        <h4 className="text-xs font-bold text-slate-800">{p.name}</h4>
+                      </div>
+                      <p className="text-[10px] text-slate-500 font-light leading-relaxed">
+                        {p.desc}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 shrink-0 justify-end">
+                      <button
+                        onClick={() => handleEditProgramClick(p)}
+                        className="p-1.5 text-slate-555 hover:bg-slate-100 rounded-lg hover:text-slate-700 transition-colors cursor-pointer"
+                        title="Edit Program"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProgram(p.id)}
+                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg hover:text-rose-700 transition-colors cursor-pointer"
+                        title="Hapus Program"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: Activity Requests (ACC Ristek) */}
       {activeTab === 'requests' && (
         <div className="space-y-4 animate-in fade-in duration-200">
           <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
