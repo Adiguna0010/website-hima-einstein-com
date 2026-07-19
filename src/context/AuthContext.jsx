@@ -71,6 +71,22 @@ const DEFAULT_USERS = [
     password: 'bendahara123',
     role: 'Bendahara Umum',
     status: 'Active'
+  },
+  {
+    name: 'Relvina',
+    nim: '022400039',
+    email: 'relvina@einsten.com',
+    password: '022400039',
+    role: 'Bendahara Umum',
+    status: 'Active'
+  },
+  {
+    name: 'Rizkiana Ramadhani',
+    nim: '022500046',
+    email: 'rizkiana@einsten.com',
+    password: '022500046',
+    role: 'Bendahara Umum',
+    status: 'Active'
   }
 ];
 
