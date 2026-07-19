@@ -23,6 +23,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSuiteOpen, setIsSuiteOpen] = useState(false);
+  const [dismissPhoneAlert, setDismissPhoneAlert] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isMobileSuiteOpen, setIsMobileSuiteOpen] = useState(false);
   
@@ -67,13 +68,30 @@ export default function Navbar() {
   const loadNotifications = () => {
     if (currentUser) {
       const saved = localStorage.getItem('hima_notifications');
+      let filtered = [];
       if (saved) {
         const parsed = JSON.parse(saved);
-        const filtered = parsed.filter(n => normalizeEmail(n.recipientEmail) === normalizeEmail(currentUser.email));
-        // Sort newest first
-        filtered.sort((a, b) => b.id - a.id);
-        setNotifications(filtered);
+        filtered = parsed.filter(n => normalizeEmail(n.recipientEmail) === normalizeEmail(currentUser.email));
       }
+
+      // Inject dynamic notification for missing phone number
+      if (!currentUser.phone) {
+        filtered.unshift({
+          id: 'complete_phone_notification',
+          recipientEmail: currentUser.email,
+          message: '⚠️ PEMBERITAHUAN: Akun Anda belum memiliki nomor WhatsApp terdaftar. Silakan lengkapi nomor WhatsApp Anda segera untuk mengamankan akun!',
+          read: false,
+          timestamp: Date.now()
+        });
+      }
+
+      // Sort newest first, keeping complete_phone_notification at the top
+      filtered.sort((a, b) => {
+        if (a.id === 'complete_phone_notification') return -1;
+        if (b.id === 'complete_phone_notification') return 1;
+        return b.id - a.id;
+      });
+      setNotifications(filtered);
     } else {
       setNotifications([]);
     }
@@ -965,14 +983,23 @@ export default function Navbar() {
     </nav>
 
     {/* Floating Complete Phone Number Alert */}
-    {currentUser && !currentUser.phone && (
+    {currentUser && !currentUser.phone && !dismissPhoneAlert && (
       <div className="fixed bottom-6 right-6 z-50 w-full max-w-sm bg-white border border-gold-border rounded-2xl p-5 shadow-2xl space-y-4 text-slate-800 text-left animate-in fade-in slide-in-from-bottom-5 duration-300">
         <div className="flex items-start gap-2.5">
           <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 shrink-0 mt-0.5 animate-pulse">
             <ShieldAlert className="w-5 h-5" />
           </div>
-          <div>
-            <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-900">Lengkapi Nomor WhatsApp</h4>
+          <div className="flex-grow">
+            <div className="flex justify-between items-start">
+              <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-900">Lengkapi Nomor WhatsApp</h4>
+              <button 
+                onClick={() => setDismissPhoneAlert(true)}
+                className="text-slate-400 hover:text-slate-650 transition-colors p-0.5 -mt-1 -mr-1 cursor-pointer"
+                title="Tutup Notifikasi"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
             <p className="text-[11px] text-slate-500 font-light leading-relaxed mt-1">
               Halo, <strong>{currentUser.name}</strong>! Akun Anda belum memiliki nomor WhatsApp terdaftar. Nomor ini diperlukan untuk keamanan & pemulihan kata sandi jika lupa.
             </p>
