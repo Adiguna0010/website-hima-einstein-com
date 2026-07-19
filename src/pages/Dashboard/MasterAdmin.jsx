@@ -5,6 +5,7 @@ import { Shield, ShieldAlert, CheckCircle, XCircle, ArrowUpRight, ArrowDownRight
 export default function MasterAdmin({ showToast }) {
   const { users, currentUser, updateUserStatus, updateUserRole } = useAuth();
   const [filterRole, setFilterRole] = useState('All');
+  const [fonnteToken, setFonnteToken] = useState(localStorage.getItem('fonnte_token') || '');
 
   const handleApprove = (email) => {
     updateUserStatus(email, 'Active');
@@ -136,13 +137,18 @@ export default function MasterAdmin({ showToast }) {
 
                   return (
                     <tr key={user.email} className={`hover:bg-slate-50/50 transition-colors ${isSelf ? 'bg-gold/5' : ''}`}>
-                      <td className="px-6 py-4 font-bold text-slate-800">
+                      <td className="px-6 py-4 font-bold text-slate-800 text-left">
                         <div className="flex items-center gap-1">
                           {user.name}
                           {isSelf && (
                             <span className="px-1.5 py-0.5 rounded bg-gold/15 text-gold-dark text-[8px] font-bold uppercase border border-gold/30">Anda</span>
                           )}
                         </div>
+                        {user.phone && (
+                          <div className="text-[10px] text-slate-500 font-mono mt-0.5 font-normal">
+                            Telp: {user.phone}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 font-mono text-slate-600">{user.nim}</td>
                       <td className="px-6 py-4 text-slate-650">{user.email}</td>
@@ -223,6 +229,38 @@ export default function MasterAdmin({ showToast }) {
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* WhatsApp OTP Gateway Settings */}
+      <div className="bg-white border border-gold-border rounded-2xl p-6 shadow-md text-left space-y-4">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+            <Shield className="w-5 h-5 text-gold" /> Pengaturan WhatsApp OTP Gateway (Fonnte)
+          </h2>
+          <p className="text-xs text-slate-500 font-light mt-1">
+            Masukkan Fonnte API Device Token Anda untuk mengaktifkan pengiriman kode OTP verifikasi WhatsApp secara riil. Jika dikosongkan, sistem otomatis menggunakan mode simulasi (gratis & aman untuk demo).
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input
+            type="password"
+            placeholder="Masukkan Device Token Fonnte Anda..."
+            value={fonnteToken}
+            onChange={(e) => {
+              setFonnteToken(e.target.value);
+              localStorage.setItem('fonnte_token', e.target.value);
+            }}
+            className="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-gold"
+          />
+          <button
+            onClick={() => {
+              showToast('Device Token Fonnte berhasil disimpan!', 'success');
+            }}
+            className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider active:scale-[0.98] transition-all"
+          >
+            Simpan Token
+          </button>
         </div>
       </div>
     </div>
