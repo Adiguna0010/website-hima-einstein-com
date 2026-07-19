@@ -218,7 +218,7 @@ export default function Profile({ showToast }) {
           {/* Info */}
           <div className="flex-1 text-center sm:text-left">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-center sm:justify-start">
-              <h1 className="text-xl font-extrabold tracking-tight">{currentUser.name}</h1>
+              <h1 className="text-xl font-extrabold tracking-tight text-white">{currentUser.name}</h1>
               <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold border rounded-full ${roleColor}`}>
                 {currentUser.role === 'Master Admin' && <Shield className="w-3 h-3" />}
                 {currentUser.role}
