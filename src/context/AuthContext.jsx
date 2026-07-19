@@ -262,6 +262,24 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
   };
 
+  const updateUserPhone = (email, phone) => {
+    const updatedUsers = users.map(u => {
+      if (normalizeEmail(u.email) === normalizeEmail(email)) {
+        return { ...u, phone };
+      }
+      return u;
+    });
+    setUsers(updatedUsers);
+    localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
+
+    // Update current user if it matches
+    if (currentUser && normalizeEmail(currentUser.email) === normalizeEmail(email)) {
+      const updatedSelf = { ...currentUser, phone };
+      setCurrentUser(updatedSelf);
+      sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       users,
@@ -272,7 +290,8 @@ export const AuthProvider = ({ children }) => {
       updateUserStatus,
       updateUserRole,
       sendOTP,
-      updateUserPassword
+      updateUserPassword,
+      updateUserPhone
     }}>
       {children}
     </AuthContext.Provider>

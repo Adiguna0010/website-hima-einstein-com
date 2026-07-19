@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
-  Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Shield, 
+  Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Shield, ShieldAlert,
   ShoppingBag, Compass, History, Cpu, Bell, MessageSquare, Send, ArrowLeft, Trash2, MessageCircle,
   Vote
 } from 'lucide-react';
@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
 export default function Navbar() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, updateUserPhone } = useAuth();
   const { totalQty } = useCart();
 
   const normalizeEmail = (emailStr) => {
@@ -277,11 +277,12 @@ export default function Navbar() {
   const dbPath = currentUser ? getDashboardPath(currentUser.role) : null;
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 border-b ${
-      isScrolled 
-        ? 'bg-white/95 backdrop-blur-md border-gold-border py-3 shadow-md' 
-        : 'bg-white/80 backdrop-blur-md border-gold-border/30 py-4 shadow-sm'
-    }`}>
+    <>
+      <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 border-b ${
+        isScrolled 
+          ? 'bg-white/95 backdrop-blur-md border-gold-border py-3 shadow-md' 
+          : 'bg-white/80 backdrop-blur-md border-gold-border/30 py-4 shadow-sm'
+      }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-12">
           
@@ -962,5 +963,45 @@ export default function Navbar() {
         </div>
       )}
     </nav>
-  );
+
+    {/* Floating Complete Phone Number Alert */}
+    {currentUser && !currentUser.phone && (
+      <div className="fixed bottom-6 right-6 z-50 w-full max-w-sm bg-white border border-gold-border rounded-2xl p-5 shadow-2xl space-y-4 text-slate-800 text-left animate-in fade-in slide-in-from-bottom-5 duration-300">
+        <div className="flex items-start gap-2.5">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 shrink-0 mt-0.5 animate-pulse">
+            <ShieldAlert className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-900">Lengkapi Nomor WhatsApp</h4>
+            <p className="text-[11px] text-slate-500 font-light leading-relaxed mt-1">
+              Halo, <strong>{currentUser.name}</strong>! Akun Anda belum memiliki nomor WhatsApp terdaftar. Nomor ini diperlukan untuk keamanan & pemulihan kata sandi jika lupa.
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="Contoh: 081234567890"
+            id="complete-phone-input"
+            className="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-gold"
+          />
+          <button
+            onClick={() => {
+              const phoneInput = document.getElementById('complete-phone-input')?.value;
+              if (!phoneInput || !phoneInput.match(/^08\d{8,11}$/)) {
+                alert('Format nomor salah! Harus diawali dengan 08 dan memiliki panjang 10-13 digit.');
+                return;
+              }
+              updateUserPhone(currentUser.email, phoneInput);
+              alert('Nomor WhatsApp berhasil ditambahkan! Akun Anda kini aman.');
+            }}
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-[10px] uppercase tracking-wider active:scale-[0.98] transition-all shrink-0"
+          >
+            Simpan
+          </button>
+        </div>
+      </div>
+    )}
+  </>
+);
 }
