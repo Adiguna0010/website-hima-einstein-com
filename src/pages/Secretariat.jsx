@@ -273,7 +273,7 @@ export default function Secretariat({ showToast }) {
               <ClipboardCheck className="w-3.5 h-3.5 text-gold" /> SECRETARY BACKOFFICE CONSOLE
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 uppercase tracking-wider">
-              Secretariat Dashboard
+              Dashboard Sekretariat
             </h1>
             <p className="text-xs text-slate-500 font-light">
               Kelola nomor surat BPH, arsipkan dokumen portal, dan daftarkan jadwal program kerja pada Einsten Kalender.

@@ -445,7 +445,7 @@ export default function Navbar() {
                 location.pathname === '/secretariat' ? 'text-gold font-bold' : 'text-slate-600 hover:text-gold-dark font-medium'
               }`}
             >
-              Secretariat
+              Sekretariat
             </Link>
             
             <Link 
@@ -868,7 +868,7 @@ export default function Navbar() {
                 location.pathname === '/secretariat' ? 'bg-slate-50 text-gold font-bold' : 'text-slate-600 hover:text-gold-dark'
               }`}
             >
-              Secretariat
+              Sekretariat
             </Link>
 
             <Link
