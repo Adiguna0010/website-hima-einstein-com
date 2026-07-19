@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Shield, ShieldAlert,
   ShoppingBag, Compass, History, Cpu, Bell, MessageSquare, Send, ArrowLeft, Trash2, MessageCircle,
-  Vote, Handshake, TrendingUp
+  Vote, Handshake, TrendingUp, FileText, Coins
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -25,6 +25,8 @@ export default function Navbar() {
   const [isSuiteOpen, setIsSuiteOpen] = useState(false);
   const [isPartnershipOpen, setIsPartnershipOpen] = useState(false);
   const [isMobilePartnershipOpen, setIsMobilePartnershipOpen] = useState(false);
+  const [isGovernanceOpen, setIsGovernanceOpen] = useState(false);
+  const [isMobileGovernanceOpen, setIsMobileGovernanceOpen] = useState(false);
   const [dismissPhoneAlert, setDismissPhoneAlert] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isMobileSuiteOpen, setIsMobileSuiteOpen] = useState(false);
@@ -32,6 +34,7 @@ export default function Navbar() {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   const partnershipRef = useRef(null);
+  const governanceRef = useRef(null);
 
   // States for Phone Completion & OTP Verification Modal
   const [showCompletePhoneModal, setShowCompletePhoneModal] = useState(false);
@@ -114,6 +117,7 @@ export default function Navbar() {
     setIsOpen(false);
     setIsSuiteOpen(false);
     setIsPartnershipOpen(false);
+    setIsGovernanceOpen(false);
     setIsAdminOpen(false);
     setIsNotifOpen(false);
   }, [location]);
@@ -294,6 +298,9 @@ export default function Navbar() {
       }
       if (partnershipRef.current && !partnershipRef.current.contains(event.target)) {
         setIsPartnershipOpen(false);
+      }
+      if (governanceRef.current && !governanceRef.current.contains(event.target)) {
+        setIsGovernanceOpen(false);
       }
       if (adminRef.current && !adminRef.current.contains(event.target)) {
         setIsAdminOpen(false);
@@ -524,14 +531,57 @@ export default function Navbar() {
               )}
             </div>
 
-            <Link 
-              to="/secretariat" 
-              className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                location.pathname === '/secretariat' ? 'text-gold font-bold' : 'text-slate-600 hover:text-gold-dark font-medium'
-              }`}
-            >
-              Sekretariat
-            </Link>
+            <div className="relative" ref={governanceRef}>
+              <button
+                onClick={() => setIsGovernanceOpen(!isGovernanceOpen)}
+                className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
+                  ['/secretariat', '/finance'].some(p => location.pathname.startsWith(p))
+                    ? 'text-gold font-bold' 
+                    : 'text-slate-600 hover:text-gold-dark font-medium'
+                }`}
+              >
+                Tata Kelola
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isGovernanceOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isGovernanceOpen && (
+                <div className="absolute left-1/2 -translate-x-1/2 mt-3 w-72 rounded-2xl bg-white border border-gold-border shadow-xl p-4 z-50 animate-slide-in text-left space-y-3">
+                  {/* Persuratan & Administrasi */}
+                  <Link 
+                    to="/secretariat" 
+                    onClick={() => setIsGovernanceOpen(false)}
+                    className="flex items-start gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors group"
+                  >
+                    <div className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center bg-slate-50 shrink-0 group-hover:border-gold/20 group-hover:bg-gold/5">
+                      <FileText className="w-4 h-4 text-slate-650 group-hover:text-gold" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800">Administrasi & Persuratan</h4>
+                      <p className="text-[10px] text-slate-500 font-light mt-0.5 leading-snug">
+                        SOP surat, format proposal, & arsip dokumen.
+                      </p>
+                    </div>
+                  </Link>
+
+                  {/* Transparansi & Keuangan */}
+                  <Link 
+                    to="/finance" 
+                    onClick={() => setIsGovernanceOpen(false)}
+                    className="flex items-start gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors group"
+                  >
+                    <div className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center bg-slate-50 shrink-0 group-hover:border-gold/20 group-hover:bg-gold/5">
+                      <Coins className="w-4 h-4 text-slate-655 group-hover:text-gold" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800">Transparansi & Keuangan</h4>
+                      <p className="text-[10px] text-slate-500 font-light mt-0.5 leading-snug">
+                        Arus kas, anggaran divisi, & laporan bendahara.
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
             
             <Link 
               to="/calendar" 
@@ -997,14 +1047,41 @@ export default function Navbar() {
               )}
             </div>
 
-            <Link
-              to="/secretariat"
-              className={`block px-3 py-2 rounded-lg text-base font-medium ${
-                location.pathname === '/secretariat' ? 'bg-slate-50 text-gold font-bold' : 'text-slate-600 hover:text-gold-dark'
-              }`}
-            >
-              Sekretariat
-            </Link>
+            {/* Tata Kelola Accordion in Mobile */}
+            <div className="py-1 border-b border-slate-100 my-2">
+              <button
+                onClick={() => setIsMobileGovernanceOpen(!isMobileGovernanceOpen)}
+                className="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 hover:text-gold transition-colors"
+              >
+                <span>Tata Kelola</span>
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isMobileGovernanceOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isMobileGovernanceOpen && (
+                <div className="pl-4 pr-3 py-1.5 space-y-2 bg-slate-50 rounded-xl mt-1 text-left">
+                  <Link
+                    to="/secretariat"
+                    onClick={() => {
+                      setIsOpen(false);
+                      setIsMobileGovernanceOpen(false);
+                    }}
+                    className="block py-1 text-xs text-slate-650 hover:text-gold font-semibold"
+                  >
+                    Administrasi & Persuratan
+                  </Link>
+                  <Link
+                    to="/finance"
+                    onClick={() => {
+                      setIsOpen(false);
+                      setIsMobileGovernanceOpen(false);
+                    }}
+                    className="block py-1 text-xs text-slate-650 hover:text-gold font-semibold"
+                  >
+                    Transparansi & Keuangan
+                  </Link>
+                </div>
+              )}
+            </div>
 
             <Link
               to="/calendar"

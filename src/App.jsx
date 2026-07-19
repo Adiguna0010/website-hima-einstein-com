@@ -12,6 +12,7 @@ import Secretariat from './pages/Secretariat';
 import Calendar from './pages/Calendar';
 import Mitra from './pages/Mitra';
 import Investor from './pages/Investor';
+import Finance from './pages/Finance';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import MasterAdmin from './pages/Dashboard/MasterAdmin';
@@ -101,6 +102,7 @@ export default function App() {
                 <Route path="/quest" element={<Quest />} />
                 <Route path="/space" element={<Space showToast={showToast} />} />
                 <Route path="/secretariat" element={<Secretariat showToast={showToast} />} />
+                <Route path="/finance" element={<Finance showToast={showToast} />} />
                 <Route path="/calendar" element={<Calendar showToast={showToast} />} />
                 <Route path="/mitra" element={<Mitra />} />
                 <Route path="/investor" element={<Investor />} />
