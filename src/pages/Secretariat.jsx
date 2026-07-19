@@ -48,12 +48,7 @@ export default function Secretariat({ showToast, isDashboard = false }) {
     { id: 3, name: 'Format LPJ (Laporan Pertanggungjawaban)', format: 'DOCX', size: '63 KB', date: 'Juli 2026', url: '/Media/Template Persuratan-20260715T225003Z-1-001/Template Persuratan/Template Permohonan Peminjaman Ruang Rapat KSTE A. Baiquni.docx' }
   ];
 
-  const DEFAULT_EVENTS = {
-    '2026-07-15': { title: 'Einsten Festival (E-Fest) 🚀', type: 'hima', desc: 'Festival teknologi, seminar instrumentasi nuklir, dan pameran proyek IoT mahasiswa Elins.', location: 'Auditorium Poltek Nuklir' },
-    '2026-07-20': { title: 'Ristek Mengajar Sebaya 🔬', type: 'hima', desc: 'Bimbingan belajar internal pemrograman C++ dan Elektronika dasar untuk mahasiswa baru.', location: 'Lab Kendali Industri' },
-    '2026-07-24': { title: 'Musyawarah Perwakilan Mahasiswa 🏛️', type: 'ormawa', desc: 'Sidang evaluasi program kerja ormawa eksternal kampus Politeknik Teknologi Nuklir Indonesia.', location: 'Ruang Rapat KSTE A. Baiquni' },
-    '2026-07-28': { title: 'Evaluasi Tengah Tahun Kabinet 🪙', type: 'hima', desc: 'Pemaparan laporan pertanggungjawaban setengah tahun Kabinet Phótisma.', location: 'Sekretariat HIMA Einsten' }
-  };
+  const DEFAULT_EVENTS = {};
 
   useEffect(() => {
     // Load Letters

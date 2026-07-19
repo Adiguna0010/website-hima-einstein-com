@@ -351,10 +351,11 @@ export default function Navbar() {
         return '/dashboard/sekretaris';
       case 'Bendahara Umum':
         return '/dashboard/bendahara';
+      case 'Operator Ristek':
+        return '/dashboard/ristek';
       case 'Operator BPH':
       case 'Operator Internal':
       case 'Operator External':
-      case 'Operator Ristek':
       case 'Operator Pengma':
       case 'Operator Kominfo':
         return '/dashboard/division';

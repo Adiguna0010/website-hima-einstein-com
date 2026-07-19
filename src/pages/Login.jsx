@@ -39,11 +39,12 @@ export default function Login({ showToast }) {
         navigate('/dashboard/sekretaris');
       } else if (user.role === 'Bendahara Umum') {
         navigate('/dashboard/bendahara');
+      } else if (user.role === 'Operator Ristek') {
+        navigate('/dashboard/ristek');
       } else if ([
         'Operator BPH',
         'Operator Internal',
         'Operator External',
-        'Operator Ristek',
         'Operator Pengma',
         'Operator Kominfo'
       ].includes(user.role)) {

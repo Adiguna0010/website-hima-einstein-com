@@ -98,11 +98,14 @@ export default function DivisionDetail({ showToast }) {
   // Form states
   const [ristekForm, setRistekForm] = useState({ name: currentUser?.name || '', role: 'murid', subject: '', wa: '' });
   const [vaultItems, setVaultItems] = useState([]);
+  const [schedules, setSchedules] = useState([]);
+  const [collabProjects, setCollabProjects] = useState([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('hima_vault');
-    if (saved) {
-      setVaultItems(JSON.parse(saved));
+    // Vault Items
+    const savedVault = localStorage.getItem('hima_vault');
+    if (savedVault) {
+      setVaultItems(JSON.parse(savedVault));
     } else {
       const DEFAULT_VAULT = [
         { id: 1, title: 'UTS: Mikroprosesor & Mikrokontroler', size: '2.4 MB', type: 'Dokumen', url: '#' },
@@ -110,6 +113,52 @@ export default function DivisionDetail({ showToast }) {
       ];
       localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_VAULT));
       setVaultItems(DEFAULT_VAULT);
+    }
+
+    // Ristek Schedules
+    const savedSchedules = localStorage.getItem('hima_ristek_schedules');
+    if (savedSchedules) {
+      setSchedules(JSON.parse(savedSchedules));
+    } else {
+      const DEFAULT_SCHEDULES = [
+        {
+          id: 1,
+          date: 'Senin, 20 Juli 2026',
+          time: '15.30 - 17.00 WIB',
+          title: 'Kelas Dasar Pemrograman C++',
+          desc: 'Pengenalan Sintaks Dasar, Variabel, Array, dan Pointers untuk mahasiswa baru.',
+          tutor: 'Adiguna Nugroho Halomoan (Kadiv Ristek)',
+          room: 'Lab Komputasi 3'
+        },
+        {
+          id: 2,
+          date: 'Rabu, 22 Juli 2026',
+          time: '13.00 - 15.00 WIB',
+          title: 'Praktikum Elektronika Lanjut',
+          desc: 'Desain Sirkuit Analog, Penggunaan Osiloskop, & Lab Virtual Proteus.',
+          tutor: 'Dian Ristek (Operator)',
+          room: 'Laboratorium Elektronika Dasar'
+        }
+      ];
+      localStorage.setItem('hima_ristek_schedules', JSON.stringify(DEFAULT_SCHEDULES));
+      setSchedules(DEFAULT_SCHEDULES);
+    }
+
+    // Collab Projects
+    const savedProjects = localStorage.getItem('hima_ristek_projects');
+    if (savedProjects) {
+      setCollabProjects(JSON.parse(savedProjects));
+    } else {
+      const DEFAULT_PROJECTS = [
+        {
+          id: 1,
+          tag: 'IoT & Nuklir',
+          title: 'Monitor Radiasi Geiger-Müller ESP32',
+          desc: 'Membangun alat ukur paparan radiasi portable berbasis sensor IoT otonom terkoneksi database IoT.'
+        }
+      ];
+      localStorage.setItem('hima_ristek_projects', JSON.stringify(DEFAULT_PROJECTS));
+      setCollabProjects(DEFAULT_PROJECTS);
     }
   }, []);
 
@@ -466,41 +515,34 @@ export default function DivisionDetail({ showToast }) {
                   </h5>
                   
                   <div className="space-y-3">
-                    <div className="p-4 bg-white border border-gold-border rounded-2xl space-y-2 shadow-sm hover:border-gold/30 transition-all">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-mono font-bold bg-gold/10 text-gold-dark border border-gold/20 px-2 py-0.5 rounded">
-                          Senin, 20 Juli 2026
-                        </span>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                          15.30 - 17.00 WIB
-                        </span>
+                    {schedules.length === 0 ? (
+                      <div className="text-center py-8 bg-white border border-gold-border rounded-2xl text-slate-400">
+                        Belum ada jadwal mengajar terdaftar.
                       </div>
-                      <h5 className="text-xs font-bold text-slate-800">Kelas Dasar Pemrograman C++</h5>
-                      <p className="text-[10px] text-slate-500 leading-normal font-light">
-                        Materi: Pengenalan Sintaks Dasar, Variabel, Array, dan Pointers untuk mahasiswa baru.
-                      </p>
-                      <p className="text-[9px] text-slate-400 font-mono">
-                        Tutor: Adiguna Nugroho Halomoan (Kadiv Ristek) • Ruang: Lab Komputasi 3
-                      </p>
-                    </div>
-
-                    <div className="p-4 bg-white border border-gold-border rounded-2xl space-y-2 shadow-sm hover:border-gold/30 transition-all">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-mono font-bold bg-gold/10 text-gold-dark border border-gold/20 px-2 py-0.5 rounded">
-                          Rabu, 22 Juli 2026
-                        </span>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                          13.00 - 15.00 WIB
-                        </span>
-                      </div>
-                      <h5 className="text-xs font-bold text-slate-800">Praktikum Elektronika Lanjut</h5>
-                      <p className="text-[10px] text-slate-500 leading-normal font-light">
-                        Materi: Desain Sirkuit Analog, Penggunaan Osiloskop, & Lab Virtual Proteus.
-                      </p>
-                      <p className="text-[9px] text-slate-400 font-mono">
-                        Tutor: Dian Ristek (Operator) • Ruang: Laboratorium Elektronika Dasar
-                      </p>
-                    </div>
+                    ) : (
+                      schedules.map((item) => (
+                        <div 
+                          key={item.id} 
+                          className="p-4 bg-white border border-gold-border rounded-2xl space-y-2 shadow-sm hover:border-gold/30 transition-all"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-[9px] font-mono font-bold bg-gold/10 text-gold-dark border border-gold/20 px-2 py-0.5 rounded">
+                              {item.date}
+                            </span>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                              {item.time}
+                            </span>
+                          </div>
+                          <h5 className="text-xs font-bold text-slate-800">{item.title}</h5>
+                          <p className="text-[10px] text-slate-500 leading-normal font-light">
+                            Materi: {item.desc}
+                          </p>
+                          <p className="text-[9px] text-slate-400 font-mono">
+                            Tutor: {item.tutor} • Ruang: {item.room}
+                          </p>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
@@ -509,73 +551,86 @@ export default function DivisionDetail({ showToast }) {
             {/* Tab: Proyek */}
             {ristekTab === 'proyek' && (
               <div className="space-y-4 text-left">
-                <div className="p-5 bg-white border border-gold-border rounded-2xl space-y-3 shadow-sm hover:border-gold/30 transition-all">
-                  <span className="inline-block px-2.5 py-0.5 rounded bg-gold/10 border border-gold/20 text-[9px] font-bold text-gold-dark uppercase tracking-wider">IoT & Nuklir</span>
-                  <h5 className="text-sm font-bold text-slate-800">Monitor Radiasi Geiger-Müller ESP32</h5>
-                  <p className="text-xs text-slate-500 leading-normal font-light">
-                    Membangun alat ukur paparan radiasi portable berbasis sensor IoT otonom terkoneksi database IoT.
-                  </p>
-                  
-                  {/* Inline Join Project Form */}
-                  <form onSubmit={(e) => {
-                    e.preventDefault();
-                    const name = e.target.name.value;
-                    const wa = e.target.wa.value;
-                    if (!name || !wa) {
-                      showToast('Mohon lengkapi nama dan WhatsApp!', 'error');
-                      return;
-                    }
-                    const newRequest = {
-                      id: Date.now(),
-                      requesterName: name,
-                      userEmail: currentUser?.email || 'guest@einsten.com',
-                      type: 'Proyek Collab',
-                      role: 'Anggota',
-                      subject: 'Geiger-Müller ESP32',
-                      wa: wa,
-                      status: 'Pending',
-                      timestamp: Date.now()
-                    };
-                    const saved = localStorage.getItem('hima_ristek_requests');
-                    const list = saved ? JSON.parse(saved) : [];
-                    const updated = [...list, newRequest];
-                    localStorage.setItem('hima_ristek_requests', JSON.stringify(updated));
-                    
-                    showToast('Permohonan bergabung proyek kolaborasi dikirim! Menunggu ACC Kadiv Ristek.', 'success');
-                    e.target.reset();
-                  }} className="pt-3 border-t border-slate-100 space-y-3">
-                    <p className="text-[10px] font-bold text-gold-dark uppercase tracking-widest">Formulir Kolaborasi Proyek</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-[9px] text-slate-500 font-semibold block">Nama Lengkap</label>
-                        <input
-                          type="text"
-                          name="name"
-                          required
-                          defaultValue={currentUser?.name || ''}
-                          placeholder="Nama Anda"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:outline-none focus:border-gold"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[9px] text-slate-500 font-semibold block">WhatsApp Kontak</label>
-                        <input
-                          type="text"
-                          name="wa"
-                          required
-                          placeholder="08xxxxxxxxxx"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:outline-none focus:border-gold"
-                        />
-                      </div>
-                    </div>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-gold text-white text-xs font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all shadow-sm w-full sm:w-auto"
+                {collabProjects.length === 0 ? (
+                  <div className="text-center py-8 bg-white border border-gold-border rounded-2xl text-slate-400">
+                    Belum ada proyek kolaborasi terdaftar.
+                  </div>
+                ) : (
+                  collabProjects.map((p) => (
+                    <div 
+                      key={p.id} 
+                      className="p-5 bg-white border border-gold-border rounded-2xl space-y-3 shadow-sm hover:border-gold/30 transition-all"
                     >
-                      Gabung Proyek
-                    </button>
-                  </form>
-                </div>
+                      <span className="inline-block px-2.5 py-0.5 rounded bg-gold/10 border border-gold/20 text-[9px] font-bold text-gold-dark uppercase tracking-wider">
+                        {p.tag}
+                      </span>
+                      <h5 className="text-sm font-bold text-slate-800">{p.title}</h5>
+                      <p className="text-xs text-slate-500 leading-normal font-light">
+                        {p.desc}
+                      </p>
+                      
+                      {/* Inline Join Project Form */}
+                      <form onSubmit={(e) => {
+                        e.preventDefault();
+                        const name = e.target.name.value;
+                        const wa = e.target.wa.value;
+                        if (!name || !wa) {
+                          showToast('Mohon lengkapi nama dan WhatsApp!', 'error');
+                          return;
+                        }
+                        const newRequest = {
+                          id: Date.now(),
+                          requesterName: name,
+                          userEmail: currentUser?.email || 'guest@einsten.com',
+                          type: 'Proyek Collab',
+                          role: 'Anggota',
+                          subject: p.title,
+                          wa: wa,
+                          status: 'Pending',
+                          timestamp: Date.now()
+                        };
+                        const saved = localStorage.getItem('hima_ristek_requests');
+                        const list = saved ? JSON.parse(saved) : [];
+                        const updated = [...list, newRequest];
+                        localStorage.setItem('hima_ristek_requests', JSON.stringify(updated));
+                        
+                        showToast('Permohonan bergabung proyek kolaborasi dikirim! Menunggu ACC Kadiv Ristek.', 'success');
+                        e.target.reset();
+                      }} className="pt-3 border-t border-slate-100 space-y-3">
+                        <p className="text-[10px] font-bold text-gold-dark uppercase tracking-widest font-mono">Formulir Kolaborasi Proyek</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[9px] text-slate-500 font-semibold block">Nama Lengkap</label>
+                            <input
+                              type="text"
+                              name="name"
+                              required
+                              defaultValue={currentUser?.name || ''}
+                              placeholder="Nama Anda"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] text-slate-500 font-semibold block">WhatsApp Kontak</label>
+                            <input
+                              type="text"
+                              name="wa"
+                              required
+                              placeholder="08xxxxxxxxxx"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                            />
+                          </div>
+                        </div>
+                        <button
+                          type="submit"
+                          className="px-4 py-2 bg-gold text-white text-xs font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all shadow-sm w-full sm:w-auto cursor-pointer"
+                        >
+                          Gabung Proyek
+                        </button>
+                      </form>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>

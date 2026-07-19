@@ -2,12 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Info, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
 
 export default function Calendar({ showToast }) {
-  const DEFAULT_EVENTS = {
-    '2026-07-15': { title: 'Einsten Festival (E-Fest) 🚀', type: 'hima', desc: 'Festival teknologi, seminar instrumentasi nuklir, dan pameran proyek IoT mahasiswa Elins.', location: 'Auditorium Poltek Nuklir' },
-    '2026-07-20': { title: 'Ristek Mengajar Sebaya 🔬', type: 'hima', desc: 'Bimbingan belajar internal pemrograman C++ dan Elektronika dasar untuk mahasiswa baru.', location: 'Lab Kendali Industri' },
-    '2026-07-24': { title: 'Musyawarah Perwakilan Mahasiswa 🏛️', type: 'ormawa', desc: 'Sidang evaluasi program kerja ormawa eksternal kampus Politeknik Teknologi Nuklir Indonesia.', location: 'Ruang Rapat KSTE A. Baiquni' },
-    '2026-07-28': { title: 'Evaluasi Tengah Tahun Kabinet 🪙', type: 'hima', desc: 'Pemaparan laporan pertanggungjawaban setengah tahun Kabinet Phótisma.', location: 'Sekretariat HIMA Einsten' }
-  };
+  const DEFAULT_EVENTS = {};
 
   const [events, setEvents] = useState({});
 
