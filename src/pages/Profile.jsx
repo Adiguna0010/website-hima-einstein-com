@@ -75,20 +75,39 @@ export default function Profile({ showToast }) {
   const myPayments = kasPayments.filter(p => p.nim === currentUser.nim);
 
   const getSemStatus = (semId) => {
-    const found = myPayments.find(p => p.semId === semId);
-    if (!found) return { status: 'Belum Bayar', payment: null };
-    return { status: found.status, payment: found };
-    // status: 'Menunggu Verifikasi' | 'Lunas' | 'Ditolak'
+    const sem = KAS_SEMESTERS.find(s => s.id === semId);
+    const semFee = sem ? sem.fee : 70000;
+    const semPayments = myPayments.filter(p => p.semId === semId);
+
+    if (semPayments.length === 0) {
+      return { status: 'Belum Bayar', payment: null, totalPaid: 0, remaining: semFee };
+    }
+
+    const paidSoFar = semPayments
+      .filter(p => p.status === 'Lunas' || p.status === 'Kurang')
+      .reduce((s, p) => s + (p.amount || 0), 0);
+
+    const latest = semPayments[semPayments.length - 1];
+    const remaining = Math.max(0, semFee - paidSoFar);
+
+    let effectiveStatus = latest.status;
+    if (paidSoFar >= semFee) {
+      effectiveStatus = 'Lunas';
+    } else if (paidSoFar > 0 && (latest.status === 'Lunas' || latest.status === 'Kurang')) {
+      effectiveStatus = 'Kurang';
+    }
+
+    return {
+      status: effectiveStatus,
+      payment: latest,
+      totalPaid: paidSoFar,
+      remaining,
+    };
   };
 
-  const totalPaid = myPayments
-    .filter(p => p.status === 'Lunas')
-    .reduce((s, p) => s + p.amount, 0);
+  const totalPaid = KAS_SEMESTERS.reduce((s, sem) => s + getSemStatus(sem.id).totalPaid, 0);
 
-  const totalTagihan = KAS_SEMESTERS.reduce((s, sem) => {
-    const st = getSemStatus(sem.id).status;
-    return st === 'Lunas' ? s : s + sem.fee;
-  }, 0);
+  const totalTagihan = KAS_SEMESTERS.reduce((s, sem) => s + getSemStatus(sem.id).remaining, 0);
 
   const hasUnpaid = totalTagihan > 0;
 
@@ -190,8 +209,9 @@ export default function Profile({ showToast }) {
     }, 1000);
   };
 
-  const statusBadge = (status) => {
+  const statusBadge = (status, remaining = 0) => {
     if (status === 'Lunas') return <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full"><CheckCircle className="w-3 h-3" /> Lunas</span>;
+    if (status === 'Kurang') return <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-orange-50 text-orange-600 border border-orange-200 rounded-full"><AlertTriangle className="w-3 h-3" /> Belum Lunas (Kurang {formatRupiah(remaining)})</span>;
     if (status === 'Menunggu Verifikasi') return <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 rounded-full"><Clock className="w-3 h-3" /> Menunggu Verifikasi</span>;
     if (status === 'Ditolak') return <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200 rounded-full"><XCircle className="w-3 h-3" /> Ditolak</span>;
     return <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200 rounded-full"><AlertTriangle className="w-3 h-3" /> Belum Bayar</span>;
@@ -358,40 +378,47 @@ export default function Profile({ showToast }) {
           {/* Semester Status Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {KAS_SEMESTERS.map(sem => {
-              const { status, payment } = getSemStatus(sem.id);
+              const { status, payment, totalPaid: semPaid, remaining } = getSemStatus(sem.id);
               return (
                 <div key={sem.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-xs font-bold text-slate-800">{sem.label}</p>
                       <p className="text-[10px] text-slate-400">{sem.period}</p>
                     </div>
-                    {statusBadge(status)}
+                    {statusBadge(status, remaining)}
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-[10px] text-slate-400 uppercase tracking-widest">Nominal Kas</p>
                       <p className="text-base font-extrabold text-slate-900">{formatRupiah(sem.fee)}</p>
                     </div>
-                    {payment && (
-                      <div className="text-right">
-                        <p className="text-[10px] text-slate-400 uppercase tracking-widest">Dibayar</p>
-                        <p className="text-xs font-bold text-emerald-600">{formatRupiah(payment.amount)}</p>
-                        <p className="text-[9px] text-slate-400">{formatDate(payment.submittedAt)}</p>
-                      </div>
-                    )}
+                    <div className="text-right">
+                      <p className="text-[10px] text-slate-400 uppercase tracking-widest">Tercatat Dibayar</p>
+                      <p className="text-xs font-bold text-emerald-600">{formatRupiah(semPaid)}</p>
+                      {payment && <p className="text-[9px] text-slate-400">{formatDate(payment.submittedAt)}</p>}
+                    </div>
                   </div>
+
+                  {remaining > 0 && semPaid > 0 && (
+                    <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-[10px] text-amber-800 flex justify-between items-center font-semibold">
+                      <span>Sisa Kurang:</span>
+                      <span className="font-extrabold text-rose-600">{formatRupiah(remaining)}</span>
+                    </div>
+                  )}
+
                   {status === 'Ditolak' && (
                     <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-[10px] text-rose-600">
                       Pembayaran ditolak. Silakan coba kembali dengan bukti yang benar.
                     </div>
                   )}
-                  {(status === 'Belum Bayar' || status === 'Ditolak') && (
+
+                  {(status === 'Belum Bayar' || status === 'Ditolak' || status === 'Kurang') && (
                     <button
-                      onClick={() => setSelectedSem(sem)}
+                      onClick={() => setSelectedSem({ ...sem, remaining })}
                       className="w-full py-2 bg-gradient-to-r from-gold to-gold-light text-white rounded-xl text-xs font-bold hover:brightness-110 transition-all active:scale-95"
                     >
-                      Bayar Sekarang →
+                      {status === 'Kurang' ? `Bayar Sisa ${formatRupiah(remaining)} →` : 'Bayar Sekarang →'}
                     </button>
                   )}
                 </div>
@@ -426,8 +453,8 @@ export default function Profile({ showToast }) {
                     </div>
                     <p className="text-[10px] text-slate-400">Scan QRIS di atas menggunakan m-Banking / e-Wallet Anda</p>
                     <div className="bg-gold/10 border border-gold/30 rounded-xl px-4 py-3">
-                      <p className="text-[10px] text-slate-500 uppercase tracking-wider">Jumlah yang dibayarkan</p>
-                      <p className="text-xl font-extrabold text-gold-dark">{formatRupiah(selectedSem.fee)}</p>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider">Tagihan / Sisa Pembayaran</p>
+                      <p className="text-xl font-extrabold text-gold-dark">{formatRupiah(selectedSem.remaining ?? selectedSem.fee)}</p>
                     </div>
                   </div>
 
@@ -438,12 +465,12 @@ export default function Profile({ showToast }) {
                       <input
                         type="text"
                         required
-                        placeholder={`Min. ${formatRupiah(selectedSem.fee)}`}
+                        placeholder={`Sisa: ${formatRupiah(selectedSem.remaining ?? selectedSem.fee)} (Min. Rp 2.000)`}
                         value={nominalInput}
                         onChange={e => setNominalInput(e.target.value)}
                         className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-mono focus:outline-none focus:border-gold"
                       />
-                      <p className="text-[10px] text-slate-400">Masukkan nominal sesuai yang Anda transfer via QRIS.</p>
+                      <p className="text-[10px] text-slate-400">Masukkan nominal transfer. Min Rp 2.000 hingga sisa {formatRupiah(selectedSem.remaining ?? selectedSem.fee)}.</p>
                     </div>
 
                     <div className="space-y-1.5">

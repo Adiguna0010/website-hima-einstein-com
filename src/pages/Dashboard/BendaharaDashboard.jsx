@@ -626,15 +626,23 @@ export default function BendaharaDashboard({ showToast }) {
         const memberSummary = allUsers.map(u => {
           const payments = kasPayments.filter(p => p.nim === u.nim);
           const semStatus = KAS_SEMESTERS.map(sem => {
-            const found = payments.find(p => p.semId === sem.id);
+            // Find latest payment for this semester (most recent)
+            const semPayments = payments.filter(p => p.semId === sem.id);
+            if (semPayments.length === 0) return { ...sem, status: 'Belum Bayar', payment: null, totalPaid: 0, remaining: sem.fee };
+            // Get total paid across all payments for this sem (Lunas + Kurang)
+            const paidSoFar = semPayments.filter(p => p.status === 'Lunas' || p.status === 'Kurang').reduce((a, p) => a + (p.amount || 0), 0);
+            const latest = semPayments[semPayments.length - 1];
+            const remaining = Math.max(0, sem.fee - paidSoFar);
             return {
               ...sem,
-              status: found ? found.status : 'Belum Bayar',
-              payment: found || null,
+              status: latest.status,
+              payment: latest,
+              totalPaid: paidSoFar,
+              remaining,
             };
           });
-          const totalOwed = semStatus.filter(s => s.status !== 'Lunas').reduce((a, s) => a + s.fee, 0);
-          const totalPaid = semStatus.filter(s => s.status === 'Lunas').reduce((a, s) => a + s.fee, 0);
+          const totalOwed = semStatus.reduce((a, s) => a + (s.remaining ?? s.fee), 0);
+          const totalPaid = semStatus.reduce((a, s) => a + (s.totalPaid || 0), 0);
           return { ...u, semStatus, totalOwed, totalPaid };
         });
 
@@ -646,16 +654,30 @@ export default function BendaharaDashboard({ showToast }) {
         });
 
         const handleAccKas = (payment) => {
-          const updated = kasPayments.map(p => p.id === payment.id ? { ...p, status: 'Lunas', verifiedBy: currentUser.name, verifiedAt: Date.now() } : p);
+          const sem = KAS_SEMESTERS.find(s => s.id === payment.semId);
+          const semFee = sem ? sem.fee : 70000;
+
+          // Calculate total already paid for this semester
+          const alreadyPaid = kasPayments
+            .filter(p => p.nim === payment.nim && p.semId === payment.semId && (p.status === 'Lunas' || p.status === 'Kurang') && p.id !== payment.id)
+            .reduce((a, p) => a + (p.amount || 0), 0);
+          const totalNow = alreadyPaid + payment.amount;
+          const remaining = Math.max(0, semFee - totalNow);
+          const newStatus = remaining <= 0 ? 'Lunas' : 'Kurang';
+
+          const updated = kasPayments.map(p => p.id === payment.id
+            ? { ...p, status: newStatus, remaining, verifiedBy: currentUser.name, verifiedAt: Date.now() }
+            : p
+          );
           setKasPayments(updated);
           localStorage.setItem('hima_kas_payments', JSON.stringify(updated));
 
-          // Auto-record in cashflow (transparansi keuangan)
+          // Auto-record in cashflow
           const cashflow = JSON.parse(localStorage.getItem('hima_cashflow') || '[]');
           cashflow.push({
             id: Date.now(),
             date: new Date().toISOString().split('T')[0],
-            desc: `Iuran Kas ${payment.semLabel} — ${payment.name} (NIM: ${payment.nim})`,
+            desc: `Iuran Kas ${payment.semLabel} — ${payment.name} (NIM: ${payment.nim})${remaining > 0 ? ` [Sebagian, sisa: ${formatRupiahKas(remaining)}]` : ''}`,
             type: 'in',
             amount: payment.amount,
             category: 'Iuran',
@@ -665,34 +687,37 @@ export default function BendaharaDashboard({ showToast }) {
 
           // Notify anggota
           const notifs = JSON.parse(localStorage.getItem('hima_notifications') || '[]');
-          notifs.push({
-            id: Date.now() + 1,
-            recipientEmail: payment.email,
-            message: `✅ Pembayaran kas Anda untuk ${payment.semLabel} sebesar ${formatRupiahKas(payment.amount)} telah DIVERIFIKASI dan dicatat dalam transparansi keuangan HIMA EINSTEN!`,
-            read: false,
-            timestamp: Date.now(),
-          });
+          const msg = remaining > 0
+            ? `⚠️ Pembayaran kas ${payment.semLabel} sebesar ${formatRupiahKas(payment.amount)} diverifikasi. Sisa tunggakan: ${formatRupiahKas(remaining)}. Silakan lunasi segera!`
+            : `✅ Pembayaran kas ${payment.semLabel} sebesar ${formatRupiahKas(payment.amount)} LUNAS dan tercatat dalam transparansi keuangan HIMA!`;
+          notifs.push({ id: Date.now() + 1, recipientEmail: payment.email, message: msg, read: false, timestamp: Date.now() });
           localStorage.setItem('hima_notifications', JSON.stringify(notifs));
           setProofModal(null);
-          showToast(`Kas ${payment.name} (${payment.semLabel}) berhasil diverifikasi dan dicatat!`, 'success');
+          showToast(`Kas ${payment.name} (${payment.semLabel}) ${newStatus === 'Lunas' ? 'LUNAS' : `dicatat, sisa ${formatRupiahKas(remaining)}`}!`, 'success');
         };
 
         const handleRejectKas = (payment) => {
           const updated = kasPayments.map(p => p.id === payment.id ? { ...p, status: 'Ditolak' } : p);
           setKasPayments(updated);
           localStorage.setItem('hima_kas_payments', JSON.stringify(updated));
-
           const notifs = JSON.parse(localStorage.getItem('hima_notifications') || '[]');
-          notifs.push({
-            id: Date.now() + 1,
-            recipientEmail: payment.email,
-            message: `❌ Pembayaran kas ${payment.semLabel} Anda DITOLAK oleh Bendahara. Silakan coba kembali dengan bukti yang valid.`,
-            read: false,
-            timestamp: Date.now(),
-          });
+          notifs.push({ id: Date.now() + 1, recipientEmail: payment.email, message: `❌ Pembayaran kas ${payment.semLabel} Anda DITOLAK oleh Bendahara. Silakan coba kembali dengan bukti yang valid.`, read: false, timestamp: Date.now() });
           localStorage.setItem('hima_notifications', JSON.stringify(notifs));
           setProofModal(null);
           showToast('Pembayaran ditolak.', 'info');
+        };
+
+        // Batalkan status Lunas — reset ke Belum Bayar
+        const handleRevokeKas = (nim, semId) => {
+          if (!window.confirm('Batalkan verifikasi pembayaran ini? Status akan kembali ke Belum Bayar.')) return;
+          const updated = kasPayments.map(p =>
+            p.nim === nim && p.semId === semId && (p.status === 'Lunas' || p.status === 'Kurang')
+              ? { ...p, status: 'Belum Bayar', verifiedBy: null, verifiedAt: null, remaining: null }
+              : p
+          );
+          setKasPayments(updated);
+          localStorage.setItem('hima_kas_payments', JSON.stringify(updated));
+          showToast('Verifikasi kas berhasil dibatalkan. Status kembali ke Belum Bayar.', 'info');
         };
 
         const pendingCount = kasPayments.filter(p => p.status === 'Menunggu Verifikasi').length;
@@ -771,7 +796,19 @@ export default function BendaharaDashboard({ showToast }) {
                         </td>
                         {member.semStatus.map(sem => {
                           const badge = {
-                            'Lunas': <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full text-[10px] font-bold"><CheckCircle className="w-3 h-3" /> Lunas</span>,
+                            'Lunas': (
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full text-[10px] font-bold"><CheckCircle className="w-3 h-3" /> Lunas</span>
+                                <button onClick={() => handleRevokeKas(member.nim, sem.id)} className="text-[9px] text-slate-400 hover:text-rose-500 underline transition-colors">Batalkan</button>
+                              </div>
+                            ),
+                            'Kurang': (
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 text-orange-600 border border-orange-200 rounded-full text-[10px] font-bold"><AlertTriangle className="w-3 h-3" /> Kurang</span>
+                                <span className="text-[9px] text-rose-500 font-bold">Sisa: {formatRupiahKas(sem.remaining || 0)}</span>
+                                {sem.payment && <button onClick={() => setProofModal(sem.payment)} className="text-[9px] text-amber-600 hover:text-amber-700 underline">Cek Bukti</button>}
+                              </div>
+                            ),
                             'Menunggu Verifikasi': <button onClick={() => setProofModal(sem.payment)} className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-full text-[10px] font-bold hover:bg-amber-100 transition-all"><Clock className="w-3 h-3" /> Cek Bukti</button>,
                             'Ditolak': <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-[10px] font-bold"><XCircle className="w-3 h-3" /> Ditolak</span>,
                             'Belum Bayar': <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-50 text-slate-500 border border-slate-200 rounded-full text-[10px] font-bold"><AlertTriangle className="w-3 h-3" /> Belum</span>,
