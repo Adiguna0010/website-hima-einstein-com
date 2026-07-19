@@ -537,19 +537,10 @@ export default function Navbar() {
             <Link 
               to="/mitra" 
               className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                location.pathname === '/mitra' ? 'text-gold font-bold' : 'text-slate-600 hover:text-gold-dark font-medium'
+                location.pathname === '/mitra' || location.pathname === '/investor' ? 'text-gold font-bold' : 'text-slate-600 hover:text-gold-dark font-medium'
               }`}
             >
-              Mitra
-            </Link>
-
-            <Link 
-              to="/investor" 
-              className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                location.pathname === '/investor' ? 'text-gold font-bold' : 'text-slate-600 hover:text-gold-dark font-medium'
-              }`}
-            >
-              Investor
+              Mitra & Investor
             </Link>
           </div>
 
@@ -976,19 +967,10 @@ export default function Navbar() {
             <Link
               to="/mitra"
               className={`block px-3 py-2 rounded-lg text-base font-medium ${
-                location.pathname === '/mitra' ? 'bg-slate-50 text-gold font-bold' : 'text-slate-600 hover:text-gold-dark'
+                location.pathname === '/mitra' || location.pathname === '/investor' ? 'bg-slate-50 text-gold font-bold' : 'text-slate-600 hover:text-gold-dark'
               }`}
             >
-              Mitra
-            </Link>
-
-            <Link
-              to="/investor"
-              className={`block px-3 py-2 rounded-lg text-base font-medium ${
-                location.pathname === '/investor' ? 'bg-slate-50 text-gold font-bold' : 'text-slate-600 hover:text-gold-dark'
-              }`}
-            >
-              Investor
+              Mitra & Investor
             </Link>
 
             {/* Mobile Auth */}
