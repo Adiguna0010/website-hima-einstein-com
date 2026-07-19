@@ -6,7 +6,6 @@ const DEFAULT_USERS = [
   {
     name: 'M. Iqbal Nur Huda',
     nim: '022400042',
-    phone: '081234567890',
     email: 'M. Iqbal Nur Huda@einsten.com',
     password: '022400042',
     role: 'Master Admin',
@@ -16,7 +15,6 @@ const DEFAULT_USERS = [
   {
     name: 'Adiguna Nugroho Halomoan',
     nim: '022400025',
-    phone: '081234567891',
     email: 'Adiguna Nugroho Halomoan@einsten.com',
     password: '022400025',
     role: 'Operator Ristek',
@@ -26,7 +24,6 @@ const DEFAULT_USERS = [
   {
     name: 'Rabbany Al-Malika Ifadzla',
     nim: '022400006',
-    phone: '081234567892',
     email: 'Rabbany Al-Malika Ifadzla@einsten.com',
     password: '022400006',
     role: 'Operator Danus',
@@ -36,7 +33,6 @@ const DEFAULT_USERS = [
   {
     name: 'Rakan Ibrahim Widjisasono',
     nim: '022400031',
-    phone: '081234567893',
     email: 'Rakan Ibrahim Widjisasono@einsten.com',
     password: '022400031',
     role: 'Operator Logistik',
@@ -46,7 +42,6 @@ const DEFAULT_USERS = [
   {
     name: 'Nailah Qarirah',
     nim: '022400051',
-    phone: '081234567894',
     email: 'Nailah Qarirah@einsten.com',
     password: '022400051',
     role: 'Sekretaris Umum',
@@ -56,7 +51,6 @@ const DEFAULT_USERS = [
   {
     name: 'Regular Member',
     nim: '240055',
-    phone: '081234567895',
     email: 'member@einsten.com',
     password: 'user123',
     role: 'Anggota Biasa',
@@ -65,7 +59,6 @@ const DEFAULT_USERS = [
   {
     name: 'Calon Anggota',
     nim: '240066',
-    phone: '081234567896',
     email: 'calon@einsten.com',
     password: 'user123',
     role: 'Anggota Biasa',
@@ -94,9 +87,18 @@ export const AuthProvider = ({ children }) => {
       try {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
+          // Clean mock phone numbers from parsed data
+          const cleanedParsed = parsed.map(u => {
+            if (u && u.phone && u.phone.startsWith('08123456789')) {
+              const { phone, ...rest } = u;
+              return rest;
+            }
+            return u;
+          });
+
           // Merge to ensure new default accounts are loaded while preserving registered accounts
           const userMap = new Map();
-          parsed.forEach(u => {
+          cleanedParsed.forEach(u => {
             if (u && u.email) {
               userMap.set(normalizeEmail(u.email), u);
             }
@@ -118,7 +120,13 @@ export const AuthProvider = ({ children }) => {
 
     const savedUser = sessionStorage.getItem('hima_current_user');
     if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      // Clean mock phone number from active session user if present
+      if (parsedUser && parsedUser.phone && parsedUser.phone.startsWith('08123456789')) {
+        delete parsedUser.phone;
+        sessionStorage.setItem('hima_current_user', JSON.stringify(parsedUser));
+      }
+      setCurrentUser(parsedUser);
     }
   }, []);
 
