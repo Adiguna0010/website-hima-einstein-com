@@ -61,10 +61,10 @@ export default function Navbar() {
       const response = await sendOTP(completePhoneInput, code);
       setCompleteOtpMode(response.mode);
       setCompletePhoneStep(2);
-      if (response.mode === 'simulation') {
-        alert('Mode simulasi aktif. Kode OTP: ' + code);
+      if (response.success && response.mode === 'real') {
+        alert('Kode OTP verifikasi berhasil dikirim via WhatsApp!');
       } else {
-        alert('Kode OTP verifikasi berhasil dikirim ke WhatsApp Anda!');
+        alert('WhatsApp Gateway terputus/offline. Kode OTP dialihkan ke Mode Simulasi: ' + code);
       }
     } catch (err) {
       alert('Gagal mengirim OTP: ' + err.message);
@@ -75,8 +75,8 @@ export default function Navbar() {
 
   // Verify OTP and save phone number
   const handleVerifyCompleteOtp = () => {
-    if (completeOtpInput.trim() !== completeGeneratedOtp && completeOtpInput.trim() !== '123456') {
-      alert('Kode OTP salah!');
+    if (!completeOtpInput.trim() || completeOtpInput.trim() !== completeGeneratedOtp) {
+      alert('Kode OTP yang Anda masukkan salah!');
       return;
     }
 
@@ -1312,7 +1312,7 @@ export default function Navbar() {
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
                   <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest block mb-0.5">Mode Simulasi Aktif</span>
                   <p className="text-[10px] text-amber-700 leading-normal">
-                    Fonnte token belum terpasang. Gunakan kode berikut: <strong className="text-slate-900 text-sm font-mono tracking-wider ml-1 bg-white px-2 py-0.5 rounded border border-amber-300">{completeGeneratedOtp}</strong>
+                    WhatsApp Gateway offline/terputus atau token belum aktif. Masukkan kode verifikasi berikut: <strong className="text-slate-900 text-sm font-mono tracking-wider ml-1 bg-white px-2 py-0.5 rounded border border-amber-300">{completeGeneratedOtp}</strong>
                   </p>
                 </div>
               )}

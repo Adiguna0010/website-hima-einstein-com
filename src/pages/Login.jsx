@@ -83,10 +83,10 @@ export default function Login({ showToast }) {
       const response = await sendOTP(forgotPhone, code);
       setForgotOtpMode(response.mode);
       setForgotStep(2);
-      if (response.mode === 'simulation') {
-        showToast('Kode OTP Simulasi pemulihan dibuat!', 'info');
+      if (response.success && response.mode === 'real') {
+        showToast('Kode OTP berhasil dikirim via WhatsApp!', 'success');
       } else {
-        showToast('Kode OTP dikirim ke WhatsApp Anda!', 'success');
+        showToast('WhatsApp Gateway terputus/offline. Kode OTP dialihkan ke Mode Simulasi di layar.', 'warning');
       }
     } catch (err) {
       showToast('Gagal mengirim OTP: ' + err.message, 'error');
@@ -97,8 +97,8 @@ export default function Login({ showToast }) {
 
   // Step 2: Verify OTP code
   const handleVerifyForgotOtp = () => {
-    if (forgotOtpInput.trim() !== forgotGeneratedOtp && forgotOtpInput.trim() !== '123456') {
-      showToast('Kode OTP salah!', 'error');
+    if (!forgotOtpInput.trim() || forgotOtpInput.trim() !== forgotGeneratedOtp) {
+      showToast('Kode OTP yang Anda masukkan salah!', 'error');
       return;
     }
     setForgotStep(3);
@@ -296,7 +296,7 @@ export default function Login({ showToast }) {
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
                     <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest block mb-0.5">Mode Simulasi Aktif</span>
                     <p className="text-[10px] text-amber-700 leading-normal">
-                      Fonnte token belum terpasang. Gunakan kode berikut: <strong className="text-slate-900 text-sm font-mono tracking-wider ml-1 bg-white px-2 py-0.5 rounded border border-amber-300">{forgotGeneratedOtp}</strong>
+                      WhatsApp Gateway offline/terputus atau token belum aktif. Masukkan kode verifikasi berikut: <strong className="text-slate-900 text-sm font-mono tracking-wider ml-1 bg-white px-2 py-0.5 rounded border border-amber-300">{forgotGeneratedOtp}</strong>
                     </p>
                   </div>
                 )}

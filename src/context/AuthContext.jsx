@@ -269,32 +269,60 @@ export const AuthProvider = ({ children }) => {
   };
 
   const sendOTP = async (phone, code) => {
-    // Masukkan Token Device Fonnte Anda di bawah ini agar aktif secara global untuk semua user
-    const DEFAULT_FONNTE_TOKEN = 'oAkLBXzaU41RszNf6j78'; 
-    const token = localStorage.getItem('fonnte_token') || DEFAULT_FONNTE_TOKEN;
-    if (!token) {
-      console.log(`[SIMULASI OTP] Mengirim OTP ke ${phone}: ${code}`);
-      return { success: true, mode: 'simulation', code };
-    }
-
+    const gatewayUrl = localStorage.getItem('self_hosted_gateway_url') || 'http://localhost:5001';
+    
+    // 1. Try Self-Hosted WhatsApp Gateway (Baileys Node.js)
     try {
-      const response = await fetch('https://api.fonnte.com/send', {
+      const response = await fetch(`${gatewayUrl}/send-otp`, {
         method: 'POST',
-        headers: {
-          'Authorization': token,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-          target: phone,
-          message: `Kode OTP verifikasi HIMA EINSTEN Anda adalah: ${code}. Gunakan kode ini untuk melanjutkan tindakan pendaftaran/pemulihan akun Anda.`
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone,
+          code,
+          message: `Kode OTP verifikasi HIMA EINSTEN Anda adalah: ${code}. Gunakan kode ini untuk melanjutkan pendaftaran/pemulihan akun Anda.`
         })
       });
       const result = await response.json();
-      return { success: result.status === true, mode: 'real', result };
-    } catch (error) {
-      console.error('Fonnte send OTP error:', error);
-      return { success: false, mode: 'error', error };
+      if (result.success) {
+        return { success: true, mode: 'real', provider: 'self-hosted', result };
+      }
+    } catch (err) {
+      console.log('Self-Hosted Gateway unavailable, trying Fonnte fallback...', err.message);
     }
+
+    // 2. Fallback to Fonnte API Gateway if token is set
+    const DEFAULT_FONNTE_TOKEN = 'oAkLBXzaU41RszNf6j78'; 
+    const token = localStorage.getItem('fonnte_token') || DEFAULT_FONNTE_TOKEN;
+    if (token) {
+      try {
+        const response = await fetch('https://api.fonnte.com/send', {
+          method: 'POST',
+          headers: {
+            'Authorization': token,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            target: phone,
+            message: `Kode OTP verifikasi HIMA EINSTEN Anda adalah: ${code}. Gunakan kode ini untuk melanjutkan tindakan pendaftaran/pemulihan akun Anda.`
+          })
+        });
+        const result = await response.json();
+        if (result.status === true) {
+          return { success: true, mode: 'real', provider: 'fonnte', result };
+        }
+      } catch (error) {
+        console.error('Fonnte send OTP error:', error);
+      }
+    }
+
+    // 3. Fallback to Simulation Mode if all gateways fail/offline
+    console.log(`[SIMULASI OTP] Mengirim OTP ke ${phone}: ${code}`);
+    return { 
+      success: false, 
+      mode: 'simulation', 
+      code, 
+      reason: 'Server WA Gateway (Self-Hosted & Fonnte) sedang offline/terputus' 
+    };
   };
 
   const updateUserPassword = (email, newPassword) => {

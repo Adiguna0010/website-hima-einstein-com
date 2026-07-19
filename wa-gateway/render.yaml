@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: wa-gateway-hima
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd wa-gateway && npm install
+    startCommand: cd wa-gateway && node server.js
+    envVars:
+      - key: PORT
+        value: 10000

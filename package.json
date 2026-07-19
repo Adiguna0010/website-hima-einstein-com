@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "gateway": "node wa-gateway/server.js",
+    "pm2:start": "npx pm2 start wa-gateway/server.js --name hima-wa-gateway",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
