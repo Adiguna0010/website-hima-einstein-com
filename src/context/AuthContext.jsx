@@ -224,7 +224,7 @@ export const AuthProvider = ({ children }) => {
 
   const sendOTP = async (phone, code) => {
     // Masukkan Token Device Fonnte Anda di bawah ini agar aktif secara global untuk semua user
-    const DEFAULT_FONNTE_TOKEN = ''; 
+    const DEFAULT_FONNTE_TOKEN = 'oAkLBXzaU41RszNf6j78'; 
     const token = localStorage.getItem('fonnte_token') || DEFAULT_FONNTE_TOKEN;
     if (!token) {
       console.log(`[SIMULASI OTP] Mengirim OTP ke ${phone}: ${code}`);
