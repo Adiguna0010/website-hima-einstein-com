@@ -7,25 +7,32 @@ export default function Space({ showToast }) {
   const { currentUser } = useAuth();
   const DEFAULT_INSTRUMENTS = [
     {
-      id: 'HIMA-MULT-002',
-      name: 'Digital Multimeter Sanwa CD800a',
+      id: 'HIMA-ARDU-001',
+      name: 'Arduino Uno R3',
       status: 'Available',
-      image: '📟',
-      desc: 'Alat ukur parameter kelistrikan presisi tinggi untuk praktikum kelistrikan.'
+      image: '/Media/Media Aset dan Logistik/Arduino Uno.webp',
+      desc: 'Papan mikrokontroler berbasis ATmega328P untuk pengembangan IoT dan elektronika dasar.'
     },
     {
-      id: 'HIMA-SOLD-005',
-      name: 'Solder Station Hakko',
-      status: 'Borrowed',
-      image: '🔥',
-      desc: 'Solder station dengan kontrol panas digital konstan untuk perakitan PCB.'
+      id: 'HIMA-GERI-002',
+      name: 'Mesin Gerinda Tangan',
+      status: 'Available',
+      image: '/Media/Media Aset dan Logistik/Gerinda.png',
+      desc: 'Mesin gerinda listrik pemotong logam, kayu, atau penghalus material proyek mekanik.'
     },
     {
-      id: 'HIMA-ARDU-011',
-      name: 'Arduino Uno Starter Kit',
+      id: 'HIMA-SOLD-003',
+      name: 'Solder Listrik',
       status: 'Available',
-      image: '🔌',
-      desc: 'Kit modul development mikrokontroler lengkap beserta modul sensor dasar.'
+      image: '/Media/Media Aset dan Logistik/Solder.jpg',
+      desc: 'Solder tangan dengan pemanas cepat untuk perakitan dan penyolderan komponen kelistrikan.'
+    },
+    {
+      id: 'HIMA-TIMA-004',
+      name: 'Timah Solder (Roll)',
+      status: 'Available',
+      image: '/Media/Media Aset dan Logistik/Timah.jpg',
+      desc: 'Kawat timah penyambung komponen elektro berkadar rosin flux optimal.'
     }
   ];
 
@@ -33,7 +40,10 @@ export default function Space({ showToast }) {
 
   useEffect(() => {
     const saved = localStorage.getItem('hima_instruments');
-    if (saved) {
+    if (saved && (saved.includes('HIMA-MULT-002') || saved.includes('HIMA-ARDU-011'))) {
+      localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
+      setInstruments(DEFAULT_INSTRUMENTS);
+    } else if (saved) {
       setInstruments(JSON.parse(saved));
     } else {
       localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
@@ -139,8 +149,12 @@ export default function Space({ showToast }) {
                 className="p-6 bg-white border border-gold-border rounded-2xl flex flex-col justify-between text-left space-y-4 hover:border-gold/30 hover:bg-slate-50/50 transition-all shadow-sm relative overflow-hidden group"
               >
                 <div className="flex justify-between items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-2xl shadow-inner shrink-0">
-                    {inst.image}
+                  <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shadow-inner shrink-0 overflow-hidden">
+                    {inst.image && (inst.image.startsWith('/') || inst.image.startsWith('http')) ? (
+                      <img src={inst.image} alt={inst.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl">{inst.image || '📦'}</span>
+                    )}
                   </div>
                   <span className={`px-2 py-0.5 rounded text-[9px] font-bold border uppercase tracking-wider ${
                     inst.status === 'Available' 

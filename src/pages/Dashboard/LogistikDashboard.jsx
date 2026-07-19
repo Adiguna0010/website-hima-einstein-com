@@ -12,15 +12,43 @@ export default function LogistikDashboard({ showToast }) {
   const [newDesc, setNewDesc] = useState('');
 
   const DEFAULT_INSTRUMENTS = [
-    { id: 'HIMA-MULT-002', name: 'Digital Multimeter Sanwa CD800a', status: 'Available', image: '📟', desc: 'Alat ukur parameter kelistrikan presisi tinggi untuk praktikum kelistrikan.' },
-    { id: 'HIMA-SOLD-005', name: 'Solder Station Hakko', status: 'Borrowed', image: '🔥', desc: 'Solder station dengan kontrol panas digital konstan untuk perakitan PCB.' },
-    { id: 'HIMA-ARDU-011', name: 'Arduino Uno Starter Kit', status: 'Available', image: '🔌', desc: 'Kit modul development mikrokontroler lengkap beserta modul sensor dasar.' }
+    {
+      id: 'HIMA-ARDU-001',
+      name: 'Arduino Uno R3',
+      status: 'Available',
+      image: '/Media/Media Aset dan Logistik/Arduino Uno.webp',
+      desc: 'Papan mikrokontroler berbasis ATmega328P untuk pengembangan IoT dan elektronika dasar.'
+    },
+    {
+      id: 'HIMA-GERI-002',
+      name: 'Mesin Gerinda Tangan',
+      status: 'Available',
+      image: '/Media/Media Aset dan Logistik/Gerinda.png',
+      desc: 'Mesin gerinda listrik pemotong logam, kayu, atau penghalus material proyek mekanik.'
+    },
+    {
+      id: 'HIMA-SOLD-003',
+      name: 'Solder Listrik',
+      status: 'Available',
+      image: '/Media/Media Aset dan Logistik/Solder.jpg',
+      desc: 'Solder tangan dengan pemanas cepat untuk perakitan dan penyolderan komponen kelistrikan.'
+    },
+    {
+      id: 'HIMA-TIMA-004',
+      name: 'Timah Solder (Roll)',
+      status: 'Available',
+      image: '/Media/Media Aset dan Logistik/Timah.jpg',
+      desc: 'Kawat timah penyambung komponen elektro berkadar rosin flux optimal.'
+    }
   ];
 
   useEffect(() => {
     // Load instruments
     const savedInst = localStorage.getItem('hima_instruments');
-    if (savedInst) {
+    if (savedInst && (savedInst.includes('HIMA-MULT-002') || savedInst.includes('HIMA-ARDU-011'))) {
+      localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
+      setInstruments(DEFAULT_INSTRUMENTS);
+    } else if (savedInst) {
       setInstruments(JSON.parse(savedInst));
     } else {
       localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
@@ -235,7 +263,11 @@ export default function LogistikDashboard({ showToast }) {
                       instruments.map((inst) => (
                         <tr key={inst.id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="px-6 py-4 flex items-center gap-3">
-                            <span className="text-2xl">{inst.image}</span>
+                            {inst.image && (inst.image.startsWith('/') || inst.image.startsWith('http')) ? (
+                              <img src={inst.image} alt={inst.name} className="w-8 h-8 rounded-lg object-cover border border-slate-200" />
+                            ) : (
+                              <span className="text-2xl">{inst.image || '📦'}</span>
+                            )}
                             <div>
                               <p className="font-bold text-slate-800">{inst.name}</p>
                               <p className="text-[10px] text-slate-500 font-light truncate max-w-[250px]">{inst.desc}</p>
