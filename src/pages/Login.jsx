@@ -33,14 +33,21 @@ export default function Login({ showToast }) {
         navigate('/dashboard/master');
       } else if (user.role === 'Operator Danus') {
         navigate('/dashboard/danus');
-      } else if (user.role === 'Operator Ristek') {
-        navigate('/sphere');
       } else if (user.role === 'Operator Logistik') {
         navigate('/dashboard/logistik');
       } else if (user.role === 'Sekretaris Umum') {
         navigate('/dashboard/sekretaris');
       } else if (user.role === 'Bendahara Umum') {
         navigate('/dashboard/bendahara');
+      } else if ([
+        'Operator BPH',
+        'Operator Internal',
+        'Operator External',
+        'Operator Ristek',
+        'Operator Pengma',
+        'Operator Kominfo'
+      ].includes(user.role)) {
+        navigate('/dashboard/division');
       } else {
         navigate('/');
       }

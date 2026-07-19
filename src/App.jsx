@@ -20,6 +20,7 @@ import DanusDashboard from './pages/Dashboard/DanusDashboard';
 import RistekDashboard from './pages/Dashboard/RistekDashboard';
 import LogistikDashboard from './pages/Dashboard/LogistikDashboard';
 import BendaharaDashboard from './pages/Dashboard/BendaharaDashboard';
+import DivisionDashboard from './pages/Dashboard/DivisionDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { Toast } from './components/Toast';
@@ -170,6 +171,26 @@ export default function App() {
                   element={
                     <ProtectedRoute allowedRoles={['Master Admin', 'Bendahara Umum']}>
                       <BendaharaDashboard showToast={showToast} />
+                    </ProtectedRoute>
+                  } 
+                />
+
+                {/* Protected Division Operator Route */}
+                <Route 
+                  path="/dashboard/division" 
+                  element={
+                    <ProtectedRoute allowedRoles={[
+                      'Master Admin',
+                      'Operator BPH',
+                      'Operator Internal',
+                      'Operator External',
+                      'Operator Ristek',
+                      'Operator Pengma',
+                      'Operator Danus',
+                      'Operator Kominfo',
+                      'Operator Logistik'
+                    ]}>
+                      <DivisionDashboard showToast={showToast} />
                     </ProtectedRoute>
                   } 
                 />

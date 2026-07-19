@@ -18,6 +18,74 @@ function ComingSoon({ title }) {
   );
 }
 
+function DivisionProgramsView({ divisionKey, divisionName }) {
+  const [programs, setPrograms] = useState([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(`hima_division_programs_${divisionKey}`);
+    if (saved) {
+      setPrograms(JSON.parse(saved));
+    } else {
+      // Starter program for empty divisions so it looks nice
+      const starter = [
+        {
+          id: 1,
+          name: `Program Kerja Unggulan ${divisionName}`,
+          desc: `Pemaparan program kerja awal divisi ${divisionName} untuk menyelaraskan target Kabinet Photisma HIMA EINSTEN.`,
+          status: 'Terencana'
+        }
+      ];
+      localStorage.setItem(`hima_division_programs_${divisionKey}`, JSON.stringify(starter));
+      setPrograms(starter);
+    }
+  }, [divisionKey, divisionName]);
+
+  return (
+    <div className="space-y-6 text-left max-w-4xl mx-auto">
+      <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
+        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
+          Pemaparan Program Kerja Divisi
+        </h3>
+        <span className="text-[10px] text-slate-400 font-mono uppercase tracking-widest">
+          [ {programs.length} PROGRAM RANCANGAN ]
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {programs.map((p) => (
+          <div 
+            key={p.id} 
+            className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:border-gold/30 hover:shadow-md transition-all space-y-3 relative group overflow-hidden"
+          >
+            {/* Design accents */}
+            <div className="absolute top-0 right-0 w-2 h-full bg-gold/10 group-hover:bg-gold/30 transition-colors"></div>
+
+            <div className="flex items-center gap-2">
+              <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold border ${
+                p.status === 'Terlaksana'
+                  ? 'bg-emerald-50 border-emerald-250 text-emerald-600'
+                  : p.status === 'Sedang Berjalan'
+                  ? 'bg-amber-50 border-amber-250 text-amber-600'
+                  : 'bg-slate-100 border-slate-205 text-slate-550'
+              }`}>
+                {p.status}
+              </span>
+            </div>
+
+            <h4 className="text-sm font-bold text-slate-800 group-hover:text-gold-dark transition-all">
+              {p.name}
+            </h4>
+
+            <p className="text-[11px] text-slate-550 leading-relaxed font-light">
+              {p.desc}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function DivisionDetail({ showToast }) {
   const { divisionKey } = useParams();
   const navigate = useNavigate();
@@ -212,14 +280,14 @@ export default function DivisionDetail({ showToast }) {
       icon: '🤝',
       iconComponent: <Users className="w-8 h-8 text-gold" />,
       desc: 'Fokus pada penyelarasan kekerabatan pengurus Himpunan, penampungan aspirasi internal, dan perumusan kegiatan kebersamaan.',
-      renderContent: () => <ComingSoon title="Internal" />
+      renderContent: () => <DivisionProgramsView divisionKey="internal" divisionName="Internal" />
     },
     external: {
       title: 'External Division',
       icon: '🌐',
       iconComponent: <Globe className="w-8 h-8 text-gold" />,
       desc: 'Menghubungkan HIMA EINSTEN dengan alumni, korporasi industri nuklir/kesehatan, BRIN, serta himpunan mahasiswa luar.',
-      renderContent: () => <ComingSoon title="External" />
+      renderContent: () => <DivisionProgramsView divisionKey="external" divisionName="External" />
     },
     ristek: {
       title: 'Riset & Teknologi',
@@ -519,7 +587,7 @@ export default function DivisionDetail({ showToast }) {
       icon: '🚀',
       iconComponent: <Rocket className="w-8 h-8 text-gold" />,
       desc: 'Fasilitas sertifikasi industri, persiapan karir, rekrutmen magang, dan kompilasi info prestasi kemahasiswaan.',
-      renderContent: () => <ComingSoon title="Pengembangan Mahasiswa" />
+      renderContent: () => <DivisionProgramsView divisionKey="pengma" divisionName="Pengembangan Mahasiswa" />
     },
     danus: {
       title: 'Dana Usaha',
@@ -579,7 +647,7 @@ export default function DivisionDetail({ showToast }) {
       icon: '📢',
       iconComponent: <Radio className="w-8 h-8 text-gold" />,
       desc: 'Media publikasi berita sains nuklir, dokumentasi kegiatan, rilis buletin triwulan EINSTEN, dan podcast audio visual.',
-      renderContent: () => <ComingSoon title="Komunikasi & Informasi" />
+      renderContent: () => <DivisionProgramsView divisionKey="kominfo" divisionName="Komunikasi & Informasi" />
     },
     logistik: {
       title: 'Logistik',

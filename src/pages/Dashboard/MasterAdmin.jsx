@@ -29,10 +29,16 @@ export default function MasterAdmin({ showToast }) {
 
   const rolesList = [
     'Anggota Biasa',
-    'Operator Danus',
+    'Operator BPH',
+    'Operator Internal',
+    'Operator External',
     'Operator Ristek',
+    'Operator Pengma',
+    'Operator Danus',
+    'Operator Kominfo',
     'Operator Logistik',
     'Sekretaris Umum',
+    'Bendahara Umum',
     'Master Admin'
   ];
 
