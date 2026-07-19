@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Shield, ShieldAlert,
   ShoppingBag, Compass, History, Cpu, Bell, MessageSquare, Send, ArrowLeft, Trash2, MessageCircle,
-  Vote
+  Vote, Handshake, TrendingUp
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -23,11 +23,15 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSuiteOpen, setIsSuiteOpen] = useState(false);
+  const [isPartnershipOpen, setIsPartnershipOpen] = useState(false);
+  const [isMobilePartnershipOpen, setIsMobilePartnershipOpen] = useState(false);
   const [dismissPhoneAlert, setDismissPhoneAlert] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isMobileSuiteOpen, setIsMobileSuiteOpen] = useState(false);
   
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  const partnershipRef = useRef(null);
 
   // States for Phone Completion & OTP Verification Modal
   const [showCompletePhoneModal, setShowCompletePhoneModal] = useState(false);
@@ -109,6 +113,7 @@ export default function Navbar() {
   useEffect(() => {
     setIsOpen(false);
     setIsSuiteOpen(false);
+    setIsPartnershipOpen(false);
     setIsAdminOpen(false);
     setIsNotifOpen(false);
   }, [location]);
@@ -286,6 +291,9 @@ export default function Navbar() {
     function handleClickOutside(event) {
       if (suiteRef.current && !suiteRef.current.contains(event.target)) {
         setIsSuiteOpen(false);
+      }
+      if (partnershipRef.current && !partnershipRef.current.contains(event.target)) {
+        setIsPartnershipOpen(false);
       }
       if (adminRef.current && !adminRef.current.contains(event.target)) {
         setIsAdminOpen(false);
@@ -534,14 +542,57 @@ export default function Navbar() {
               Kalender
             </Link>
 
-            <Link 
-              to="/mitra" 
-              className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                location.pathname === '/mitra' || location.pathname === '/investor' ? 'text-gold font-bold' : 'text-slate-600 hover:text-gold-dark font-medium'
-              }`}
-            >
-              Mitra & Investor
-            </Link>
+            <div className="relative" ref={partnershipRef}>
+              <button
+                onClick={() => setIsPartnershipOpen(!isPartnershipOpen)}
+                className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
+                  ['/mitra', '/investor'].some(p => location.pathname.startsWith(p))
+                    ? 'text-gold font-bold' 
+                    : 'text-slate-600 hover:text-gold-dark font-medium'
+                }`}
+              >
+                Mitra & Investor
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isPartnershipOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isPartnershipOpen && (
+                <div className="absolute left-1/2 -translate-x-1/2 mt-3 w-72 rounded-2xl bg-white border border-gold-border shadow-xl p-4 z-50 animate-slide-in text-left space-y-3">
+                  {/* Sponsor & Mitra Strategis */}
+                  <Link 
+                    to="/mitra" 
+                    onClick={() => setIsPartnershipOpen(false)}
+                    className="flex items-start gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors group"
+                  >
+                    <div className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center bg-slate-50 shrink-0 group-hover:border-gold/20 group-hover:bg-gold/5">
+                      <Handshake className="w-4 h-4 text-slate-650 group-hover:text-gold" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800">Mitra & Sponsor</h4>
+                      <p className="text-[10px] text-slate-500 font-light mt-0.5 leading-snug">
+                        Kolaborasi event, riset, & sponsor industri.
+                      </p>
+                    </div>
+                  </Link>
+
+                  {/* Investor & Pendanaan */}
+                  <Link 
+                    to="/investor" 
+                    onClick={() => setIsPartnershipOpen(false)}
+                    className="flex items-start gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors group"
+                  >
+                    <div className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center bg-slate-50 shrink-0 group-hover:border-gold/20 group-hover:bg-gold/5">
+                      <TrendingUp className="w-4 h-4 text-slate-655 group-hover:text-gold" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800">Investor & Pendanaan</h4>
+                      <p className="text-[10px] text-slate-500 font-light mt-0.5 leading-snug">
+                        Inkubasi bisnis & pendanaan riset komersial HIMA.
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Desktop Right Controls (Auth & Instansi Logos) */}
@@ -964,14 +1015,41 @@ export default function Navbar() {
               Kalender
             </Link>
 
-            <Link
-              to="/mitra"
-              className={`block px-3 py-2 rounded-lg text-base font-medium ${
-                location.pathname === '/mitra' || location.pathname === '/investor' ? 'bg-slate-50 text-gold font-bold' : 'text-slate-600 hover:text-gold-dark'
-              }`}
-            >
-              Mitra & Investor
-            </Link>
+            {/* Mitra & Investor Accordion in Mobile */}
+            <div className="py-1 border-b border-slate-100 my-2">
+              <button
+                onClick={() => setIsMobilePartnershipOpen(!isMobilePartnershipOpen)}
+                className="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 hover:text-gold transition-colors"
+              >
+                <span>Mitra & Investor</span>
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isMobilePartnershipOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isMobilePartnershipOpen && (
+                <div className="pl-4 pr-3 py-1.5 space-y-2 bg-slate-50 rounded-xl mt-1 text-left">
+                  <Link
+                    to="/mitra"
+                    onClick={() => {
+                      setIsOpen(false);
+                      setIsMobilePartnershipOpen(false);
+                    }}
+                    className="block py-1 text-xs text-slate-650 hover:text-gold font-semibold"
+                  >
+                    Sponsor & Mitra Strategis
+                  </Link>
+                  <Link
+                    to="/investor"
+                    onClick={() => {
+                      setIsOpen(false);
+                      setIsMobilePartnershipOpen(false);
+                    }}
+                    className="block py-1 text-xs text-slate-650 hover:text-gold font-semibold"
+                  >
+                    Investor & Pendanaan
+                  </Link>
+                </div>
+              )}
+            </div>
 
             {/* Mobile Auth */}
             <div className="pt-4 border-t border-slate-105">
