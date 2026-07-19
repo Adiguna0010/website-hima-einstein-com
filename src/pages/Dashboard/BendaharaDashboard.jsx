@@ -109,9 +109,29 @@ export default function BendaharaDashboard({ showToast }) {
   // Delete Finance Entry
   const handleDeleteTransaction = (id) => {
     if (window.confirm('Hapus entri transaksi ini?')) {
+      const recordToDelete = records.find(r => r.id === id);
       const updated = records.filter(r => r.id !== id);
       setRecords(updated);
       localStorage.setItem('hima_cashflow', JSON.stringify(updated));
+
+      // Jika entri kas iuran anggota, reset status hima_kas_payments kembali ke 'Belum Bayar'
+      if (recordToDelete && recordToDelete.category === 'Iuran') {
+        const kasData = JSON.parse(localStorage.getItem('hima_kas_payments') || '[]');
+        // Cari payment yang cocok berdasarkan deskripsi (mengandung NIM)
+        const updatedKas = kasData.map(p => {
+          if (
+            p.status === 'Lunas' &&
+            recordToDelete.desc &&
+            recordToDelete.desc.includes(p.nim)
+          ) {
+            return { ...p, status: 'Belum Bayar', verifiedBy: null, verifiedAt: null };
+          }
+          return p;
+        });
+        setKasPayments(updatedKas);
+        localStorage.setItem('hima_kas_payments', JSON.stringify(updatedKas));
+      }
+
       showToast('Entri transaksi berhasil dihapus.', 'info');
     }
   };

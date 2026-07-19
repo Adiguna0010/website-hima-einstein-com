@@ -123,8 +123,8 @@ export default function Profile({ showToast }) {
     if (!selectedSem) { showToast('Pilih semester yang ingin dibayar!', 'error'); return; }
     if (!proofImg) { showToast('Upload foto bukti pembayaran QRIS!', 'error'); return; }
     const nominal = parseInt(nominalInput.replace(/\D/g, ''), 10);
-    if (!nominal || nominal < selectedSem.fee) {
-      showToast(`Jumlah yang dibayarkan harus minimal ${formatRupiah(selectedSem.fee)}!`, 'error');
+    if (!nominal || nominal < 2000) {
+      showToast(`Jumlah yang dibayarkan harus minimal ${formatRupiah(2000)}!`, 'error');
       return;
     }
 
