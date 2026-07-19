@@ -285,14 +285,23 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-12">
           
-          {/* Logo - HIMA logo */}
-          <div className="flex-shrink-0 cursor-pointer flex items-center" onClick={() => navigate('/')}>
+          {/* Logo - HIMA & Kabinet logo */}
+          <div className="flex-shrink-0 cursor-pointer flex items-center gap-2" onClick={() => navigate('/')}>
             <img 
               src="/Media/Logo HIma/logo hima warna (3)_page-0001.jpg" 
-              alt="HIMPUNAN EINSTEN.COM Logo" 
-              className="h-14 sm:h-18 w-auto object-contain"
+              alt="Logo HIMA EINSTEN" 
+              className="h-10 sm:h-12 w-auto object-contain rounded-md"
               onError={(e) => {
-                e.target.src = "https://placehold.co/180x45/ffffff/000000?text=EINSTEN";
+                e.target.src = "https://placehold.co/120x45/ffffff/000000?text=EINSTEN";
+              }}
+            />
+            <div className="w-px h-6 sm:h-8 bg-slate-300"></div>
+            <img 
+              src="/Media Einsten/Media Umum/logo kabinet hitam (horizontal) (1).png" 
+              alt="Logo Kabinet Phótisma" 
+              className="h-7 sm:h-9 w-auto object-contain"
+              onError={(e) => {
+                e.target.src = "https://placehold.co/180x45/ffffff/000000?text=PHÓTISMA";
               }}
             />
           </div>

@@ -12,14 +12,25 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-left">
           {/* Brand/About */}
           <div className="md:col-span-2 space-y-4">
-            <img 
-              src="/Media/Logo Kabinet/logo kabinet hitam (horizontal).png" 
-              alt="Kabinet Phótisma Logo" 
-              className="h-10 w-auto object-contain"
-              onError={(e) => {
-                e.target.src = "https://placehold.co/180x45/ffffff/000000?text=KABINET+PHOTISMA";
-              }}
-            />
+            <div className="flex items-center gap-3">
+              <img 
+                src="/Media/Logo HIma/logo hima warna (3)_page-0001.jpg" 
+                alt="Logo HIMA EINSTEN" 
+                className="h-12 w-auto object-contain rounded-md"
+                onError={(e) => {
+                  e.target.src = "https://placehold.co/120x45/ffffff/000000?text=EINSTEN";
+                }}
+              />
+              <div className="w-px h-8 bg-slate-300"></div>
+              <img 
+                src="/Media/Logo Kabinet/logo kabinet hitam (horizontal).png" 
+                alt="Kabinet Phótisma Logo" 
+                className="h-10 w-auto object-contain"
+                onError={(e) => {
+                  e.target.src = "https://placehold.co/180x45/ffffff/000000?text=KABINET+PHOTISMA";
+                }}
+              />
+            </div>
             <p className="text-slate-600 text-sm max-w-sm leading-relaxed font-light">
               Website Resmi Himpunan Mahasiswa Program Studi Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia - Kabinet Phótisma.
             </p>
