@@ -215,28 +215,19 @@ export default function ScannerModal({ isOpen, onClose, activeToolId, activeTool
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-between gap-3">
+        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
           <button
-            onClick={handleSimulateScan}
-            className="px-4 py-2 bg-white border border-slate-250 hover:bg-slate-100 text-slate-700 hover:text-slate-900 rounded-xl text-xs font-semibold transition-all shadow-sm"
+            onClick={onClose}
+            className="px-4 py-2 border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-semibold transition-colors"
           >
-            Simulasikan Scan (3 Detik)
+            Batal
           </button>
-          
-          <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-semibold transition-colors"
-            >
-              Batal
-            </button>
-            <button
-              onClick={handleManualSubmit}
-              className="px-5 py-2 bg-gradient-to-r from-gold to-gold-light text-white rounded-xl text-xs font-bold shadow-md shadow-gold/20 hover:brightness-110 transition-all active:scale-95"
-            >
-              Gunakan ID
-            </button>
-          </div>
+          <button
+            onClick={handleManualSubmit}
+            className="px-5 py-2 bg-gradient-to-r from-gold to-gold-light text-white rounded-xl text-xs font-bold shadow-md shadow-gold/20 hover:brightness-110 transition-all active:scale-95"
+          >
+            Gunakan ID
+          </button>
         </div>
       </div>
     </div>
