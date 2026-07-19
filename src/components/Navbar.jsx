@@ -923,6 +923,14 @@ export default function Navbar() {
                     </div>
 
                     <div className="py-1 text-left">
+                      <Link
+                        to="/profile"
+                        onClick={() => setIsAdminOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-gold-dark transition-colors"
+                      >
+                        <User className="w-3.5 h-3.5" />
+                        Profil Saya
+                      </Link>
                       {dbPath && (
                         <Link
                           to={dbPath}
@@ -1154,6 +1162,12 @@ export default function Navbar() {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 px-3">
+                    <Link
+                      to="/profile"
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-700 hover:text-slate-900"
+                    >
+                      <User className="w-4 h-4" /> Profil
+                    </Link>
                     {dbPath && (
                       <Link
                         to={dbPath}
@@ -1164,7 +1178,7 @@ export default function Navbar() {
                     )}
                     <button
                       onClick={handleLogout}
-                      className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-rose-200 bg-rose-50 text-sm font-semibold text-rose-600 hover:text-rose-700"
+                      className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-rose-200 bg-rose-50 text-sm font-semibold text-rose-600 hover:text-rose-700 ${dbPath ? 'col-span-2' : ''}`}
                     >
                       <LogOut className="w-4 h-4" /> Keluar
                     </button>

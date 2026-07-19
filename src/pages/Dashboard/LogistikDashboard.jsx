@@ -8,8 +8,9 @@ export default function LogistikDashboard({ showToast }) {
   // Form states for new instrument
   const [newName, setNewName] = useState('');
   const [newId, setNewId] = useState('');
-  const [newImage, setNewImage] = useState('📟');
+  const [newImage, setNewImage] = useState('');
   const [newDesc, setNewDesc] = useState('');
+  const [formKey, setFormKey] = useState(Date.now());
 
   const DEFAULT_INSTRUMENTS = [
     {
@@ -90,10 +91,31 @@ export default function LogistikDashboard({ showToast }) {
     showToast(`Status alat ${id} berhasil diubah!`, 'success');
   };
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 1024 * 1024) {
+        showToast('Ukuran foto terlalu besar! Maksimal 1MB.', 'error');
+        e.target.value = null;
+        setNewImage('');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewImage(reader.result); // Base64 string
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleRegisterInstrument = (e) => {
     e.preventDefault();
     if (!newName || !newId) {
       showToast('Nama Alat dan Kode ID wajib diisi!', 'error');
+      return;
+    }
+    if (!newImage) {
+      showToast('Foto alat wajib diupload!', 'error');
       return;
     }
 
@@ -118,8 +140,9 @@ export default function LogistikDashboard({ showToast }) {
     // Reset Form
     setNewName('');
     setNewId('');
-    setNewImage('📟');
+    setNewImage('');
     setNewDesc('');
+    setFormKey(Date.now());
     showToast(`Alat ${newName} berhasil didaftarkan!`, 'success');
   };
 
@@ -455,21 +478,22 @@ export default function LogistikDashboard({ showToast }) {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Ikon Alat (Emoji)</label>
-                <select 
-                  value={newImage}
-                  onChange={(e) => setNewImage(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-850 focus:outline-none focus:border-gold"
-                >
-                  <option value="📟">📟 Multimeter / Alat Digital</option>
-                  <option value="🔌">🔌 Modul / Sensor / Arduino</option>
-                  <option value="🔥">🔥 Solder / Pemanas</option>
-                  <option value="🔬">🔬 Mikroskop / Alat Optik</option>
-                  <option value="💻">💻 Komputer / Laptop Lab</option>
-                  <option value="⚙️">⚙️ Modul Mekanik</option>
-                  <option value="🔋">🔋 Baterai / Catu Daya</option>
-                  <option value="🛠️">🛠️ Perkakas / Toolset</option>
-                </select>
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Foto Alat (Upload)</label>
+                <div className="flex flex-col gap-2">
+                  <input 
+                    key={formKey}
+                    type="file"
+                    accept="image/*"
+                    required
+                    onChange={handleImageUpload}
+                    className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gold/10 file:text-gold-dark hover:file:bg-gold/20 cursor-pointer"
+                  />
+                  {newImage && (
+                    <div className="relative w-16 h-16 rounded-xl border border-slate-200 overflow-hidden mt-1 bg-slate-50 flex items-center justify-center">
+                      <img src={newImage} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-1">

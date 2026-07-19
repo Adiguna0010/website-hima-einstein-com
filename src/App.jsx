@@ -26,6 +26,7 @@ import { CartProvider } from './context/CartContext';
 import { Toast } from './components/Toast';
 import CabinetStructure from './pages/CabinetStructure';
 import Election from './pages/Election';
+import Profile from './pages/Profile';
 
 // Redirect to home page on F5 refresh / initial mount
 function RefreshRedirect() {
@@ -197,6 +198,16 @@ export default function App() {
 
                 {/* Fallback redirect to Home */}
                 <Route path="*" element={<Navigate to="/" replace />} />
+
+                {/* Protected Profile Route — all logged-in users */}
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute allowedRoles={['Master Admin','Bendahara Umum','Operator Danus','Operator Logistik','Operator Ristek','Sekretaris Umum','Operator BPH','Operator Internal','Operator External','Operator Pengma','Operator Kominfo','Anggota Biasa']}>
+                      <Profile showToast={showToast} />
+                    </ProtectedRoute>
+                  }
+                />
               </Routes>
             </main>
 

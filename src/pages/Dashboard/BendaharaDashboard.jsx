@@ -2,14 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Coins, FileText, Plus, Trash2, Save, TrendingUp, TrendingDown, 
-  Calendar, CheckCircle, XCircle, AlertCircle, FileSpreadsheet, Loader2, ArrowRight
+  Calendar, CheckCircle, XCircle, AlertCircle, FileSpreadsheet, Loader2, ArrowRight,
+  Users, AlertTriangle, BadgeCheck, Clock, Eye
 } from 'lucide-react';
+
+// ─── Kas Config ──────────────────────────────────────────────
+const KAS_SEMESTERS = [
+  { id: 'sem1-2026', label: 'Semester 1 — 2026', period: 'Januari – Juni 2026', fee: 70000 },
+  { id: 'sem2-2026', label: 'Semester 2 — 2026', period: 'Juli – Desember 2026', fee: 70000 },
+];
+const formatRupiahKas = (val) =>
+  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
+const formatDateKas = (ts) =>
+  ts ? new Date(ts).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 
 export default function BendaharaDashboard({ showToast }) {
   const { currentUser } = useAuth();
 
   // Tab State
-  const [activeTab, setActiveTab] = useState('finance'); // 'finance', 'budget', 'letters'
+  const [activeTab, setActiveTab] = useState('finance'); // 'finance', 'budget', 'letters', 'kas'
+
+  // KAS ANGGOTA STATE
+  const [kasPayments, setKasPayments] = useState([]);
+  const [kasFilter, setKasFilter] = useState('all'); // 'all'|'pending'|'lunas'|'belum'
+  const [proofModal, setProofModal] = useState(null); // payment obj
 
   // FINANCE STATE
   const [records, setRecords] = useState([]);
@@ -54,6 +70,10 @@ export default function BendaharaDashboard({ showToast }) {
     if (savedLetters) {
       setLetters(JSON.parse(savedLetters));
     }
+
+    // Kas Anggota
+    const savedKas = localStorage.getItem('hima_kas_payments');
+    if (savedKas) setKasPayments(JSON.parse(savedKas));
   }, []);
 
   const formatRupiah = (val) => {
@@ -210,6 +230,19 @@ export default function BendaharaDashboard({ showToast }) {
           }`}
         >
           <FileText className="w-4 h-4" /> Verifikasi Persuratan
+        </button>
+        <button
+          onClick={() => setActiveTab('kas')}
+          className={`flex items-center gap-2 pb-4 px-6 text-sm font-semibold transition-all relative ${
+            activeTab === 'kas' ? 'text-gold' : 'text-zinc-400 hover:text-zinc-650'
+          }`}
+        >
+          <Users className="w-4 h-4" /> Kas Anggota
+          {kasPayments.filter(p => p.status === 'Menunggu Verifikasi').length > 0 && (
+            <span className="ml-1 px-1.5 py-0.5 text-[9px] font-bold bg-rose-500 text-white rounded-full">
+              {kasPayments.filter(p => p.status === 'Menunggu Verifikasi').length}
+            </span>
+          )}
         </button>
       </div>
 
@@ -562,6 +595,229 @@ export default function BendaharaDashboard({ showToast }) {
           </div>
         </div>
       )}
+
+      {/* TAB 4: Kas Anggota */}
+      {activeTab === 'kas' && (() => {
+        // Compute per-user kas status
+        const allUsers = JSON.parse(localStorage.getItem('hima_users') || '[]')
+          .filter(u => u.status === 'Active');
+
+        // Build member kas summary
+        const memberSummary = allUsers.map(u => {
+          const payments = kasPayments.filter(p => p.nim === u.nim);
+          const semStatus = KAS_SEMESTERS.map(sem => {
+            const found = payments.find(p => p.semId === sem.id);
+            return {
+              ...sem,
+              status: found ? found.status : 'Belum Bayar',
+              payment: found || null,
+            };
+          });
+          const totalOwed = semStatus.filter(s => s.status !== 'Lunas').reduce((a, s) => a + s.fee, 0);
+          const totalPaid = semStatus.filter(s => s.status === 'Lunas').reduce((a, s) => a + s.fee, 0);
+          return { ...u, semStatus, totalOwed, totalPaid };
+        });
+
+        const filtered = memberSummary.filter(m => {
+          if (kasFilter === 'pending') return kasPayments.some(p => p.nim === m.nim && p.status === 'Menunggu Verifikasi');
+          if (kasFilter === 'lunas') return m.totalOwed === 0;
+          if (kasFilter === 'belum') return m.totalOwed > 0;
+          return true;
+        });
+
+        const handleAccKas = (payment) => {
+          const updated = kasPayments.map(p => p.id === payment.id ? { ...p, status: 'Lunas', verifiedBy: currentUser.name, verifiedAt: Date.now() } : p);
+          setKasPayments(updated);
+          localStorage.setItem('hima_kas_payments', JSON.stringify(updated));
+
+          // Auto-record in cashflow (transparansi keuangan)
+          const cashflow = JSON.parse(localStorage.getItem('hima_cashflow') || '[]');
+          cashflow.push({
+            id: Date.now(),
+            date: new Date().toISOString().split('T')[0],
+            desc: `Iuran Kas ${payment.semLabel} — ${payment.name} (NIM: ${payment.nim})`,
+            type: 'in',
+            amount: payment.amount,
+            category: 'Iuran',
+          });
+          localStorage.setItem('hima_cashflow', JSON.stringify(cashflow));
+          setRecords(cashflow);
+
+          // Notify anggota
+          const notifs = JSON.parse(localStorage.getItem('hima_notifications') || '[]');
+          notifs.push({
+            id: Date.now() + 1,
+            recipientEmail: payment.email,
+            message: `✅ Pembayaran kas Anda untuk ${payment.semLabel} sebesar ${formatRupiahKas(payment.amount)} telah DIVERIFIKASI dan dicatat dalam transparansi keuangan HIMA EINSTEN!`,
+            read: false,
+            timestamp: Date.now(),
+          });
+          localStorage.setItem('hima_notifications', JSON.stringify(notifs));
+          setProofModal(null);
+          showToast(`Kas ${payment.name} (${payment.semLabel}) berhasil diverifikasi dan dicatat!`, 'success');
+        };
+
+        const handleRejectKas = (payment) => {
+          const updated = kasPayments.map(p => p.id === payment.id ? { ...p, status: 'Ditolak' } : p);
+          setKasPayments(updated);
+          localStorage.setItem('hima_kas_payments', JSON.stringify(updated));
+
+          const notifs = JSON.parse(localStorage.getItem('hima_notifications') || '[]');
+          notifs.push({
+            id: Date.now() + 1,
+            recipientEmail: payment.email,
+            message: `❌ Pembayaran kas ${payment.semLabel} Anda DITOLAK oleh Bendahara. Silakan coba kembali dengan bukti yang valid.`,
+            read: false,
+            timestamp: Date.now(),
+          });
+          localStorage.setItem('hima_notifications', JSON.stringify(notifs));
+          setProofModal(null);
+          showToast('Pembayaran ditolak.', 'info');
+        };
+
+        const pendingCount = kasPayments.filter(p => p.status === 'Menunggu Verifikasi').length;
+        const totalCollected = kasPayments.filter(p => p.status === 'Lunas').reduce((a, p) => a + p.amount, 0);
+
+        return (
+          <div className="space-y-6 animate-in fade-in duration-250">
+            {/* Summary Stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Menunggu Verifikasi</p>
+                <p className="text-2xl font-extrabold text-amber-600 mt-1">{pendingCount}</p>
+                <p className="text-[10px] text-slate-400">pembayaran perlu di-ACC</p>
+              </div>
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Total Terverifikasi</p>
+                <p className="text-2xl font-extrabold text-emerald-600 mt-1">{formatRupiahKas(totalCollected)}</p>
+                <p className="text-[10px] text-slate-400">sudah tercatat di kas HIMA</p>
+              </div>
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Total Anggota</p>
+                <p className="text-2xl font-extrabold text-slate-800 mt-1">{allUsers.length}</p>
+                <p className="text-[10px] text-slate-400">akun aktif terdaftar</p>
+              </div>
+            </div>
+
+            {/* Filter */}
+            <div className="flex gap-2 flex-wrap">
+              {[['all','Semua'],['pending','Menunggu Verifikasi'],['belum','Menunggak'],['lunas','Lunas']].map(([val,label]) => (
+                <button
+                  key={val}
+                  onClick={() => setKasFilter(val)}
+                  className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                    kasFilter === val
+                      ? 'bg-gold text-white border-gold shadow-md'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-gold/50'
+                  }`}
+                >
+                  {label}
+                  {val === 'pending' && pendingCount > 0 && (
+                    <span className="ml-1.5 px-1.5 py-0.5 bg-rose-500 text-white rounded-full text-[9px] font-bold">{pendingCount}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Member Table */}
+            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200">
+                      <th className="px-5 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Anggota</th>
+                      <th className="px-4 py-3 text-center text-[10px] font-bold text-slate-500 uppercase">Semester 1</th>
+                      <th className="px-4 py-3 text-center text-[10px] font-bold text-slate-500 uppercase">Semester 2</th>
+                      <th className="px-4 py-3 text-right text-[10px] font-bold text-slate-500 uppercase">Tunggakan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filtered.length === 0 ? (
+                      <tr><td colSpan={4} className="px-5 py-8 text-center text-slate-400 text-xs">Tidak ada data.</td></tr>
+                    ) : filtered.map(member => (
+                      <tr key={member.email} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                              {member.photo
+                                ? <img src={member.photo} alt={member.name} className="w-full h-full object-cover" />
+                                : <span className="text-xs font-bold text-gold">{member.name[0]}</span>}
+                            </div>
+                            <div className="text-left">
+                              <p className="font-bold text-slate-800">{member.name}</p>
+                              <p className="text-[10px] text-slate-400">{member.nim} · {member.role}</p>
+                            </div>
+                          </div>
+                        </td>
+                        {member.semStatus.map(sem => {
+                          const badge = {
+                            'Lunas': <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full text-[10px] font-bold"><CheckCircle className="w-3 h-3" /> Lunas</span>,
+                            'Menunggu Verifikasi': <button onClick={() => setProofModal(sem.payment)} className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-full text-[10px] font-bold hover:bg-amber-100 transition-all"><Clock className="w-3 h-3" /> Cek Bukti</button>,
+                            'Ditolak': <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-[10px] font-bold"><XCircle className="w-3 h-3" /> Ditolak</span>,
+                            'Belum Bayar': <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-50 text-slate-500 border border-slate-200 rounded-full text-[10px] font-bold"><AlertTriangle className="w-3 h-3" /> Belum</span>,
+                          }[sem.status] || null;
+                          return <td key={sem.id} className="px-4 py-3 text-center">{badge}</td>;
+                        })}
+                        <td className="px-4 py-3 text-right">
+                          {member.totalOwed > 0
+                            ? <span className="font-extrabold text-rose-600">{formatRupiahKas(member.totalOwed)}</span>
+                            : <span className="font-bold text-emerald-500">Lunas</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Proof Modal */}
+            {proofModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setProofModal(null)} />
+                <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden z-10">
+                  <div className="bg-gradient-to-r from-gold to-gold-light px-6 py-4">
+                    <h3 className="text-white font-extrabold text-sm">Verifikasi Bukti Pembayaran Kas</h3>
+                    <p className="text-white/80 text-xs mt-0.5">{proofModal.name} — {proofModal.semLabel}</p>
+                  </div>
+                  <div className="p-5 space-y-4">
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div className="bg-slate-50 rounded-xl p-3 text-left">
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">NIM</p>
+                        <p className="font-bold text-slate-800 mt-0.5">{proofModal.nim}</p>
+                      </div>
+                      <div className="bg-slate-50 rounded-xl p-3 text-left">
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">Nominal</p>
+                        <p className="font-extrabold text-gold-dark mt-0.5">{formatRupiahKas(proofModal.amount)}</p>
+                      </div>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-2">Foto Bukti Bayar</p>
+                      <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+                        <img src={proofModal.proofImg} alt="Bukti" className="w-full max-h-64 object-contain" />
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1">Dikirim: {formatDateKas(proofModal.submittedAt)}</p>
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleRejectKas(proofModal)}
+                        className="flex-1 py-2.5 bg-rose-50 border border-rose-200 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-100 transition-all"
+                      >
+                        ✗ Tolak
+                      </button>
+                      <button
+                        onClick={() => handleAccKas(proofModal)}
+                        className="flex-1 py-2.5 bg-emerald-500 text-white font-bold rounded-xl text-xs hover:bg-emerald-600 transition-all shadow-md"
+                      >
+                        ✓ ACC &amp; Catat
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
