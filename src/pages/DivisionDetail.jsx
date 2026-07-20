@@ -111,17 +111,36 @@ export default function DivisionDetail({ showToast }) {
 
   useEffect(() => {
     // Vault Items
+    const DEFAULT_VAULT = [
+      { id: 101, title: 'Labview 2026 Community', size: '4 GB', type: 'Software', url: 'https://drive.google.com/drive/folders/1kBIWKQYOPJ84se' },
+      { id: 102, title: 'Kumpulan Soal Uas Semester 1 2024', size: '6.4 MB', type: 'Dokumen', url: 'https://drive.google.com/drive/folders/1NS7bPiYAN19edi8' },
+      { id: 103, title: 'UTS: Mikroprosesor & Mikrokontroler', size: '2.4 MB', type: 'Dokumen', url: '#' },
+      { id: 104, title: 'Modul Praktikum: Detektor Radiasi Nuklir', size: '4.8 MB', type: 'Dokumen', url: '#' }
+    ];
+
     const savedVault = localStorage.getItem('hima_vault');
+    let loadedVault = DEFAULT_VAULT;
     if (savedVault) {
-      setVaultItems(JSON.parse(savedVault));
-    } else {
-      const DEFAULT_VAULT = [
-        { id: 1, title: 'UTS: Mikroprosesor & Mikrokontroler', size: '2.4 MB', type: 'Dokumen', url: '#' },
-        { id: 2, title: 'Modul Praktikum: Detektor Radiasi Nuklir', size: '4.8 MB', type: 'Dokumen', url: '#' }
-      ];
-      localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_VAULT));
-      setVaultItems(DEFAULT_VAULT);
+      try {
+        const parsed = JSON.parse(savedVault);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const titleMap = new Map();
+          parsed.forEach(item => {
+            if (item && item.title) titleMap.set(item.title.toLowerCase(), item);
+          });
+          DEFAULT_VAULT.forEach(item => {
+            if (!titleMap.has(item.title.toLowerCase())) {
+              titleMap.set(item.title.toLowerCase(), item);
+            }
+          });
+          loadedVault = Array.from(titleMap.values());
+        }
+      } catch (e) {
+        console.error('Failed to parse vault:', e);
+      }
     }
+    localStorage.setItem('hima_vault', JSON.stringify(loadedVault));
+    setVaultItems(loadedVault);
 
     // Ristek Schedules
     const savedSchedules = localStorage.getItem('hima_ristek_schedules');
