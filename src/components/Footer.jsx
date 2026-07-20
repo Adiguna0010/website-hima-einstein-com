@@ -14,9 +14,9 @@ export default function Footer() {
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
               <img 
-                src="/Media/Logo HIma/logo hima warna transparan.png" 
+                src="/logo-hima-transparan.png" 
                 alt="Logo HIMA EINSTEN" 
-                className="h-12 w-auto object-contain"
+                className="h-12 w-auto object-contain shrink-0"
                 onError={(e) => {
                   e.target.src = "https://placehold.co/120x45/ffffff/000000?text=EINSTEN";
                 }}
