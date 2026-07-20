@@ -370,27 +370,27 @@ export default function Navbar() {
     <>
       <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 border-b ${
         isScrolled 
-          ? 'bg-white/95 backdrop-blur-md border-gold-border py-3 shadow-md' 
-          : 'bg-white/80 backdrop-blur-md border-gold-border/30 py-4 shadow-sm'
+          ? 'bg-white/95 backdrop-blur-md border-gold-border py-1 shadow-md' 
+          : 'bg-white/90 backdrop-blur-md border-gold-border/30 py-1.5 shadow-sm'
       }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
+        <div className="flex items-center justify-between h-12 sm:h-14">
           
           {/* Logo - HIMA & Kabinet logo */}
-          <div className="flex-shrink-0 cursor-pointer flex items-center gap-2.5 sm:gap-3.5" onClick={() => navigate('/')}>
+          <div className="flex-shrink-0 cursor-pointer flex items-center gap-2.5 sm:gap-3" onClick={() => navigate('/')}>
             <img 
               src="/logo-hima-transparan.png" 
               alt="Logo HIMA EINSTEN" 
-              className="h-12 sm:h-16 md:h-18 w-auto object-contain shrink-0"
+              className="h-9 sm:h-11 w-auto object-contain shrink-0"
               onError={(e) => {
                 e.target.src = "https://placehold.co/120x45/ffffff/000000?text=EINSTEN";
               }}
             />
-            <div className="w-px h-8 sm:h-10 md:h-11 bg-slate-300"></div>
+            <div className="w-px h-6 sm:h-7 bg-slate-300"></div>
             <img 
               src="/Media Einsten/Media Umum/logo kabinet hitam (horizontal) (1).png" 
               alt="Logo Kabinet Phótisma" 
-              className="h-7 sm:h-9 md:h-10 w-auto object-contain"
+              className="h-6 sm:h-7.5 w-auto object-contain"
               onError={(e) => {
                 e.target.src = "https://placehold.co/180x45/ffffff/000000?text=PHÓTISMA";
               }}
