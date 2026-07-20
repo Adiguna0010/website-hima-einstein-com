@@ -80,16 +80,16 @@ export default function Register({ showToast }) {
             <img 
               src="/logo-hima-transparan.png" 
               alt="Logo HIMA EINSTEN" 
-              className="h-18 sm:h-22 w-auto object-contain shrink-0"
+              className="h-24 sm:h-32 w-auto object-contain shrink-0"
               onError={(e) => {
                 e.target.src = "https://placehold.co/120x45/ffffff/000000?text=EINSTEN";
               }}
             />
-            <div className="w-px h-12 sm:h-14 bg-slate-300"></div>
+            <div className="w-px h-16 sm:h-20 bg-slate-300"></div>
             <img 
               src="/Media Einsten/Media Umum/logo kabinet hitam (horizontal) (1).png" 
               alt="Logo Kabinet Phótisma" 
-              className="h-12 sm:h-14 w-auto object-contain"
+              className="h-14 sm:h-16 w-auto object-contain"
               onError={(e) => {
                 e.target.src = "https://placehold.co/180x45/ffffff/000000?text=PHÓTISMA";
               }}
