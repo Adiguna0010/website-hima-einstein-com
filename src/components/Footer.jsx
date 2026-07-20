@@ -16,16 +16,16 @@ export default function Footer() {
               <img 
                 src="/logo-hima-transparan.png" 
                 alt="Logo HIMA EINSTEN" 
-                className="h-12 w-auto object-contain shrink-0"
+                className="h-14 sm:h-16 w-auto object-contain shrink-0"
                 onError={(e) => {
                   e.target.src = "https://placehold.co/120x45/ffffff/000000?text=EINSTEN";
                 }}
               />
-              <div className="w-px h-8 bg-slate-300"></div>
+              <div className="w-px h-10 bg-slate-300"></div>
               <img 
                 src="/Media/Logo Kabinet/logo kabinet hitam (horizontal).png" 
                 alt="Kabinet Phótisma Logo" 
-                className="h-10 w-auto object-contain"
+                className="h-10 sm:h-12 w-auto object-contain"
                 onError={(e) => {
                   e.target.src = "https://placehold.co/180x45/ffffff/000000?text=KABINET+PHOTISMA";
                 }}
