@@ -130,9 +130,9 @@ export default function Login({ showToast }) {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center justify-center gap-4">
             <img 
-              src="/Media/Logo HIma/logo hima warna (3)_page-0001.jpg" 
+              src="/Media/Logo HIma/logo hima warna transparan.png" 
               alt="Logo HIMA EINSTEN" 
-              className="h-16 w-auto object-contain rounded-lg"
+              className="h-14 sm:h-16 w-auto object-contain"
               onError={(e) => {
                 e.target.src = "https://placehold.co/120x45/ffffff/000000?text=EINSTEN";
               }}

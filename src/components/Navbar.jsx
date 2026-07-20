@@ -379,9 +379,9 @@ export default function Navbar() {
           {/* Logo - HIMA & Kabinet logo */}
           <div className="flex-shrink-0 cursor-pointer flex items-center gap-2" onClick={() => navigate('/')}>
             <img 
-              src="/Media/Logo HIma/logo hima warna (3)_page-0001.jpg" 
+              src="/Media/Logo HIma/logo hima warna transparan.png" 
               alt="Logo HIMA EINSTEN" 
-              className="h-10 sm:h-12 w-auto object-contain rounded-md"
+              className="h-10 sm:h-12 w-auto object-contain"
               onError={(e) => {
                 e.target.src = "https://placehold.co/120x45/ffffff/000000?text=EINSTEN";
               }}
