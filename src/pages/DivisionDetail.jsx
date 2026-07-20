@@ -379,10 +379,10 @@ export default function DivisionDetail({ showToast }) {
         };
         return (
           <div className="max-w-2xl mx-auto space-y-6">
-            <div className="flex border-b border-slate-200">
+            <div className="flex overflow-x-auto whitespace-nowrap scrollbar-none border-b border-slate-200 gap-1 sm:gap-2">
               <button 
                 onClick={() => setRistekTab('vault')}
-                className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition-colors ${
+                className={`flex-1 min-w-[100px] px-3 pb-3 text-xs font-bold uppercase tracking-wider transition-colors ${
                   ristekTab === 'vault' ? 'text-gold border-b-2 border-gold' : 'text-slate-400 hover:text-slate-700'
                 }`}
               >
@@ -390,7 +390,7 @@ export default function DivisionDetail({ showToast }) {
               </button>
               <button 
                 onClick={() => setRistekTab('les')}
-                className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition-colors ${
+                className={`flex-1 min-w-[110px] px-3 pb-3 text-xs font-bold uppercase tracking-wider transition-colors ${
                   ristekTab === 'les' ? 'text-gold border-b-2 border-gold' : 'text-slate-400 hover:text-slate-700'
                 }`}
               >
@@ -398,7 +398,7 @@ export default function DivisionDetail({ showToast }) {
               </button>
               <button 
                 onClick={() => setRistekTab('proyek')}
-                className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition-colors ${
+                className={`flex-1 min-w-[100px] px-3 pb-3 text-xs font-bold uppercase tracking-wider transition-colors ${
                   ristekTab === 'proyek' ? 'text-gold border-b-2 border-gold' : 'text-slate-400 hover:text-slate-700'
                 }`}
               >
@@ -406,7 +406,7 @@ export default function DivisionDetail({ showToast }) {
               </button>
               <button 
                 onClick={() => setRistekTab('programs')}
-                className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition-colors ${
+                className={`flex-1 min-w-[100px] px-3 pb-3 text-xs font-bold uppercase tracking-wider transition-colors ${
                   ristekTab === 'programs' ? 'text-gold border-b-2 border-gold' : 'text-slate-400 hover:text-slate-700'
                 }`}
               >
@@ -777,17 +777,17 @@ export default function DivisionDetail({ showToast }) {
       {/* Main Panel wrapper */}
       <div className="glass-deep rounded-2xl p-6 md:p-8 space-y-6 relative z-10 text-slate-800">
         {/* Header */}
-        <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-4 border-b border-slate-100 pb-6 text-center md:text-left">
-          <div className="space-y-3">
-            <div className="flex items-center justify-center md:justify-start gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-gold/10 flex items-center justify-center shadow-inner">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-4 border-b border-slate-100 pb-6 text-left">
+          <div className="space-y-3 text-left">
+            <div className="flex items-center justify-start gap-3">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gold/10 flex items-center justify-center shadow-inner shrink-0">
                 {currentDiv.iconComponent}
               </div>
-              <h1 className="text-2xl font-extrabold text-slate-900 uppercase tracking-wider">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 uppercase tracking-wider text-left">
                 {currentDiv.title}
               </h1>
             </div>
-            <p className="text-sm text-slate-500 leading-relaxed font-light max-w-2xl">
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed font-light max-w-2xl text-left">
               {currentDiv.desc}
             </p>
           </div>
