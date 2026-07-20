@@ -208,21 +208,23 @@ export default function Home() {
         <div className="flex flex-col items-center justify-center text-center space-y-8 py-8 lg:py-16">
           
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold/40 bg-gradient-to-r from-gold/10 via-gold/5 to-transparent text-xs font-bold text-gold-dark tracking-widest uppercase shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
-            Portal Resmi HIMA EINSTEN • Poltek Nuklir
+          <div className="inline-flex items-center gap-2 px-4.5 py-1.5 rounded-full border border-gold/40 bg-gradient-to-r from-gold/10 via-gold/5 to-transparent text-xs font-bold text-gold-dark tracking-widest uppercase shadow-sm">
+            <span className="w-2.5 h-2.5 rounded-full bg-gold animate-pulse"></span>
+            PORTAL RESMI HIMA EINSTEN • POLTEK NUKLIR
           </div>
           
-          {/* Heading */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-slate-900 leading-tight max-w-4xl">
-            Website Resmi <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-gold-dark via-gold to-amber-500 bg-clip-text text-transparent">
-              HIMA EINSTEN
-            </span>
-          </h1>
+          {/* Heading Hierarchy */}
+          <div className="space-y-3 max-w-4xl mx-auto">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tight text-slate-900 leading-none">
+              SELAMAT DATANG
+            </h1>
+            <p className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-800 tracking-tight leading-snug">
+              di Website Resmi <span className="bg-gradient-to-r from-gold-dark via-gold to-amber-500 bg-clip-text text-transparent">HIMA EINSTEN</span> Poltek Nuklir
+            </p>
+          </div>
           
           {/* Description */}
-          <p className="text-slate-600 text-sm sm:text-base max-w-xl leading-relaxed font-normal mx-auto">
+          <p className="text-slate-600 text-sm sm:text-base max-w-xl leading-relaxed font-normal mx-auto pt-1">
             Wadah sinergi riset teknologi nuklir, instrumentasi otonom, dan karya mahasiswa Politeknik Teknologi Nuklir Indonesia.
           </p>
 
