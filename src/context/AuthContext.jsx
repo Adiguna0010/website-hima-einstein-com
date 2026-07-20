@@ -269,9 +269,29 @@ export const AuthProvider = ({ children }) => {
   };
 
   const sendOTP = async (phone, code) => {
+    // 1. Try Vercel Serverless Function (/api/send-otp)
+    try {
+      const response = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone,
+          code,
+          message: `Kode OTP verifikasi HIMA EINSTEN Anda adalah: ${code}. Gunakan kode ini untuk melanjutkan pendaftaran/pemulihan akun Anda.`
+        })
+      });
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.mode === 'real') {
+          return { success: true, mode: 'real', provider: result.provider || 'vercel-api', result };
+        }
+      }
+    } catch (err) {
+      console.log('Vercel API Gateway unavailable, trying self-hosted...', err.message);
+    }
+
+    // 2. Try Self-Hosted WhatsApp Gateway (Baileys Node.js)
     const gatewayUrl = localStorage.getItem('self_hosted_gateway_url') || 'http://localhost:5001';
-    
-    // 1. Try Self-Hosted WhatsApp Gateway (Baileys Node.js)
     try {
       const response = await fetch(`${gatewayUrl}/send-otp`, {
         method: 'POST',
@@ -287,10 +307,10 @@ export const AuthProvider = ({ children }) => {
         return { success: true, mode: 'real', provider: 'self-hosted', result };
       }
     } catch (err) {
-      console.log('Self-Hosted Gateway unavailable, trying Fonnte fallback...', err.message);
+      console.log('Self-Hosted Gateway unavailable, trying direct Fonnte fallback...', err.message);
     }
 
-    // 2. Fallback to Fonnte API Gateway if token is set
+    // 3. Fallback to Direct Fonnte API Gateway if token is set
     const DEFAULT_FONNTE_TOKEN = 'oAkLBXzaU41RszNf6j78'; 
     const token = localStorage.getItem('fonnte_token') || DEFAULT_FONNTE_TOKEN;
     if (token) {
@@ -315,13 +335,13 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    // 3. Fallback to Simulation Mode if all gateways fail/offline
+    // 4. Fallback to Simulation Mode if all gateways fail/offline
     console.log(`[SIMULASI OTP] Mengirim OTP ke ${phone}: ${code}`);
     return { 
       success: false, 
       mode: 'simulation', 
       code, 
-      reason: 'Server WA Gateway (Self-Hosted & Fonnte) sedang offline/terputus' 
+      reason: 'Server WA Gateway sedang offline/terputus' 
     };
   };
 
