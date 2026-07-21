@@ -186,79 +186,79 @@ export default function Finance({ showToast }) {
         </div>
       </div>
 
-      {/* DEDICATED SECTION: TRANSPARANSI & PHOTISMA FINANCE */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden text-left border border-slate-800 space-y-6">
-        {/* Glow accent */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-gold/10 rounded-full blur-3xl pointer-events-none"></div>
+      {/* DEDICATED SECTION: TRANSPARANSI & PHOTISMA FINANCE (LIGHT ELEGANT THEME) */}
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 text-slate-800 shadow-sm relative overflow-hidden text-left space-y-6 hover:border-gold/30 transition-all">
+        {/* Decorative subtle gold orb */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-gold/5 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5 relative z-10">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 text-[10px] font-extrabold text-gold tracking-widest uppercase bg-gold/10 px-2.5 py-1 rounded-md border border-gold/20">
-              <ShoppingBag className="w-3.5 h-3.5" /> PHOTISMA FINANCE
+            <div className="inline-flex items-center gap-1.5 text-[10px] font-extrabold text-gold-dark tracking-widest uppercase bg-gold/10 px-3 py-1 rounded-full border border-gold/20">
+              <ShoppingBag className="w-3.5 h-3.5 text-gold" /> PHOTISMA FINANCE
             </div>
-            <h2 className="text-xl sm:text-2xl font-serif text-white tracking-wide">
+            <h2 className="text-xl sm:text-2xl font-serif text-slate-900 tracking-wide">
               Photisma Finance
             </h2>
-            <p className="text-slate-400 text-xs font-light">
+            <p className="text-slate-500 text-xs font-light">
               Transparansi dua aliran dana: Hasil Penjualan & Keuangan Dana Usaha Photisma.
             </p>
           </div>
 
-          <div className="bg-slate-800/80 border border-slate-700 rounded-2xl px-5 py-3 text-right shrink-0">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Total Photisma Finance</span>
-            <span className="text-2xl font-extrabold text-gold font-heading">{formatRupiah(totalDanusPortfolio)}</span>
+          <div className="bg-gradient-to-br from-amber-50 to-gold/10 border border-gold/25 rounded-2xl px-5 py-3 text-right shrink-0 shadow-xs">
+            <span className="text-[10px] font-extrabold text-gold-dark uppercase tracking-widest block">Total Photisma Finance</span>
+            <span className="text-2xl font-extrabold text-slate-900 font-heading">{formatRupiah(totalDanusPortfolio)}</span>
           </div>
         </div>
 
         {/* 2 Streams Breakdown Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
           {/* Stream 1 Card */}
-          <div className="p-5 bg-slate-800/60 border border-slate-700/80 rounded-2xl space-y-3 hover:border-gold/40 transition-all">
+          <div className="p-5 bg-slate-50/70 border border-slate-200 rounded-2xl space-y-3 hover:border-gold/40 hover:bg-white hover:shadow-md transition-all">
             <div className="flex justify-between items-start">
               <div className="space-y-0.5">
-                <span className="text-[10px] font-bold text-gold-light uppercase tracking-wider block">Aliran Dana 1</span>
-                <h3 className="text-sm font-bold text-white uppercase tracking-wide">
+                <span className="text-[10px] font-extrabold text-gold-dark uppercase tracking-wider block">Aliran Dana 1</span>
+                <h3 className="text-sm font-bold text-slate-850 uppercase tracking-wide">
                   Hasil Penjualan
                 </h3>
               </div>
-              <div className="p-2 rounded-xl bg-gold/10 border border-gold/20 text-gold shrink-0">
+              <div className="p-2.5 rounded-xl bg-gold/10 border border-gold/20 text-gold shrink-0">
                 <ShoppingBag className="w-5 h-5" />
               </div>
             </div>
-            <div className="pt-2 border-t border-slate-700/50 flex items-baseline justify-between">
+            <div className="pt-2 border-t border-slate-200/60 flex items-baseline justify-between">
               <div>
-                <span className="text-2xl font-extrabold text-white font-heading">{formatRupiah(danusSalesEarnings)}</span>
-                <p className="text-[10px] text-emerald-400 font-medium flex items-center gap-1 mt-0.5">
+                <span className="text-2xl font-extrabold text-slate-900 font-heading">{formatRupiah(danusSalesEarnings)}</span>
+                <p className="text-[10px] text-emerald-600 font-medium flex items-center gap-1 mt-0.5">
                   <ArrowUpRight className="w-3 h-3" /> Revenue Store Terverifikasi
                 </p>
               </div>
-              <span className="text-[10px] text-slate-400 font-mono">
+              <span className="text-[10px] text-slate-500 font-mono font-medium bg-white px-2 py-0.5 rounded border border-slate-200">
                 {danusOrders.filter(o => o.status === 'Active').length} Transaksi Lunas
               </span>
             </div>
           </div>
 
           {/* Stream 2 Card */}
-          <div className="p-5 bg-slate-800/60 border border-slate-700/80 rounded-2xl space-y-3 hover:border-blue-400/40 transition-all">
+          <div className="p-5 bg-slate-50/70 border border-slate-200 rounded-2xl space-y-3 hover:border-blue-300 hover:bg-white hover:shadow-md transition-all">
             <div className="flex justify-between items-start">
               <div className="space-y-0.5">
-                <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider block">Aliran Dana 2</span>
-                <h3 className="text-sm font-bold text-white uppercase tracking-wide">
+                <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-wider block">Aliran Dana 2</span>
+                <h3 className="text-sm font-bold text-slate-850 uppercase tracking-wide">
                   Keuangan Dana Usaha Photisma
                 </h3>
               </div>
-              <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 shrink-0">
+              <div className="p-2.5 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 shrink-0">
                 <Wallet className="w-5 h-5" />
               </div>
             </div>
-            <div className="pt-2 border-t border-slate-700/50 flex items-baseline justify-between">
+            <div className="pt-2 border-t border-slate-200/60 flex items-baseline justify-between">
               <div>
-                <span className="text-2xl font-extrabold text-white font-heading">{formatRupiah(danusNetOperationalCash)}</span>
-                <p className="text-[10px] text-slate-400 font-light mt-0.5">
+                <span className="text-2xl font-extrabold text-slate-900 font-heading">{formatRupiah(danusNetOperationalCash)}</span>
+                <p className="text-[10px] text-slate-500 font-light mt-0.5">
                   Debet: {formatRupiah(danusCashIn)} • Kredit: {formatRupiah(danusCashOut)}
                 </p>
               </div>
-              <span className="text-[10px] text-slate-400 font-mono">
+              <span className="text-[10px] text-slate-500 font-mono font-medium bg-white px-2 py-0.5 rounded border border-slate-200">
                 {danusLedger.length} Entri Jurnal
               </span>
             </div>
