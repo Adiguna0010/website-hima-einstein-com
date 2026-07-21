@@ -18,6 +18,7 @@ const DEFAULT_USERS = [
     email: 'Adiguna Nugroho Halomoan@einsten.com',
     password: '022400025',
     role: 'Operator Ristek',
+    phone: '085175420692',
     photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Ristek/Kepala Divisi Riset dan Teknologi_Adiguna Nugroho Halomoan - 022400025.JPG',
     status: 'Active'
   },
@@ -136,16 +137,17 @@ export const AuthProvider = ({ children }) => {
             }
           }
           
-          // Merge to ensure new default accounts are loaded while preserving registered accounts
+          // Merge to ensure new default accounts are loaded while preserving registered accounts and user updates
           const userMap = new Map();
-          parsed.forEach(u => {
+          DEFAULT_USERS.forEach(u => {
             if (u && u.email) {
               userMap.set(normalizeEmail(u.email), u);
             }
           });
-          DEFAULT_USERS.forEach(u => {
+          parsed.forEach(u => {
             if (u && u.email) {
-              userMap.set(normalizeEmail(u.email), u);
+              const defaultUser = userMap.get(normalizeEmail(u.email)) || {};
+              userMap.set(normalizeEmail(u.email), { ...defaultUser, ...u });
             }
           });
           loadedUsers = Array.from(userMap.values());
@@ -164,7 +166,18 @@ export const AuthProvider = ({ children }) => {
 
     const savedUser = sessionStorage.getItem('hima_current_user');
     if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        const latestUser = loadedUsers.find(u => normalizeEmail(u.email) === normalizeEmail(parsedUser.email));
+        if (latestUser) {
+          setCurrentUser(latestUser);
+          sessionStorage.setItem('hima_current_user', JSON.stringify(latestUser));
+        } else {
+          setCurrentUser(parsedUser);
+        }
+      } catch (e) {
+        console.error('Failed to parse saved user:', e);
+      }
     }
   }, []);
 

@@ -31,6 +31,7 @@ export default function Profile({ showToast }) {
   const [previewPhoto, setPreviewPhoto] = useState(currentUser?.photo || '');
   const [newPhoto, setNewPhoto] = useState('');
   const [bio, setBio] = useState(currentUser?.bio || '');
+  const [phone, setPhone] = useState(currentUser?.phone || '');
   const fileRef = useRef(null);
 
   // ─── Kas State ─────────────────────────────────────────────
@@ -73,6 +74,7 @@ export default function Profile({ showToast }) {
     if (!currentUser) { navigate('/login'); return; }
     setPreviewPhoto(currentUser.photo || '');
     setBio(currentUser.bio || '');
+    setPhone(currentUser.phone || '');
     loadKasPayments();
   }, [currentUser]);
 
@@ -151,7 +153,7 @@ export default function Profile({ showToast }) {
   };
 
   const handleSaveProfile = () => {
-    const updates = { bio };
+    const updates = { bio, phone };
     if (newPhoto) updates.photo = newPhoto;
     updateUserProfile(currentUser.email, updates);
     setEditMode(false);
@@ -162,6 +164,7 @@ export default function Profile({ showToast }) {
   const handleCancelEdit = () => {
     setPreviewPhoto(currentUser.photo || '');
     setBio(currentUser.bio || '');
+    setPhone(currentUser.phone || '');
     setNewPhoto('');
     setEditMode(false);
   };
@@ -313,18 +316,30 @@ export default function Profile({ showToast }) {
           </div>
         </div>
 
-        {/* Bio Edit */}
+        {/* Profile Edit Section */}
         {editMode && (
-          <div className="relative mt-5 pt-5 border-t border-white/10">
-            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block mb-1.5">Bio Singkat</label>
-            <textarea
-              value={bio}
-              onChange={e => setBio(e.target.value)}
-              rows={2}
-              maxLength={120}
-              placeholder="Tulis bio singkat tentang diri Anda..."
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-gold resize-none"
-            />
+          <div className="relative mt-5 pt-5 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block mb-1.5">Nomor WhatsApp / HP</label>
+              <input
+                type="text"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                placeholder="Contoh: 085175420692"
+                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-gold"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block mb-1.5">Bio Singkat</label>
+              <textarea
+                value={bio}
+                onChange={e => setBio(e.target.value)}
+                rows={2}
+                maxLength={120}
+                placeholder="Tulis bio singkat tentang diri Anda..."
+                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-gold resize-none"
+              />
+            </div>
           </div>
         )}
       </div>

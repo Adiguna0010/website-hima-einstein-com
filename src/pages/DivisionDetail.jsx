@@ -109,8 +109,7 @@ export default function DivisionDetail({ showToast }) {
   const [schedules, setSchedules] = useState([]);
   const [collabProjects, setCollabProjects] = useState([]);
 
-  useEffect(() => {
-    // Vault Items
+  const loadVaultItems = () => {
     const DEFAULT_VAULT = [
       { id: 101, title: 'Labview 2026 Community', size: '4 GB', type: 'Software', url: 'https://drive.google.com/drive/folders/1kBIWKQYOPJ84se' },
       { id: 102, title: 'Kumpulan Soal Uas Semester 1 2024', size: '6.4 MB', type: 'Dokumen', url: 'https://drive.google.com/drive/folders/1NS7bPiYAN19edi8' },
@@ -120,27 +119,29 @@ export default function DivisionDetail({ showToast }) {
 
     const savedVault = localStorage.getItem('hima_vault');
     let loadedVault = DEFAULT_VAULT;
-    if (savedVault) {
+    if (savedVault !== null) {
       try {
         const parsed = JSON.parse(savedVault);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const titleMap = new Map();
-          parsed.forEach(item => {
-            if (item && item.title) titleMap.set(item.title.toLowerCase(), item);
-          });
-          DEFAULT_VAULT.forEach(item => {
-            if (!titleMap.has(item.title.toLowerCase())) {
-              titleMap.set(item.title.toLowerCase(), item);
-            }
-          });
-          loadedVault = Array.from(titleMap.values());
+        if (Array.isArray(parsed)) {
+          loadedVault = parsed;
         }
       } catch (e) {
         console.error('Failed to parse vault:', e);
       }
+    } else {
+      localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_VAULT));
     }
-    localStorage.setItem('hima_vault', JSON.stringify(loadedVault));
     setVaultItems(loadedVault);
+  };
+
+  useEffect(() => {
+    // Vault Items
+    loadVaultItems();
+
+    const handleSync = () => loadVaultItems();
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('focus', handleSync);
+    const interval = setInterval(loadVaultItems, 1000);
 
     // Ristek Schedules
     const savedSchedules = localStorage.getItem('hima_ristek_schedules');
@@ -187,6 +188,12 @@ export default function DivisionDetail({ showToast }) {
       localStorage.setItem('hima_ristek_projects', JSON.stringify(DEFAULT_PROJECTS));
       setCollabProjects(DEFAULT_PROJECTS);
     }
+
+    return () => {
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('focus', handleSync);
+      clearInterval(interval);
+    };
   }, []);
 
   const divisions = {

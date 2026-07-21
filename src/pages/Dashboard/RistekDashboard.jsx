@@ -56,26 +56,18 @@ export default function RistekDashboard({ showToast }) {
 
     const savedVault = localStorage.getItem('hima_vault');
     let loadedVault = DEFAULT_VAULT;
-    if (savedVault) {
+    if (savedVault !== null) {
       try {
         const parsed = JSON.parse(savedVault);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const titleMap = new Map();
-          parsed.forEach(item => {
-            if (item && item.title) titleMap.set(item.title.toLowerCase(), item);
-          });
-          DEFAULT_VAULT.forEach(item => {
-            if (!titleMap.has(item.title.toLowerCase())) {
-              titleMap.set(item.title.toLowerCase(), item);
-            }
-          });
-          loadedVault = Array.from(titleMap.values());
+        if (Array.isArray(parsed)) {
+          loadedVault = parsed;
         }
       } catch (e) {
         console.error('Failed to parse vault:', e);
       }
+    } else {
+      localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_VAULT));
     }
-    localStorage.setItem('hima_vault', JSON.stringify(loadedVault));
     setVaultItems(loadedVault);
 
     // Schedules
@@ -170,6 +162,7 @@ export default function RistekDashboard({ showToast }) {
     const updated = [...vaultItems, newItem];
     setVaultItems(updated);
     localStorage.setItem('hima_vault', JSON.stringify(updated));
+    window.dispatchEvent(new Event('storage'));
     showToast('File baru berhasil ditambahkan ke Einsten Vault!', 'success');
     
     setVaultTitle('');
@@ -183,6 +176,7 @@ export default function RistekDashboard({ showToast }) {
       const updated = vaultItems.filter(item => item.id !== id);
       setVaultItems(updated);
       localStorage.setItem('hima_vault', JSON.stringify(updated));
+      window.dispatchEvent(new Event('storage'));
       showToast('File berhasil dihapus dari Einsten Vault.', 'info');
     }
   };
