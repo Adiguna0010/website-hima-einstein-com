@@ -186,7 +186,7 @@ export default function Finance({ showToast }) {
         </div>
       </div>
 
-      {/* DEDICATED SECTION: TRANSPARANSI & PORTOFOLIO DANA USAHA (DANUS) */}
+      {/* DEDICATED SECTION: TRANSPARANSI & PHOTISMA FINANCE */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden text-left border border-slate-800 space-y-6">
         {/* Glow accent */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-gold/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -194,18 +194,18 @@ export default function Finance({ showToast }) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 text-[10px] font-extrabold text-gold tracking-widest uppercase bg-gold/10 px-2.5 py-1 rounded-md border border-gold/20">
-              <ShoppingBag className="w-3.5 h-3.5" /> REKAPITULASI DANA USAHA (DANUS)
+              <ShoppingBag className="w-3.5 h-3.5" /> PHOTISMA FINANCE
             </div>
             <h2 className="text-xl sm:text-2xl font-serif text-white tracking-wide">
-              Portofolio Financial Wirausaha Mandiri Danus
+              Photisma Finance
             </h2>
             <p className="text-slate-400 text-xs font-light">
-              Transparansi dua aliran keuangan Danus: Hasil Penjualan Produk & Kas Operasional Usaha.
+              Transparansi dua aliran dana: Hasil Penjualan & Keuangan Dana Usaha Photisma.
             </p>
           </div>
 
           <div className="bg-slate-800/80 border border-slate-700 rounded-2xl px-5 py-3 text-right shrink-0">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Total Portofolio Danus</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Total Photisma Finance</span>
             <span className="text-2xl font-extrabold text-gold font-heading">{formatRupiah(totalDanusPortfolio)}</span>
           </div>
         </div>
@@ -218,7 +218,7 @@ export default function Finance({ showToast }) {
               <div className="space-y-0.5">
                 <span className="text-[10px] font-bold text-gold-light uppercase tracking-wider block">Aliran Dana 1</span>
                 <h3 className="text-sm font-bold text-white uppercase tracking-wide">
-                  Hasil Penjualan Merchandise & Produk Danus
+                  Hasil Penjualan
                 </h3>
               </div>
               <div className="p-2 rounded-xl bg-gold/10 border border-gold/20 text-gold shrink-0">
@@ -244,7 +244,7 @@ export default function Finance({ showToast }) {
               <div className="space-y-0.5">
                 <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider block">Aliran Dana 2</span>
                 <h3 className="text-sm font-bold text-white uppercase tracking-wide">
-                  Kas & Operasional Dana Usaha (Danus)
+                  Keuangan Dana Usaha Photisma
                 </h3>
               </div>
               <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 shrink-0">

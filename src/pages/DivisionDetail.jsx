@@ -405,35 +405,35 @@ export default function DivisionDetail({ showToast }) {
         };
         return (
           <div className="max-w-2xl mx-auto space-y-6">
-            <div className="flex overflow-x-auto whitespace-nowrap scrollbar-none border-b border-slate-200 gap-1 sm:gap-2">
+            <div className="flex overflow-x-auto whitespace-nowrap scrollbar-none border-b border-slate-200 gap-1 pb-1">
               <button 
                 onClick={() => setRistekTab('vault')}
-                className={`flex-1 min-w-[100px] px-3 pb-3 text-xs font-bold uppercase tracking-wider transition-colors ${
-                  ristekTab === 'vault' ? 'text-gold border-b-2 border-gold' : 'text-slate-400 hover:text-slate-700'
+                className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 whitespace-nowrap ${
+                  ristekTab === 'vault' ? 'text-gold border-b-2 border-gold font-extrabold' : 'text-slate-400 hover:text-slate-700 border-b-2 border-transparent'
                 }`}
               >
                 Einsten Vault
               </button>
               <button 
                 onClick={() => setRistekTab('les')}
-                className={`flex-1 min-w-[110px] px-3 pb-3 text-xs font-bold uppercase tracking-wider transition-colors ${
-                  ristekTab === 'les' ? 'text-gold border-b-2 border-gold' : 'text-slate-400 hover:text-slate-700'
+                className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 whitespace-nowrap ${
+                  ristekTab === 'les' ? 'text-gold border-b-2 border-gold font-extrabold' : 'text-slate-400 hover:text-slate-700 border-b-2 border-transparent'
                 }`}
               >
                 Ristek Mengajar
               </button>
               <button 
                 onClick={() => setRistekTab('proyek')}
-                className={`flex-1 min-w-[100px] px-3 pb-3 text-xs font-bold uppercase tracking-wider transition-colors ${
-                  ristekTab === 'proyek' ? 'text-gold border-b-2 border-gold' : 'text-slate-400 hover:text-slate-700'
+                className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 whitespace-nowrap ${
+                  ristekTab === 'proyek' ? 'text-gold border-b-2 border-gold font-extrabold' : 'text-slate-400 hover:text-slate-700 border-b-2 border-transparent'
                 }`}
               >
                 Proyek Collab
               </button>
               <button 
                 onClick={() => setRistekTab('programs')}
-                className={`flex-1 min-w-[100px] px-3 pb-3 text-xs font-bold uppercase tracking-wider transition-colors ${
-                  ristekTab === 'programs' ? 'text-gold border-b-2 border-gold' : 'text-slate-400 hover:text-slate-700'
+                className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 whitespace-nowrap ${
+                  ristekTab === 'programs' ? 'text-gold border-b-2 border-gold font-extrabold' : 'text-slate-400 hover:text-slate-700 border-b-2 border-transparent'
                 }`}
               >
                 Program Kerja

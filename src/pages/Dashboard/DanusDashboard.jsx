@@ -148,10 +148,10 @@ export default function DanusDashboard({ showToast }) {
           </div>
         </div>
 
-        {/* Stream 2: Kas Operasional Danus */}
+        {/* Stream 2: Keuangan Dana Usaha Photisma */}
         <div className="p-5 bg-white border border-slate-200 rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Kas Operasional Danus</span>
+            <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Keuangan Dana Usaha Photisma</span>
             <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
               <Wallet className="w-4 h-4" />
             </div>
@@ -166,10 +166,10 @@ export default function DanusDashboard({ showToast }) {
           </div>
         </div>
 
-        {/* Combined Total: Portofolio Dana Usaha */}
+        {/* Combined Total: Total Photisma Finance */}
         <div className="p-5 bg-emerald-50/50 border border-emerald-200/60 rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-extrabold text-emerald-700 uppercase tracking-widest">Total Akumulasi Danus</span>
+            <span className="text-[10px] font-extrabold text-emerald-700 uppercase tracking-widest">Total Photisma Finance</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-600">
               <Coins className="w-4 h-4" />
             </div>
