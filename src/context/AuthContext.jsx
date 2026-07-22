@@ -63,7 +63,7 @@ const DEFAULT_USERS = [
     email: 'calon@einsten.com',
     password: 'user123',
     role: 'Anggota Biasa',
-    status: 'Pending'
+    status: 'Active'
   },
   {
     name: 'Bendahara Umum',
@@ -161,6 +161,14 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
+    // Auto-migrate any previously registered Pending users to Active
+    loadedUsers = loadedUsers.map(u => {
+      if (u && u.status === 'Pending') {
+        return { ...u, status: 'Active' };
+      }
+      return u;
+    });
+
     localStorage.setItem('hima_users', JSON.stringify(loadedUsers));
     setUsers(loadedUsers);
 
@@ -205,7 +213,7 @@ export const AuthProvider = ({ children }) => {
         email: generatedEmail,
         password,
         role: 'Anggota Biasa',
-        status: 'Pending'
+        status: 'Active'
       };
 
       const updatedUsers = [...users, newUser];
@@ -226,7 +234,11 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (user.status === 'Pending') {
-        return reject(new Error('Login gagal. Akun Anda masih dalam status PENDING menunggu persetujuan Admin BPH.'));
+        // Auto-activate account
+        user.status = 'Active';
+        const updatedUsers = users.map(u => normalizeEmail(u.email) === normalizeEmail(user.email) ? { ...u, status: 'Active' } : u);
+        setUsers(updatedUsers);
+        localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
       }
 
       if (user.status === 'Rejected') {
@@ -404,6 +416,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const deleteAccount = (email) => {
+    const targetEmail = normalizeEmail(email);
+    const updatedUsers = users.filter(u => normalizeEmail(u.email) !== targetEmail);
+    setUsers(updatedUsers);
+    localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
+
+    if (currentUser && normalizeEmail(currentUser.email) === targetEmail) {
+      logout();
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       users,
@@ -411,6 +434,7 @@ export const AuthProvider = ({ children }) => {
       register,
       login,
       logout,
+      deleteAccount,
       updateUserStatus,
       updateUserRole,
       sendOTP,

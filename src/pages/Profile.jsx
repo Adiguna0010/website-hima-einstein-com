@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   User, Camera, Edit3, Save, X, CheckCircle, AlertTriangle,
   Coins, QrCode, Upload, Clock, BadgeCheck, ChevronRight, Shield,
-  Phone, CreditCard, Calendar, XCircle, Loader2
+  Phone, CreditCard, Calendar, XCircle, Loader2, Trash2
 } from 'lucide-react';
 
 // ─── Kas Config ──────────────────────────────────────────────
@@ -21,7 +21,7 @@ const formatDate = (ts) =>
   ts ? new Date(ts).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-';
 
 export default function Profile({ showToast }) {
-  const { currentUser, updateUserProfile } = useAuth();
+  const { currentUser, updateUserProfile, deleteAccount } = useAuth();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('profil');
@@ -33,6 +33,11 @@ export default function Profile({ showToast }) {
   const [bio, setBio] = useState(currentUser?.bio || '');
   const [phone, setPhone] = useState(currentUser?.phone || '');
   const fileRef = useRef(null);
+
+  // ─── Delete Account State ─────────────────────────────────
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   // ─── Kas State ─────────────────────────────────────────────
   const [kasPayments, setKasPayments] = useState([]);
@@ -167,6 +172,19 @@ export default function Profile({ showToast }) {
     setPhone(currentUser.phone || '');
     setNewPhoto('');
     setEditMode(false);
+  };
+
+  const handleDeleteAccount = () => {
+    if (deleteConfirmText.trim().toUpperCase() !== 'HAPUS') {
+      showToast('Ketik kata "HAPUS" untuk mengonfirmasi penghapusan akun!', 'error');
+      return;
+    }
+    setDeleting(true);
+    setTimeout(() => {
+      deleteAccount(currentUser.email);
+      showToast('Akun Anda telah berhasil dihapus secara permanen.', 'info');
+      navigate('/login');
+    }, 800);
   };
 
   // ─── Kas Handlers ───────────────────────────────────────────
@@ -386,6 +404,33 @@ export default function Profile({ showToast }) {
               </div>
             </div>
           ))}
+
+          {/* ── ZONA BAHAYA (HAPUS AKUN) ────────────────────────── */}
+          <div className="md:col-span-2 mt-4 bg-rose-50/70 border border-rose-200/80 rounded-2xl p-6 text-left space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
+                <Trash2 className="w-4 h-4 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-rose-900">Hapus Akun Saya</h3>
+                <p className="text-xs text-rose-700 font-light">
+                  Jika Anda tidak lagi memerlukan akun di portal ini, Anda dapat menghapusnya secara permanen.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteConfirmText('');
+                  setShowDeleteModal(true);
+                }}
+                className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs rounded-xl shadow-sm transition-all flex items-center gap-2"
+              >
+                <Trash2 className="w-3.5 h-3.5" /> Hapus Akun Saya
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -578,6 +623,61 @@ export default function Profile({ showToast }) {
             </div>
           )}
 
+        </div>
+      )}
+
+      {/* ── MODAL KONFIRMASI HAPUS AKUN ───────────────────────── */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 w-full max-w-md text-left shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2 text-rose-600 font-bold text-sm">
+                <AlertTriangle className="w-4.5 h-4.5" /> Konfirmasi Hapus Akun
+              </div>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-4.5 h-4.5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Apakah Anda yakin ingin menghapus akun <strong className="text-slate-900">{currentUser.name}</strong> ({currentUser.email}) secara permanen?
+              Tindakan ini <strong>tidak dapat dibatalkan</strong> dan data akun Anda akan dihapus dari sistem.
+            </p>
+
+            <div className="space-y-1.5 bg-slate-50 border border-slate-200 p-3.5 rounded-xl">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                Ketik <span className="text-rose-600 font-mono">HAPUS</span> di bawah ini untuk konfirmasi:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="Ketik HAPUS di sini"
+                className="w-full bg-white border border-slate-200 rounded-lg py-2 px-3 text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-rose-500"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs uppercase tracking-wider transition-all"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={deleting || deleteConfirmText.trim().toUpperCase() !== 'HAPUS'}
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
+              >
+                {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />} Ya, Hapus Akun
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

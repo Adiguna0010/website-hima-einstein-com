@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Phone, User, ShieldAlert, Loader2, ArrowRight, IdCard, Check, X } from 'lucide-react';
+import { Lock, Phone, User, ShieldAlert, Loader2, ArrowRight, IdCard, Check, X, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register({ showToast }) {
@@ -58,7 +58,7 @@ export default function Register({ showToast }) {
     setLoading(true);
     try {
       await register(name, nim, phone, password);
-      showToast(`Registrasi Berhasil! Akun email Anda adalah: ${name.trim()}@einsten.com. Menunggu persetujuan (approval) BPH.`, 'success');
+      showToast(`Registrasi Berhasil! Akun Anda (${name.trim()}@einsten.com) telah aktif sebagai Anggota Biasa. Silakan masuk.`, 'success');
       setShowOtpModal(false);
       navigate('/login');
     } catch (err) {
@@ -169,10 +169,10 @@ export default function Register({ showToast }) {
               </div>
             </div>
 
-            <div className="flex items-start gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl text-left">
-              <ShieldAlert className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-              <p className="text-[10px] text-slate-500 leading-normal">
-                Akun baru secara default terdaftar dengan status <strong className="text-slate-850">Pending</strong> dan membutuhkan persetujuan **Dashboard Kahim** sebelum bisa digunakan untuk masuk.
+            <div className="flex items-start gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-left">
+              <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <p className="text-[10px] text-emerald-700 leading-normal">
+                Setelah verifikasi nomor WhatsApp dengan OTP berhasil, akun Anda akan <strong>langsung aktif</strong> sebagai <strong>Anggota Biasa</strong> tanpa perlu persetujuan Admin/Kahim.
               </p>
             </div>
 
