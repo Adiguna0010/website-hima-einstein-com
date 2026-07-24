@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Phone, User, ShieldAlert, Loader2, ArrowRight, IdCard, Check, X, CheckCircle } from 'lucide-react';
+import { Lock, Phone, User, ShieldAlert, Loader2, ArrowRight, IdCard, Check, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register({ showToast }) {
@@ -167,13 +167,6 @@ export default function Register({ showToast }) {
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold transition-all"
                 />
               </div>
-            </div>
-
-            <div className="flex items-start gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-left">
-              <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-              <p className="text-[10px] text-emerald-700 leading-normal">
-                Setelah verifikasi nomor WhatsApp dengan OTP berhasil, akun Anda akan <strong>langsung aktif</strong> sebagai <strong>Anggota Biasa</strong> tanpa perlu persetujuan Admin/Kahim.
-              </p>
             </div>
 
             <button
