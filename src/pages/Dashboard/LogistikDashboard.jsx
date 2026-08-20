@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import { 
   Box, ToggleLeft, ToggleRight, Radio, ShieldCheck, Plus, Trash2, UserCheck, UserX, Users, FileText,
-  QrCode, Upload, Download, FileSpreadsheet, Eye, X, Printer
+  QrCode, Upload, Download, FileSpreadsheet, Eye, X, Printer, CheckCircle2, Layers, AlertCircle
 } from 'lucide-react';
 
 export default function LogistikDashboard({ showToast }) {
@@ -11,8 +12,15 @@ export default function LogistikDashboard({ showToast }) {
   // QR Modal State
   const [selectedQrInstrument, setSelectedQrInstrument] = useState(null);
   const csvInputRef = useRef(null);
+  const batchFileInputRef = useRef(null);
 
-  // Form states for new instrument
+  // Form Mode: 'manual' (one-by-one) | 'batch' (spreadsheet table upload)
+  const [regMode, setRegMode] = useState('manual');
+  const [excelFile, setExcelFile] = useState(null);
+  const [excelPreviewData, setExcelPreviewData] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Form states for single instrument
   const [newName, setNewName] = useState('');
   const [newId, setNewId] = useState('');
   const [newImage, setNewImage] = useState('');
@@ -184,94 +192,152 @@ export default function LogistikDashboard({ showToast }) {
     }
   };
 
-  // CSV / Spreadsheet Import Handler
-  const handleCsvUpload = (e) => {
-    const file = e.target.files[0];
+  // Spreadsheet (Excel / CSV) Parser & Bulk Import Handlers
+  const handleSpreadsheetFile = (file) => {
     if (!file) return;
+    setExcelFile(file);
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = (e) => {
       try {
-        const text = event.target.result;
-        const lines = text.split(/\r\n|\n/).filter(line => line.trim().length > 0);
-        if (lines.length <= 1) {
-          showToast('File spreadsheet / CSV kosong atau tidak memiliki baris data!', 'error');
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+        if (!jsonData || jsonData.length <= 1) {
+          showToast('File spreadsheet kosong atau tidak memiliki baris data!', 'error');
+          setExcelPreviewData([]);
           return;
         }
 
-        // Parse header
-        const delimiter = lines[0].includes(';') ? ';' : lines[0].includes('\t') ? '\t' : ',';
-        const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^["']|["']$/g, '').toLowerCase());
-
+        // Find headers from first row
+        const headers = jsonData[0].map(h => String(h || '').trim().toLowerCase());
         const idIdx = headers.findIndex(h => h.includes('id') || h.includes('kode'));
-        const nameIdx = headers.findIndex(h => h.includes('nama') || h.includes('name') || h.includes('alat'));
-        const descIdx = headers.findIndex(h => h.includes('deskripsi') || h.includes('desc') || h.includes('ket'));
+        const nameIdx = headers.findIndex(h => h.includes('nama') || h.includes('name') || h.includes('alat') || h.includes('barang'));
+        const descIdx = headers.findIndex(h => h.includes('deskripsi') || h.includes('desc') || h.includes('ket') || h.includes('spesifikasi'));
         const imgIdx = headers.findIndex(h => h.includes('foto') || h.includes('image') || h.includes('gambar') || h.includes('url'));
         const statusIdx = headers.findIndex(h => h.includes('status'));
 
-        if (nameIdx === -1) {
-          showToast('Kolom "Nama Alat" tidak ditemukan pada file CSV!', 'error');
-          return;
-        }
+        const finalNameIdx = nameIdx !== -1 ? nameIdx : (idIdx === 0 ? 1 : 0);
 
-        const newImported = [];
-        let existingIds = new Set(instruments.map(i => i.id.toLowerCase()));
+        const parsedItems = [];
+        const existingIds = new Set(instruments.map(i => i.id.toUpperCase()));
 
-        for (let i = 1; i < lines.length; i++) {
-          const row = lines[i].split(delimiter).map(col => col.trim().replace(/^["']|["']$/g, ''));
-          if (!row[nameIdx]) continue;
+        for (let i = 1; i < jsonData.length; i++) {
+          const row = jsonData[i];
+          if (!row || row.length === 0) continue;
+          
+          const rawName = String(row[finalNameIdx] || '').trim();
+          if (!rawName) continue;
 
-          const rawId = (idIdx !== -1 && row[idIdx]) ? row[idIdx].trim().toUpperCase() : `HIMA-ALAT-${Date.now().toString().slice(-4)}${i}`;
+          let rawId = (idIdx !== -1 && row[idIdx]) ? String(row[idIdx]).trim().toUpperCase() : `HIMA-ALAT-${Date.now().toString().slice(-4)}${i}`;
           let finalId = rawId;
           let counter = 1;
-          while (existingIds.has(finalId.toLowerCase())) {
+          while (existingIds.has(finalId.toUpperCase())) {
             finalId = `${rawId}-${counter}`;
             counter++;
           }
-          existingIds.add(finalId.toLowerCase());
+          existingIds.add(finalId.toUpperCase());
 
-          newImported.push({
+          const desc = (descIdx !== -1 && row[descIdx]) ? String(row[descIdx]).trim() : 'Alat laboratorium terdaftar via Spreadsheet.';
+          const img = (imgIdx !== -1 && row[imgIdx]) ? String(row[imgIdx]).trim() : '📦';
+          const status = (statusIdx !== -1 && String(row[statusIdx]).toLowerCase().includes('pinjam')) ? 'Borrowed' : 'Available';
+
+          parsedItems.push({
             id: finalId,
-            name: row[nameIdx],
-            status: (statusIdx !== -1 && row[statusIdx]?.toLowerCase().includes('pinjam')) ? 'Borrowed' : 'Available',
-            image: (imgIdx !== -1 && row[imgIdx]) ? row[imgIdx] : '📦',
-            desc: (descIdx !== -1 && row[descIdx]) ? row[descIdx] : 'Alat laboratorium terdaftar via Spreadsheet.'
+            name: rawName,
+            status,
+            image: img,
+            desc
           });
         }
 
-        if (newImported.length === 0) {
+        if (parsedItems.length === 0) {
           showToast('Tidak ada data alat valid yang ditemukan di file!', 'warning');
-          return;
+          setExcelPreviewData([]);
+        } else {
+          setExcelPreviewData(parsedItems);
+          showToast(`Berhasil membaca ${parsedItems.length} alat dari file spreadsheet!`, 'success');
         }
-
-        const updatedList = [...instruments, ...newImported];
-        setInstruments(updatedList);
-        localStorage.setItem('hima_instruments', JSON.stringify(updatedList));
-        showToast(`Berhasil mengimpor ${newImported.length} alat dari Spreadsheet/CSV!`, 'success');
-        if (csvInputRef.current) csvInputRef.current.value = '';
       } catch (err) {
         console.error(err);
-        showToast('Gagal memproses file Spreadsheet / CSV: ' + err.message, 'error');
+        showToast('Gagal membaca file spreadsheet: ' + err.message, 'error');
+        setExcelPreviewData([]);
       }
     };
-    reader.readAsText(file);
+    reader.readAsArrayBuffer(file);
   };
 
-  // Download Sample CSV Template
-  const handleDownloadTemplate = () => {
-    const csvContent = "Kode_ID,Nama_Alat,Deskripsi,Status,URL_Foto\n" +
-      "HIMA-OSCI-005,Oscilloscope Digital GW Instek,Oscilloscope 2 channel 100MHz untuk pengukuran sinyal frekuensi,Available,\n" +
-      "HIMA-MULT-006,Digital Multimeter Sanwa,Multimeter digital presisi tinggi untuk ukur tegangan dan resistansi,Available,\n" +
-      "HIMA-POW-007,DC Power Supply Linear 30V 5A,Catu daya variabel teregulasi untuk pengujian modul IoT,Available,";
+  const handleBulkRegister = () => {
+    if (!excelPreviewData || excelPreviewData.length === 0) {
+      showToast('Pilih file spreadsheet terlebih dahulu!', 'warning');
+      return;
+    }
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'template_inventaris_alat_hima.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const updatedList = [...instruments, ...excelPreviewData];
+    setInstruments(updatedList);
+    localStorage.setItem('hima_instruments', JSON.stringify(updatedList));
+    showToast(`Sukses! ${excelPreviewData.length} alat berhasil didaftarkan sekaligus ke inventaris!`, 'success');
+    
+    // Reset preview
+    setExcelFile(null);
+    setExcelPreviewData([]);
+    if (batchFileInputRef.current) batchFileInputRef.current.value = '';
+    if (csvInputRef.current) csvInputRef.current.value = '';
+  };
+
+  // Download Sample Excel & CSV Template
+  const handleDownloadTemplate = (format = 'xlsx') => {
+    const templateData = [
+      {
+        Kode_ID: 'HIMA-OSCI-005',
+        Nama_Alat: 'Oscilloscope Digital GW Instek',
+        Deskripsi: 'Oscilloscope 2 channel 100MHz untuk pengukuran sinyal frekuensi',
+        Status: 'Available',
+        Foto: ''
+      },
+      {
+        Kode_ID: 'HIMA-MULT-006',
+        Nama_Alat: 'Digital Multimeter Sanwa',
+        Deskripsi: 'Multimeter digital presisi tinggi untuk ukur tegangan dan resistansi',
+        Status: 'Available',
+        Foto: ''
+      },
+      {
+        Kode_ID: 'HIMA-POW-007',
+        Nama_Alat: 'DC Power Supply Linear 30V 5A',
+        Deskripsi: 'Catu daya variabel teregulasi untuk pengujian modul IoT & sirkuit',
+        Status: 'Available',
+        Foto: ''
+      },
+      {
+        Kode_ID: 'HIMA-FUNC-008',
+        Nama_Alat: 'Function Generator DDS 25MHz',
+        Deskripsi: 'Generator sinyal sinus, kotak, dan segitiga untuk kalibrasi',
+        Status: 'Available',
+        Foto: ''
+      }
+    ];
+
+    if (format === 'xlsx') {
+      const ws = XLSX.utils.json_to_sheet(templateData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Inventaris_Alat');
+      XLSX.writeFile(wb, 'template_inventaris_alat_hima.xlsx');
+    } else {
+      const csvContent = "Kode_ID,Nama_Alat,Deskripsi,Status,Foto\n" +
+        templateData.map(r => `"${r.Kode_ID}","${r.Nama_Alat}","${r.Deskripsi}","${r.Status}","${r.Foto}"`).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'template_inventaris_alat_hima.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   const handleApproveRequest = (reqId) => {
@@ -403,28 +469,24 @@ export default function LogistikDashboard({ showToast }) {
               </h3>
               
               <div className="flex items-center gap-2 flex-wrap">
-                <input 
-                  type="file" 
-                  ref={csvInputRef} 
-                  accept=".csv,text/csv,text/plain" 
-                  onChange={handleCsvUpload} 
-                  className="hidden" 
-                />
                 <button
                   type="button"
-                  onClick={() => csvInputRef.current && csvInputRef.current.click()}
+                  onClick={() => {
+                    setRegMode('batch');
+                    if (batchFileInputRef.current) batchFileInputRef.current.click();
+                  }}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark text-xs font-bold border border-gold/30 transition-all active:scale-95 cursor-pointer"
-                  title="Upload daftar inventaris dari file CSV/Spreadsheet"
+                  title="Upload daftar inventaris dari file Excel (.xlsx) / CSV"
                 >
-                  <Upload className="w-3.5 h-3.5 text-gold-dark" /> Import Spreadsheet / CSV
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-gold-dark" /> Upload Tabel Spreadsheet
                 </button>
                 <button
                   type="button"
-                  onClick={handleDownloadTemplate}
+                  onClick={() => handleDownloadTemplate('xlsx')}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-all active:scale-95 cursor-pointer"
-                  title="Unduh contoh template format spreadsheet/CSV"
+                  title="Unduh contoh template format Excel (.xlsx)"
                 >
-                  <Download className="w-3.5 h-3.5 text-slate-600" /> Template CSV
+                  <Download className="w-3.5 h-3.5 text-slate-600" /> Template Excel
                 </button>
               </div>
             </div>
@@ -611,78 +673,224 @@ export default function LogistikDashboard({ showToast }) {
 
         </div>
 
-        {/* Right column: Register form */}
-        <div className="lg:col-span-4 space-y-6">
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <Plus className="w-4 h-4 text-gold" /> Daftarkan Alat Baru
-          </h3>
-          <div className="bg-white border border-gold-border rounded-2xl p-6 shadow-md relative overflow-hidden">
-            <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-gold/5 rounded-full blur-xl"></div>
-            
-            <form onSubmit={handleRegisterInstrument} className="space-y-4 relative z-10">
-              <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Nama Alat Lab</label>
-                <input 
-                  type="text"
-                  required
-                  placeholder="Contoh: Oscilloscope GW Instek"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-800 focus:outline-none focus:border-gold"
-                />
-              </div>
+        {/* Right column: Register form & Batch Spreadsheet Uploader */}
+        <div className="lg:col-span-4 space-y-4">
+          
+          {/* Tab Switcher */}
+          <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-inner">
+            <button
+              type="button"
+              onClick={() => setRegMode('manual')}
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                regMode === 'manual'
+                  ? 'bg-white text-gold-dark shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <Plus className="w-3.5 h-3.5" /> Input Manual
+            </button>
+            <button
+              type="button"
+              onClick={() => setRegMode('batch')}
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                regMode === 'batch'
+                  ? 'bg-white text-gold-dark shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" /> Upload Spreadsheet
+            </button>
+          </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Kode ID Inventaris</label>
-                <input 
-                  type="text"
-                  required
-                  placeholder="Contoh: HIMA-OSCI-001"
-                  value={newId}
-                  onChange={(e) => setNewId(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-850 focus:outline-none focus:border-gold font-mono uppercase"
-                />
+          {regMode === 'manual' ? (
+            /* MANUAL SINGLE ITEM FORM */
+            <div className="bg-white border border-gold-border rounded-2xl p-6 shadow-md relative overflow-hidden text-left">
+              <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-gold/5 rounded-full blur-xl"></div>
+              
+              <div className="mb-4 space-y-1">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <Plus className="w-4 h-4 text-gold" /> Daftarkan Alat Baru
+                </h3>
+                <p className="text-[11px] text-slate-500 font-light">Input satu per satu alat laboratorium ke dalam inventaris.</p>
               </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">
-                  Foto Alat <span className="text-slate-400 font-normal lowercase">(opsional / boleh kosong)</span>
-                </label>
-                <div className="flex flex-col gap-2">
+              
+              <form onSubmit={handleRegisterInstrument} className="space-y-4 relative z-10">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Nama Alat Lab</label>
                   <input 
-                    key={formKey}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gold/10 file:text-gold-dark hover:file:bg-gold/20 cursor-pointer"
+                    type="text"
+                    required
+                    placeholder="Contoh: Oscilloscope GW Instek"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-800 focus:outline-none focus:border-gold"
                   />
-                  {newImage && (
-                    <div className="relative w-16 h-16 rounded-xl border border-slate-200 overflow-hidden mt-1 bg-slate-50 flex items-center justify-center">
-                      <img src={newImage} alt="Preview" className="w-full h-full object-cover" />
-                    </div>
-                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Kode ID Inventaris</label>
+                  <input 
+                    type="text"
+                    required
+                    placeholder="Contoh: HIMA-OSCI-001"
+                    value={newId}
+                    onChange={(e) => setNewId(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-850 focus:outline-none focus:border-gold font-mono uppercase"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">
+                    Foto Alat <span className="text-slate-400 font-normal lowercase">(opsional / boleh kosong)</span>
+                  </label>
+                  <div className="flex flex-col gap-2">
+                    <input 
+                      key={formKey}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gold/10 file:text-gold-dark hover:file:bg-gold/20 cursor-pointer"
+                    />
+                    {newImage && (
+                      <div className="relative w-16 h-16 rounded-xl border border-slate-200 overflow-hidden mt-1 bg-slate-50 flex items-center justify-center">
+                        <img src={newImage} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Deskripsi Singkat</label>
+                  <textarea 
+                    placeholder="Tulis spesifikasi singkat atau kegunaan alat..."
+                    rows="3"
+                    value={newDesc}
+                    onChange={(e) => setNewDesc(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-850 focus:outline-none focus:border-gold resize-none"
+                  />
+                </div>
+
+                <button 
+                  type="submit"
+                  className="w-full py-3 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-gold/20 flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 text-white" /> Daftarkan Alat
+                </button>
+              </form>
+            </div>
+          ) : (
+            /* BATCH SPREADSHEET UPLOAD BOX */
+            <div className="bg-white border border-gold-border rounded-2xl p-6 shadow-md relative overflow-hidden text-left space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <FileSpreadsheet className="w-4 h-4 text-gold" /> Upload Tabel Spreadsheet
+                </h3>
+                <p className="text-[11px] text-slate-500 font-light leading-relaxed">
+                  Upload file <strong>Excel (.xlsx, .xls)</strong> atau <strong>CSV</strong> untuk mendaftarkan semua alat sekaligus ke sistem.
+                </p>
+              </div>
+
+              {/* Download template buttons */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Unduh Format Tabel:</span>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadTemplate('xlsx')}
+                    className="flex-1 py-1.5 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl text-[10px] border border-emerald-200 transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
+                  >
+                    <Download className="w-3 h-3" /> Format Excel (.xlsx)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadTemplate('csv')}
+                    className="flex-1 py-1.5 px-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-[10px] border border-slate-300 transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
+                  >
+                    <Download className="w-3 h-3" /> Format CSV (.csv)
+                  </button>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Deskripsi Singkat</label>
-                <textarea 
-                  placeholder="Tulis spesifikasi singkat atau kegunaan alat..."
-                  rows="3"
-                  value={newDesc}
-                  onChange={(e) => setNewDesc(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-850 focus:outline-none focus:border-gold resize-none"
-                />
+              {/* Drag & Drop Upload Zone */}
+              <input 
+                type="file"
+                ref={batchFileInputRef}
+                accept=".xlsx,.xls,.csv,.tsv"
+                onChange={(e) => e.target.files && handleSpreadsheetFile(e.target.files[0])}
+                className="hidden"
+              />
+
+              <div
+                onClick={() => batchFileInputRef.current && batchFileInputRef.current.click()}
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleSpreadsheetFile(e.dataTransfer.files[0]);
+                  }
+                }}
+                className={`p-6 border-2 border-dashed rounded-2xl text-center cursor-pointer transition-all ${
+                  isDragging 
+                    ? 'border-gold bg-gold/10 scale-98' 
+                    : 'border-slate-300 hover:border-gold hover:bg-slate-50'
+                }`}
+              >
+                <Upload className="w-8 h-8 text-gold mx-auto mb-2 animate-bounce" />
+                <p className="text-xs font-bold text-slate-700">
+                  {excelFile ? excelFile.name : 'Klik untuk Pilih File Spreadsheet'}
+                </p>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  Mendukung file Excel (.xlsx, .xls) & CSV
+                </p>
               </div>
 
-              <button 
-                type="submit"
-                className="w-full py-3 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-gold/20 flex items-center justify-center gap-1.5"
-              >
-                <Plus className="w-4 h-4 text-white" /> Daftarkan Alat
-              </button>
-            </form>
-          </div>
+              {/* Preview of Parsed Rows */}
+              {excelPreviewData.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      {excelPreviewData.length} Alat Terbaca dari File
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => { setExcelFile(null); setExcelPreviewData([]); }}
+                      className="text-[10px] text-rose-500 hover:underline cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                  </div>
+
+                  {/* Mini Preview Table */}
+                  <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-xl bg-slate-50 text-[11px] divide-y divide-slate-200 shadow-inner">
+                    {excelPreviewData.map((item, idx) => (
+                      <div key={idx} className="p-2 flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-800 truncate">{item.name}</p>
+                          <p className="text-[9px] font-mono text-slate-500 truncate">{item.id}</p>
+                        </div>
+                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold shrink-0">
+                          Siap
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Primary Bulk Register Button */}
+                  <button
+                    type="button"
+                    onClick={handleBulkRegister}
+                    className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Layers className="w-4 h-4" /> Daftarkan {excelPreviewData.length} Alat Sekaligus
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
 
       </div>
