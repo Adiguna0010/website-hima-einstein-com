@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Calendar, User, GraduationCap, Phone, ShieldCheck, HelpCircle, ArrowRight } from 'lucide-react';
+import { Camera, Calendar, User, GraduationCap, Phone, ShieldCheck, HelpCircle, ArrowRight, QrCode } from 'lucide-react';
 import ScannerModal from '../components/ScannerModal';
 import { useAuth } from '../context/AuthContext';
 
@@ -95,17 +95,36 @@ export default function Space({ showToast }) {
   };
 
   const handleOpenScanner = (tool) => {
-    setActiveToolId(tool.id);
-    setActiveToolName(tool.name);
+    if (tool) {
+      setActiveToolId(tool.id);
+      setActiveToolName(tool.name);
+    } else {
+      setActiveToolId('');
+      setActiveToolName('');
+    }
     setScannerOpen(true);
   };
 
-  const handleScanSuccess = (scannedId, scannedName) => {
+  const handleScanSuccess = (scannedText) => {
     setScannerOpen(false);
-    setSelectedToolId(scannedId);
-    setSelectedToolName(scannedName);
-    setShowForm(true);
-    showToast(`Scan Berhasil: ${scannedName} terpilih!`, 'success');
+    const cleaned = scannedText.trim();
+    // Find matching instrument by ID or name
+    const found = instruments.find(
+      inst => inst.id.toLowerCase() === cleaned.toLowerCase() ||
+              inst.name.toLowerCase() === cleaned.toLowerCase()
+    );
+
+    if (found) {
+      setSelectedToolId(found.id);
+      setSelectedToolName(found.name);
+      setShowForm(true);
+      showToast(`Scan Berhasil: ${found.name} (${found.id}) terpilih!`, 'success');
+    } else {
+      setSelectedToolId(cleaned.toUpperCase());
+      setSelectedToolName(activeToolName || cleaned);
+      setShowForm(true);
+      showToast(`Scan Berhasil: Kode ${cleaned} terpilih!`, 'success');
+    }
   };
 
   const handleReservationSubmit = (e) => {
@@ -208,67 +227,94 @@ export default function Space({ showToast }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-6">
         
-        {/* Left Column: Instruments status board */}
-        <div className="lg:col-span-8 space-y-6">
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider text-left flex items-center gap-1.5">
-            <ShieldCheck className="w-4.5 h-4.5 text-gold" /> Dashboard Ketersediaan Alat
-          </h3>
+        {/* Left Column: Instruments status board in LIST VIEW */}
+        <div className="lg:col-span-8 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider text-left flex items-center gap-1.5">
+              <ShieldCheck className="w-4.5 h-4.5 text-gold" /> Daftar Ketersediaan Alat
+            </h3>
+            
+            {/* Quick General Scan Button */}
+            <button
+              onClick={() => handleOpenScanner(null)}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark font-bold text-xs border border-gold/30 transition-all active:scale-95 cursor-pointer self-start sm:self-auto"
+            >
+              <QrCode className="w-4 h-4 text-gold-dark" /> Scan QR / Barcode Fisik
+            </button>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {instruments.map((inst) => (
-              <div 
-                key={inst.id} 
-                className="p-6 bg-white border border-gold-border rounded-2xl flex flex-col justify-between text-left space-y-4 hover:border-gold/30 hover:bg-slate-50/50 transition-all shadow-sm relative overflow-hidden group"
-              >
-                <div className="flex justify-between items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shadow-inner shrink-0 overflow-hidden">
-                    {inst.image && (inst.image.startsWith('/') || inst.image.startsWith('http')) ? (
-                      <img src={inst.image} alt={inst.name} className="w-full h-full object-cover" />
+          {/* List items container */}
+          <div className="bg-white border border-gold-border rounded-2xl shadow-sm overflow-hidden divide-y divide-slate-100">
+            {instruments.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-xs">Belum ada alat laboratorium yang terdaftar.</div>
+            ) : (
+              instruments.map((inst) => (
+                <div 
+                  key={inst.id}
+                  className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition-all text-left group"
+                >
+                  {/* Tool Image & Details */}
+                  <div className="flex items-start sm:items-center gap-3.5 flex-1 min-w-0">
+                    <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+                      {inst.image && (inst.image.startsWith('/') || inst.image.startsWith('http') || inst.image.startsWith('data:')) ? (
+                        <img src={inst.image} alt={inst.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-2xl">{inst.image || '📦'}</span>
+                      )}
+                    </div>
+
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="text-sm font-bold text-slate-800 group-hover:text-gold-dark transition-colors truncate">
+                          {inst.name}
+                        </h4>
+                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-mono text-[9px] font-bold border border-slate-200">
+                          {inst.id}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
+                          inst.status === 'Available' 
+                            ? 'bg-emerald-50 text-emerald-600 border-emerald-500/20' 
+                            : 'bg-rose-50 text-rose-600 border-rose-500/20'
+                        }`}>
+                          {inst.status === 'Available' ? 'Tersedia' : 'Sedang Dipinjam'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 leading-relaxed font-light line-clamp-2">
+                        {inst.desc}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                    {inst.status === 'Available' ? (
+                      <>
+                        <button 
+                          onClick={() => handleSelectTool(inst)}
+                          className="px-4 py-2 bg-gold hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer"
+                        >
+                          Pinjam Barang
+                        </button>
+                        <button 
+                          onClick={() => handleOpenScanner(inst)}
+                          className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs flex items-center justify-center active:scale-95 transition-all border border-slate-200 cursor-pointer"
+                          title="Scan QR Code Alat Ini"
+                        >
+                          <Camera className="w-4 h-4 text-slate-600" />
+                        </button>
+                      </>
                     ) : (
-                      <span className="text-2xl">{inst.image || '📦'}</span>
+                      <button 
+                        disabled
+                        className="px-4 py-2 bg-slate-100 text-slate-400 font-semibold rounded-xl text-xs cursor-not-allowed border border-slate-200"
+                      >
+                        Sedang Dipinjam
+                      </button>
                     )}
                   </div>
-                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold border uppercase tracking-wider ${
-                    inst.status === 'Available' 
-                      ? 'bg-emerald-50 text-emerald-600 border-emerald-500/20' 
-                      : 'bg-rose-55 text-rose-600 border-rose-500/20'
-                  }`}>
-                    {inst.status === 'Available' ? 'Tersedia' : 'Sedang Dipinjam'}
-                  </span>
                 </div>
-
-                <div className="space-y-1.5">
-                  <h4 className="text-sm font-bold text-slate-800 group-hover:text-gold-dark transition-colors">{inst.name}</h4>
-                  <span className="block text-[10px] font-mono text-slate-500 uppercase tracking-widest">ID: {inst.id}</span>
-                  <p className="text-[11px] text-slate-500 leading-normal font-light">{inst.desc}</p>
-                </div>
-
-                {inst.status === 'Available' ? (
-                  <div className="flex gap-2 mt-2">
-                    <button 
-                      onClick={() => handleSelectTool(inst)}
-                      className="flex-1 py-2 bg-gold hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer"
-                    >
-                      Pinjam Barang
-                    </button>
-                    <button 
-                      onClick={() => handleOpenScanner(inst)}
-                      className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs flex items-center justify-center active:scale-95 transition-all border border-slate-200 cursor-pointer"
-                      title="Scan QR Code Alat"
-                    >
-                      <Camera className="w-4 h-4 text-slate-600" />
-                    </button>
-                  </div>
-                ) : (
-                  <button 
-                    disabled
-                    className="w-full py-2 bg-slate-100 text-slate-400 font-semibold rounded-xl text-xs cursor-not-allowed mt-2 border border-slate-200"
-                  >
-                    Alat Penuh Dipinjam
-                  </button>
-                )}
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 

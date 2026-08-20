@@ -1,9 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Box, ToggleLeft, ToggleRight, Radio, ShieldCheck, Plus, Trash2, UserCheck, UserX, Users, FileText } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Box, ToggleLeft, ToggleRight, Radio, ShieldCheck, Plus, Trash2, UserCheck, UserX, Users, FileText,
+  QrCode, Upload, Download, FileSpreadsheet, Eye, X, Printer
+} from 'lucide-react';
 
 export default function LogistikDashboard({ showToast }) {
   const [instruments, setInstruments] = useState([]);
   const [borrowRequests, setBorrowRequests] = useState([]);
+
+  // QR Modal State
+  const [selectedQrInstrument, setSelectedQrInstrument] = useState(null);
+  const csvInputRef = useRef(null);
 
   // Form states for new instrument
   const [newName, setNewName] = useState('');
@@ -155,6 +162,96 @@ export default function LogistikDashboard({ showToast }) {
     }
   };
 
+  // CSV / Spreadsheet Import Handler
+  const handleCsvUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target.result;
+        const lines = text.split(/\r\n|\n/).filter(line => line.trim().length > 0);
+        if (lines.length <= 1) {
+          showToast('File spreadsheet / CSV kosong atau tidak memiliki baris data!', 'error');
+          return;
+        }
+
+        // Parse header
+        const delimiter = lines[0].includes(';') ? ';' : lines[0].includes('\t') ? '\t' : ',';
+        const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^["']|["']$/g, '').toLowerCase());
+
+        const idIdx = headers.findIndex(h => h.includes('id') || h.includes('kode'));
+        const nameIdx = headers.findIndex(h => h.includes('nama') || h.includes('name') || h.includes('alat'));
+        const descIdx = headers.findIndex(h => h.includes('deskripsi') || h.includes('desc') || h.includes('ket'));
+        const imgIdx = headers.findIndex(h => h.includes('foto') || h.includes('image') || h.includes('gambar') || h.includes('url'));
+        const statusIdx = headers.findIndex(h => h.includes('status'));
+
+        if (nameIdx === -1) {
+          showToast('Kolom "Nama Alat" tidak ditemukan pada file CSV!', 'error');
+          return;
+        }
+
+        const newImported = [];
+        let existingIds = new Set(instruments.map(i => i.id.toLowerCase()));
+
+        for (let i = 1; i < lines.length; i++) {
+          const row = lines[i].split(delimiter).map(col => col.trim().replace(/^["']|["']$/g, ''));
+          if (!row[nameIdx]) continue;
+
+          const rawId = (idIdx !== -1 && row[idIdx]) ? row[idIdx].trim().toUpperCase() : `HIMA-ALAT-${Date.now().toString().slice(-4)}${i}`;
+          let finalId = rawId;
+          let counter = 1;
+          while (existingIds.has(finalId.toLowerCase())) {
+            finalId = `${rawId}-${counter}`;
+            counter++;
+          }
+          existingIds.add(finalId.toLowerCase());
+
+          newImported.push({
+            id: finalId,
+            name: row[nameIdx],
+            status: (statusIdx !== -1 && row[statusIdx]?.toLowerCase().includes('pinjam')) ? 'Borrowed' : 'Available',
+            image: (imgIdx !== -1 && row[imgIdx]) ? row[imgIdx] : '📦',
+            desc: (descIdx !== -1 && row[descIdx]) ? row[descIdx] : 'Alat laboratorium terdaftar via Spreadsheet.'
+          });
+        }
+
+        if (newImported.length === 0) {
+          showToast('Tidak ada data alat valid yang ditemukan di file!', 'warning');
+          return;
+        }
+
+        const updatedList = [...instruments, ...newImported];
+        setInstruments(updatedList);
+        localStorage.setItem('hima_instruments', JSON.stringify(updatedList));
+        showToast(`Berhasil mengimpor ${newImported.length} alat dari Spreadsheet/CSV!`, 'success');
+        if (csvInputRef.current) csvInputRef.current.value = '';
+      } catch (err) {
+        console.error(err);
+        showToast('Gagal memproses file Spreadsheet / CSV: ' + err.message, 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Download Sample CSV Template
+  const handleDownloadTemplate = () => {
+    const csvContent = "Kode_ID,Nama_Alat,Deskripsi,Status,URL_Foto\n" +
+      "HIMA-OSCI-005,Oscilloscope Digital GW Instek,Oscilloscope 2 channel 100MHz untuk pengukuran sinyal frekuensi,Available,\n" +
+      "HIMA-MULT-006,Digital Multimeter Sanwa,Multimeter digital presisi tinggi untuk ukur tegangan dan resistansi,Available,\n" +
+      "HIMA-POW-007,DC Power Supply Linear 30V 5A,Catu daya variabel teregulasi untuk pengujian modul IoT,Available,";
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'template_inventaris_alat_hima.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleApproveRequest = (reqId) => {
     const req = borrowRequests.find(r => r.id === reqId);
     if (!req) return;
@@ -278,9 +375,38 @@ export default function LogistikDashboard({ showToast }) {
           
           {/* Inventory list */}
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-              <Box className="w-4 h-4 text-gold" /> Daftar Inventaris Alat
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <Box className="w-4 h-4 text-gold" /> Daftar Inventaris Alat
+              </h3>
+              
+              <div className="flex items-center gap-2 flex-wrap">
+                <input 
+                  type="file" 
+                  ref={csvInputRef} 
+                  accept=".csv,text/csv,text/plain" 
+                  onChange={handleCsvUpload} 
+                  className="hidden" 
+                />
+                <button
+                  type="button"
+                  onClick={() => csvInputRef.current && csvInputRef.current.click()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark text-xs font-bold border border-gold/30 transition-all active:scale-95 cursor-pointer"
+                  title="Upload daftar inventaris dari file CSV/Spreadsheet"
+                >
+                  <Upload className="w-3.5 h-3.5 text-gold-dark" /> Import Spreadsheet / CSV
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadTemplate}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-all active:scale-95 cursor-pointer"
+                  title="Unduh contoh template format spreadsheet/CSV"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-600" /> Template CSV
+                </button>
+              </div>
+            </div>
+
             <div className="bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
@@ -288,6 +414,7 @@ export default function LogistikDashboard({ showToast }) {
                     <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                       <th className="px-6 py-4">Alat Lab</th>
                       <th className="px-6 py-4">Kode ID</th>
+                      <th className="px-6 py-4">QR Code</th>
                       <th className="px-6 py-4">Status</th>
                       <th className="px-6 py-4 text-center">Tindakan Otoritas</th>
                     </tr>
@@ -295,23 +422,34 @@ export default function LogistikDashboard({ showToast }) {
                   <tbody className="divide-y divide-slate-200 text-xs text-slate-750">
                     {instruments.length === 0 ? (
                       <tr>
-                        <td colSpan="4" className="px-6 py-10 text-center text-slate-400">Belum ada alat terdaftar.</td>
+                        <td colSpan="5" className="px-6 py-10 text-center text-slate-400">Belum ada alat terdaftar.</td>
                       </tr>
                     ) : (
                       instruments.map((inst) => (
                         <tr key={inst.id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="px-6 py-4 flex items-center gap-3">
-                            {inst.image && (inst.image.startsWith('/') || inst.image.startsWith('http')) ? (
+                            {inst.image && (inst.image.startsWith('/') || inst.image.startsWith('http') || inst.image.startsWith('data:')) ? (
                               <img src={inst.image} alt={inst.name} className="w-8 h-8 rounded-lg object-cover border border-slate-200" />
                             ) : (
                               <span className="text-2xl">{inst.image || '📦'}</span>
                             )}
                             <div>
                               <p className="font-bold text-slate-800">{inst.name}</p>
-                              <p className="text-[10px] text-slate-500 font-light truncate max-w-[250px]">{inst.desc}</p>
+                              <p className="text-[10px] text-slate-500 font-light truncate max-w-[200px]">{inst.desc}</p>
                             </div>
                           </td>
-                          <td className="px-6 py-4 font-mono text-slate-600">{inst.id}</td>
+                          <td className="px-6 py-4 font-mono text-slate-600 font-bold">{inst.id}</td>
+                          <td className="px-6 py-4">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedQrInstrument(inst)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-gold/10 hover:text-gold-dark text-slate-700 text-[10px] font-bold border border-slate-200 transition-all active:scale-95 cursor-pointer"
+                              title="Lihat & Cetak QR Code Alat"
+                            >
+                              <QrCode className="w-3.5 h-3.5 text-gold-dark" />
+                              <span>Lihat QR</span>
+                            </button>
+                          </td>
                           <td className="px-6 py-4">
                             <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
                               inst.status === 'Available' 
@@ -345,7 +483,7 @@ export default function LogistikDashboard({ showToast }) {
                               
                               <button
                                 onClick={() => handleDeleteInstrument(inst.id)}
-                                className="p-1.5 text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl transition-all active:scale-95"
+                                className="p-1.5 text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl transition-all active:scale-95 cursor-pointer"
                                 title="Hapus Alat"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -525,6 +663,64 @@ export default function LogistikDashboard({ showToast }) {
         </div>
 
       </div>
+
+      {/* QR Code Modal for Inventory Tools */}
+      {selectedQrInstrument && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white border border-gold-border rounded-2xl max-w-sm w-full p-6 shadow-2xl relative text-center space-y-4 animate-slide-in">
+            <button
+              onClick={() => setSelectedQrInstrument(null)}
+              className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold text-gold-dark uppercase tracking-widest block">
+                QR Code Alat Laboratorium
+              </span>
+              <h3 className="text-base font-bold text-slate-900 truncate">
+                {selectedQrInstrument.name}
+              </h3>
+              <p className="text-xs font-mono font-bold text-slate-500 bg-slate-100 py-1 px-2 rounded-lg inline-block">
+                {selectedQrInstrument.id}
+              </p>
+            </div>
+
+            {/* QR Image */}
+            <div className="p-4 bg-white border-2 border-dashed border-gold-border/80 rounded-2xl inline-block shadow-inner mx-auto">
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(selectedQrInstrument.id)}`}
+                alt={`QR Code ${selectedQrInstrument.name}`}
+                className="w-48 h-48 object-contain mx-auto"
+              />
+            </div>
+
+            <p className="text-[11px] text-slate-500 font-light leading-relaxed">
+              Cetak QR Code ini dan tempelkan pada alat fisik. Mahasiswa dapat memindainya langsung di portal <strong className="text-slate-800">Einsten Space</strong>.
+            </p>
+
+            <div className="flex gap-2 pt-2">
+              <a
+                href={`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(selectedQrInstrument.id)}`}
+                target="_blank"
+                rel="noreferrer"
+                download={`QR_${selectedQrInstrument.id}.png`}
+                className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" /> Unduh QR
+              </a>
+              <button
+                onClick={() => window.print()}
+                className="flex-1 py-2.5 bg-gold hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-gold/20 cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5" /> Cetak / Print
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
