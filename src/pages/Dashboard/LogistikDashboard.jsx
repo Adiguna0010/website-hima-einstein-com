@@ -117,27 +117,23 @@ export default function LogistikDashboard({ showToast }) {
 
   const handleRegisterInstrument = (e) => {
     e.preventDefault();
-    if (!newName || !newId) {
+    if (!newName.trim() || !newId.trim()) {
       showToast('Nama Alat dan Kode ID wajib diisi!', 'error');
       return;
     }
-    if (!newImage) {
-      showToast('Foto alat wajib diupload!', 'error');
-      return;
-    }
 
-    const idExists = instruments.some(inst => inst.id.toLowerCase() === newId.toLowerCase());
+    const idExists = instruments.some(inst => inst.id.toLowerCase() === newId.trim().toLowerCase());
     if (idExists) {
-      showToast(`Kode ID ${newId} sudah digunakan!`, 'error');
+      showToast(`Kode ID ${newId.trim().toUpperCase()} sudah digunakan!`, 'error');
       return;
     }
 
     const newInstrument = {
-      id: newId.toUpperCase(),
-      name: newName,
+      id: newId.trim().toUpperCase(),
+      name: newName.trim(),
       status: 'Available',
-      image: newImage,
-      desc: newDesc || 'Tidak ada deskripsi.'
+      image: newImage || '📦',
+      desc: newDesc.trim() || 'Tidak ada deskripsi.'
     };
 
     const updated = [...instruments, newInstrument];
@@ -623,13 +619,14 @@ export default function LogistikDashboard({ showToast }) {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Foto Alat (Upload)</label>
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">
+                  Foto Alat <span className="text-slate-400 font-normal lowercase">(opsional / boleh kosong)</span>
+                </label>
                 <div className="flex flex-col gap-2">
                   <input 
                     key={formKey}
                     type="file"
                     accept="image/*"
-                    required
                     onChange={handleImageUpload}
                     className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gold/10 file:text-gold-dark hover:file:bg-gold/20 cursor-pointer"
                   />
