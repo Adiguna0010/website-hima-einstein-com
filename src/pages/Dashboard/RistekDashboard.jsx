@@ -17,9 +17,10 @@ export default function RistekDashboard({ showToast }) {
   const [vaultUrl, setVaultUrl] = useState('');
 
   const handleSyncDrive = () => {
-    localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_DRIVE_VAULT));
-    setVaultItems(DEFAULT_DRIVE_VAULT);
-    showToast('Berhasil mengimpor & menyinkronkan 39 berkas dari Google Drive!', 'success');
+    const cleanVault = DEFAULT_DRIVE_VAULT.filter(i => i.id !== 100 && !i.title?.includes('Google Drive Utama') && !i.title?.includes('Google Drive Induk'));
+    localStorage.setItem('hima_vault', JSON.stringify(cleanVault));
+    setVaultItems(cleanVault);
+    showToast('Berhasil mengimpor & menyinkronkan 38 berkas dari Google Drive!', 'success');
   };
 
   // SCHEDULE STATE
@@ -56,21 +57,22 @@ export default function RistekDashboard({ showToast }) {
   useEffect(() => {
     // Vault
     const savedVault = localStorage.getItem('hima_vault');
-    let loadedVault = DEFAULT_DRIVE_VAULT;
+    const cleanDefault = DEFAULT_DRIVE_VAULT.filter(i => i.id !== 100 && !i.title?.includes('Google Drive Utama') && !i.title?.includes('Google Drive Induk'));
+    let loadedVault = cleanDefault;
     if (savedVault !== null) {
       try {
         const parsed = JSON.parse(savedVault);
         if (Array.isArray(parsed) && parsed.length > 5) {
-          loadedVault = parsed;
+          loadedVault = parsed.filter(i => i.id !== 100 && !i.title?.includes('Google Drive Utama') && !i.title?.includes('Google Drive Induk'));
         } else {
-          loadedVault = DEFAULT_DRIVE_VAULT;
-          localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_DRIVE_VAULT));
+          loadedVault = cleanDefault;
+          localStorage.setItem('hima_vault', JSON.stringify(cleanDefault));
         }
       } catch (e) {
         console.error('Failed to parse vault:', e);
       }
     } else {
-      localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_DRIVE_VAULT));
+      localStorage.setItem('hima_vault', JSON.stringify(cleanDefault));
     }
     setVaultItems(loadedVault);
 
@@ -506,7 +508,7 @@ export default function RistekDashboard({ showToast }) {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gold/10 hover:bg-gold hover:text-white text-gold-dark text-xs font-bold transition-all border border-gold/30 shadow-sm active:scale-95 cursor-pointer"
                 title="Sinkronkan seluruh folder dan berkas dari Google Drive Einsten Vault"
               >
-                <RefreshCw className="w-3.5 h-3.5" /> ⚡ Sinkronkan Google Drive (39 Berkas)
+                <RefreshCw className="w-3.5 h-3.5" /> ⚡ Sinkronkan Google Drive (38 Berkas)
               </button>
             </div>
 

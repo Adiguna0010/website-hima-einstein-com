@@ -103,7 +103,7 @@ export default function DivisionDetail({ showToast }) {
   
   // Ristek tabs
   const [ristekTab, setRistekTab] = useState('vault');
-  const [vaultCategory, setVaultCategory] = useState('all'); // 'all', 'materi', 'software'
+  const [vaultCategory, setVaultCategory] = useState('materi'); // default to 'materi'
   const [vaultSearch, setVaultSearch] = useState('');
 
   // Form states
@@ -120,7 +120,7 @@ export default function DivisionDetail({ showToast }) {
       try {
         const parsed = JSON.parse(savedVault);
         if (Array.isArray(parsed) && parsed.length > 5) {
-          loadedVault = parsed;
+          loadedVault = parsed.filter(item => item.id !== 100 && !item.title?.includes('Google Drive Utama') && !item.title?.includes('Google Drive Induk'));
         } else {
           // Upgrade older short list to complete Drive vault
           loadedVault = DEFAULT_DRIVE_VAULT;
@@ -512,17 +512,6 @@ export default function DivisionDetail({ showToast }) {
                 <div className="flex items-center gap-2 flex-wrap bg-slate-50 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
                   <button
                     type="button"
-                    onClick={() => setVaultCategory('all')}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      vaultCategory === 'all'
-                        ? 'bg-white text-gold-dark shadow-sm'
-                        : 'text-slate-500 hover:text-slate-800'
-                    }`}
-                  >
-                    Semua Berkas ({vaultItems.length})
-                  </button>
-                  <button
-                    type="button"
                     onClick={() => setVaultCategory('materi')}
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                       vaultCategory === 'materi'
@@ -542,6 +531,17 @@ export default function DivisionDetail({ showToast }) {
                     }`}
                   >
                     <Code className="w-3.5 h-3.5 text-gold" /> Software Praktikum ({softwareList.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVaultCategory('all')}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      vaultCategory === 'all'
+                        ? 'bg-white text-gold-dark shadow-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Semua Berkas ({vaultItems.length})
                   </button>
                 </div>
 

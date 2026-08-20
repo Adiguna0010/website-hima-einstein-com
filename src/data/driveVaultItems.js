@@ -1,14 +1,5 @@
 export const DEFAULT_DRIVE_VAULT = [
   {
-    "id": 100,
-    "title": "📁 EINSTEN VAULT (Google Drive Utama)",
-    "size": "All Cloud Files",
-    "type": "Materi",
-    "category": "Materi",
-    "desc": "Direktori induk Google Drive resmi Einsten Vault Himpunan Mahasiswa Einstein.com.",
-    "url": "https://drive.google.com/drive/folders/1_li2rGzaWjoyYohhzBOE4IzdxRmgSypK"
-  },
-  {
     "id": 101,
     "title": "Arduino IDE (Software Lab)",
     "size": "180 MB",
