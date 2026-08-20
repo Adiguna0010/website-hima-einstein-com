@@ -458,43 +458,27 @@ export default function RistekDashboard({ showToast }) {
       <div className="flex overflow-x-auto border-b border-slate-200 gap-1 pb-1">
         <button
           onClick={() => setActiveTab('vault')}
-          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 shrink-0 ${
+          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 shrink-0 cursor-pointer ${
             activeTab === 'vault' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
           }`}
         >
-          Kelola File Vault
+          Kelola File Vault (Materi & Software)
         </button>
         <button
           onClick={() => setActiveTab('schedule')}
-          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 shrink-0 ${
+          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 shrink-0 cursor-pointer ${
             activeTab === 'schedule' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
           }`}
         >
           Jadwal Mengajar
         </button>
         <button
-          onClick={() => setActiveTab('projects')}
-          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 shrink-0 ${
-            activeTab === 'projects' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
-          }`}
-        >
-          Proyek Collab
-        </button>
-        <button
-          onClick={() => setActiveTab('programs')}
-          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 shrink-0 ${
-            activeTab === 'programs' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
-          }`}
-        >
-          Program Kerja
-        </button>
-        <button
           onClick={() => setActiveTab('requests')}
-          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-1.5 shrink-0 ${
+          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-1.5 shrink-0 cursor-pointer ${
             activeTab === 'requests' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
           }`}
         >
-          ACC Kegiatan
+          ACC Kegiatan Mengajar
           {totalPending > 0 && (
             <span className="bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full">
               {totalPending}
@@ -509,7 +493,7 @@ export default function RistekDashboard({ showToast }) {
           {/* List of files */}
           <div className="lg:col-span-7 space-y-4">
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <ShieldCheck className="w-4.5 h-4.5 text-gold" /> Daftar File Vault Aktif
+              <ShieldCheck className="w-4.5 h-4.5 text-gold" /> Daftar File Vault Aktif ({vaultItems.length})
             </h3>
             <div className="space-y-3">
               {vaultItems.length === 0 ? (
@@ -517,37 +501,47 @@ export default function RistekDashboard({ showToast }) {
                   <p className="text-xs">Belum ada file di Vault.</p>
                 </div>
               ) : (
-                vaultItems.map((item) => (
-                  <div key={item.id} className="p-4 bg-white border border-gold-border rounded-2xl flex items-center justify-between group hover:bg-slate-50/50 shadow-sm transition-colors">
-                    <div className="space-y-1 min-w-0 flex-1 pr-4">
-                      <h4 className="text-xs font-bold text-slate-800 group-hover:text-gold-dark transition-colors truncate">{item.title}</h4>
-                      <p className="text-[10px] text-slate-500 font-mono">
-                        Tipe: <span className="font-bold text-gold-dark">{item.type || 'Dokumen'}</span> • Ukuran: {item.size}
-                      </p>
+                vaultItems.map((item) => {
+                  const isSoftware = (item.type || '').toLowerCase().includes('software') || (item.title || '').toLowerCase().includes('labview') || (item.title || '').toLowerCase().includes('proteus') || (item.title || '').toLowerCase().includes('ide');
+                  return (
+                    <div key={item.id} className="p-4 bg-white border border-gold-border rounded-2xl flex items-center justify-between group hover:bg-slate-50/50 shadow-sm transition-colors">
+                      <div className="space-y-1 min-w-0 flex-1 pr-4">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
+                            isSoftware ? 'bg-indigo-100 text-indigo-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {isSoftware ? 'Software Praktikum' : 'Materi / Bank Soal'}
+                          </span>
+                        </div>
+                        <h4 className="text-xs font-bold text-slate-800 group-hover:text-gold-dark transition-colors truncate">{item.title}</h4>
+                        <p className="text-[10px] text-slate-500 font-mono">
+                          Ukuran: {item.size} • <span className="text-slate-400 truncate max-w-[200px]">{item.url}</span>
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => handleDeleteFile(item.id)}
+                          className="p-2 rounded-lg hover:bg-rose-50 text-rose-600 hover:text-rose-700 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => handleDeleteFile(item.id)}
-                        className="p-2 rounded-lg hover:bg-rose-50 text-rose-600 hover:text-rose-700 transition-colors cursor-pointer"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
           {/* Add file form */}
           <div className="lg:col-span-5 space-y-4">
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <Plus className="w-4.5 h-4.5 text-gold" /> Tambah File Baru
+              <Plus className="w-4.5 h-4.5 text-gold" /> Tambah File / Software Baru
             </h3>
             <form onSubmit={handleAddFile} className="bg-white border border-gold-border rounded-2xl p-6 space-y-4 shadow-sm text-left">
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Nama File</label>
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Nama File / Software</label>
                 <input 
-                  type="text" required placeholder="Contoh: Modul Arduino Elins" value={vaultTitle}
+                  type="text" required placeholder="Contoh: LabVIEW 2026 atau Bank Soal UAS" value={vaultTitle}
                   onChange={(e) => setVaultTitle(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
                 />
@@ -555,30 +549,31 @@ export default function RistekDashboard({ showToast }) {
               <div className="space-y-1">
                 <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Ukuran File</label>
                 <input 
-                  type="text" required placeholder="Contoh: 1.5 MB" value={vaultSize}
+                  type="text" required placeholder="Contoh: 1.5 MB atau 4.2 GB" value={vaultSize}
                   onChange={(e) => setVaultSize(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Tipe File</label>
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Kategori / Tipe File</label>
                 <select 
                   value={vaultType} onChange={(e) => setVaultType(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
                 >
-                  <option value="Dokumen">Dokumen (Modul, Bank Soal)</option>
-                  <option value="Software">Software (IDE, Simulator)</option>
+                  <option value="Materi">📚 Materi Ajar & Bank Soal</option>
+                  <option value="Software">💻 Software & Tools Praktikum</option>
+                  <option value="Dokumen">📄 Dokumen / Modul Praktikum</option>
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Tautan Download / URL</label>
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Tautan Download / URL (Google Drive / Direct Link)</label>
                 <input 
-                  type="text" placeholder="Contoh: https://gdrive.com/file.zip" value={vaultUrl}
+                  type="text" placeholder="Contoh: https://drive.google.com/..." value={vaultUrl}
                   onChange={(e) => setVaultUrl(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold font-mono"
                 />
               </div>
-              <button type="submit" className="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-[0.98] transition-all">
+              <button type="submit" className="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer">
                 Unggah ke Vault
               </button>
             </form>
@@ -600,18 +595,21 @@ export default function RistekDashboard({ showToast }) {
                   <p className="text-xs">Belum ada jadwal mengajar terdaftar.</p>
                 </div>
               ) : (
-                schedules.map((item) => (
-                  <div key={item.id} className="p-4 bg-white border border-gold-border rounded-2xl flex items-center justify-between hover:bg-slate-50/50 shadow-sm transition-colors font-sans text-slate-700">
-                    <div className="space-y-1 text-left">
-                      <h4 className="text-xs font-bold text-slate-800">{item.title}</h4>
-                      <p className="text-[10px] text-slate-500 font-mono">
-                        Hari/Tgl: <span className="font-bold text-gold-dark">{item.date}</span> • Waktu: {item.time}
-                      </p>
-                      <p className="text-[10px] text-slate-550 leading-relaxed font-light mt-0.5">{item.desc}</p>
-                      <p className="text-[9px] text-slate-400 font-mono">Tutor: {item.tutor} • Ruang: {item.room}</p>
+                schedules.map((s) => (
+                  <div key={s.id} className="p-4 bg-white border border-gold-border rounded-2xl flex items-center justify-between group hover:bg-slate-50/50 shadow-sm transition-colors text-left">
+                    <div className="space-y-1 flex-1 pr-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-mono font-bold bg-gold/10 text-gold-dark border border-gold/20 px-2 py-0.5 rounded">
+                          {s.date}
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-bold">{s.time}</span>
+                      </div>
+                      <h4 className="text-xs font-bold text-slate-800">{s.title}</h4>
+                      <p className="text-[10px] text-slate-500 font-light">{s.desc}</p>
+                      <p className="text-[9px] text-slate-400 font-mono">Tutor: {s.tutor} • Ruang: {s.room}</p>
                     </div>
                     <button
-                      onClick={() => handleDeleteSchedule(item.id)}
+                      onClick={() => handleDeleteSchedule(s.id)}
                       className="p-2 rounded-lg hover:bg-rose-50 text-rose-600 hover:text-rose-700 transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -624,11 +622,11 @@ export default function RistekDashboard({ showToast }) {
           {/* Add schedule form */}
           <div className="lg:col-span-5 space-y-4">
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <Plus className="w-4.5 h-4.5 text-gold" /> Tambah Jadwal Mengajar Baru
+              <Plus className="w-4.5 h-4.5 text-gold" /> Tambah Jadwal Mengajar
             </h3>
             <form onSubmit={handleAddSchedule} className="bg-white border border-gold-border rounded-2xl p-6 space-y-4 shadow-sm text-left">
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Hari, Tanggal (Teks)</label>
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Hari & Tanggal</label>
                 <input 
                   type="text" required placeholder="Contoh: Senin, 20 Juli 2026" value={schedDateText}
                   onChange={(e) => setSchedDateText(e.target.value)}
@@ -636,7 +634,7 @@ export default function RistekDashboard({ showToast }) {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Waktu / Jam (Teks)</label>
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Jam / Waktu</label>
                 <input 
                   type="text" required placeholder="Contoh: 15.30 - 17.00 WIB" value={schedTime}
                   onChange={(e) => setSchedTime(e.target.value)}
@@ -644,19 +642,19 @@ export default function RistekDashboard({ showToast }) {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Nama Kelas / Mata Kuliah</label>
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Judul / Mata Kuliah</label>
                 <input 
-                  type="text" required placeholder="Contoh: Kelas Dasar Pemrograman C++" value={schedTitle}
+                  type="text" required placeholder="Contoh: Pemrograman C++ Lanjut" value={schedTitle}
                   onChange={(e) => setSchedTitle(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Materi / Deskripsi Kelas</label>
-                <textarea 
-                  rows={2} placeholder="Contoh: Pengenalan Sintaks Dasar, Variabel, Array..." value={schedDesc}
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Deskripsi / Materi</label>
+                <input 
+                  type="text" placeholder="Contoh: Pointers, Dynamic Memory, & Struct" value={schedDesc}
                   onChange={(e) => setSchedDesc(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold resize-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
                 />
               </div>
               <div className="space-y-1">
@@ -700,261 +698,10 @@ export default function RistekDashboard({ showToast }) {
                 )}
               </div>
 
-              <button type="submit" className="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-[0.98] transition-all">
+              <button type="submit" className="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer">
                 Tambah Jadwal
               </button>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 3: Collab Projects Management */}
-      {activeTab === 'projects' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in duration-200">
-          {/* List of projects */}
-          <div className="lg:col-span-7 space-y-4">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <Code className="w-4.5 h-4.5 text-gold" /> Proyek Kolaborasi Aktif
-            </h3>
-            <div className="space-y-3">
-              {projects.length === 0 ? (
-                <div className="text-center py-10 bg-white border border-gold-border rounded-2xl text-slate-455 shadow-sm">
-                  <p className="text-xs">Belum ada proyek kolaborasi dibuka.</p>
-                </div>
-              ) : (
-                projects.map((p) => (
-                  <div key={p.id} className="p-5 bg-white border border-gold-border rounded-2xl flex items-center justify-between hover:bg-slate-50/50 shadow-sm transition-colors text-left font-sans text-slate-700">
-                    <div className="space-y-1.5 flex-1 pr-4">
-                      <span className="inline-block px-2.5 py-0.5 rounded bg-gold/10 border border-gold/20 text-[9px] font-bold text-gold-dark uppercase tracking-wider font-mono">
-                        {p.tag}
-                      </span>
-                      <h4 className="text-xs font-bold text-slate-800">{p.title}</h4>
-                      <p className="text-[10px] text-slate-500 leading-normal font-light">{p.desc}</p>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteProject(p.id)}
-                      className="p-2 rounded-lg hover:bg-rose-50 text-rose-600 hover:text-rose-700 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-          {/* Add project form */}
-          <div className="lg:col-span-5 space-y-4">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <Plus className="w-4.5 h-4.5 text-gold" /> Buka Proyek Kolaborasi Baru
-            </h3>
-            <form onSubmit={handleAddProject} className="bg-white border border-gold-border rounded-2xl p-6 space-y-4 shadow-sm text-left">
-              <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Kategori Proyek / Tag</label>
-                <input 
-                  type="text" required placeholder="Contoh: IoT & Nuklir atau Web App" value={projTag}
-                  onChange={(e) => setProjTag(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Judul Proyek</label>
-                <input 
-                  type="text" required placeholder="Contoh: Monitor Radiasi Geiger-Müller" value={projTitle}
-                  onChange={(e) => setProjTitle(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Deskripsi Proyek</label>
-                <textarea 
-                  required rows={4} placeholder="Jelaskan detail tujuan proyek, target alat/software, dan syarat kolaborasi bagi anggota..." value={projDesc}
-                  onChange={(e) => setProjDesc(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold resize-none"
-                />
-              </div>
-              <button type="submit" className="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-[0.98] transition-all">
-                Buka Proyek Collab
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 4: Program Kerja (Pemaparan Program Kerja Ristek) */}
-      {activeTab === 'programs' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-left animate-in fade-in duration-200 font-sans text-slate-700">
-          {/* Form Input */}
-          <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm h-fit space-y-5">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <Sparkles className="w-4.5 h-4.5 text-gold" /> 
-              {editingId ? 'Edit Program Kerja' : 'Tambah Program Kerja'}
-            </h3>
-            <form onSubmit={handleSaveProgram} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Nama Program Kerja</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Riset Radiasi Nuklir"
-                  value={progName}
-                  onChange={(e) => setProgName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold font-sans font-light"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Deskripsi Program</label>
-                <textarea
-                  required
-                  rows={3}
-                  placeholder="Jelaskan detail tujuan dan rancangan dari program ini."
-                  value={progDesc}
-                  onChange={(e) => setProgDesc(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold resize-none font-sans font-light"
-                />
-              </div>
-
-              {/* DATE, TIME, LOCATION FIELDS */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Tanggal Pelaksanaan (Sync Kalender)</label>
-                <input
-                  type="date"
-                  value={progDate}
-                  onChange={(e) => setProgDate(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold font-mono"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Waktu / Jam Pelaksanaan</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: 08.00 - 12.00 WIB"
-                  value={progTime}
-                  onChange={(e) => setProgTime(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold font-sans font-light"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Tempat / Lokasi</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Auditorium Poltek Nuklir"
-                  value={progLocation}
-                  onChange={(e) => setProgLocation(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold font-sans font-light"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Status Program</label>
-                <select
-                  value={progStatus}
-                  onChange={(e) => setProgStatus(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-205 rounded-xl py-2.5 px-3 text-xs focus:outline-none focus:border-gold font-sans font-light"
-                >
-                  <option value="Terencana">Terencana</option>
-                  <option value="Sedang Berjalan">Sedang Berjalan</option>
-                  <option value="Terlaksana">Terlaksana</option>
-                </select>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                {editingId && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingId(null);
-                      setProgName('');
-                      setProgDesc('');
-                      setProgStatus('Terencana');
-                      setProgDate('');
-                      setProgTime('');
-                      setProgLocation('');
-                    }}
-                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-655 font-bold rounded-xl text-xs uppercase tracking-wider transition-all"
-                  >
-                    Batal
-                  </button>
-                )}
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider active:scale-[0.98] transition-all cursor-pointer"
-                >
-                  {editingId ? 'Simpan' : 'Tambah'}
-                </button>
-              </div>
-            </form>
-          </div>
-
-          {/* List Program Kerja */}
-          <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm h-fit space-y-4">
-            <div>
-              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <CheckCircle className="w-4.5 h-4.5 text-gold" /> Daftar Program Kerja Terancang
-              </h3>
-              <p className="text-[11px] text-slate-400 font-light mt-0.5">
-                Program kerja berikut akan ditayangkan pada halaman publik divisi Riset & Teknologi dan disinkronkan ke kalender ormawa.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {divPrograms.length === 0 ? (
-                <div className="text-center py-10 border border-dashed border-slate-200 rounded-2xl text-slate-455">
-                  Belum ada program kerja yang didefinisikan.
-                </div>
-              ) : (
-                divPrograms.map((p) => (
-                  <div 
-                    key={p.id} 
-                    className="p-4 bg-slate-50/50 border border-slate-200 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-gold/30 hover:bg-white transition-all group"
-                  >
-                    <div className="space-y-1.5 text-left flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold border ${
-                          p.status === 'Terlaksana'
-                            ? 'bg-emerald-50 border-emerald-250 text-emerald-600'
-                            : p.status === 'Sedang Berjalan'
-                            ? 'bg-amber-55 border-amber-250 text-amber-600'
-                            : 'bg-slate-100 border-slate-205 text-slate-550'
-                        }`}>
-                          {p.status}
-                        </span>
-                        <h4 className="text-xs font-bold text-slate-800">{p.name}</h4>
-                      </div>
-                      <p className="text-[10px] text-slate-555 font-light leading-relaxed font-sans">
-                        {p.desc}
-                      </p>
-
-                      {p.date && (
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[9px] text-slate-450 font-mono pt-1">
-                          <span>📅 {p.date}</span>
-                          {p.time && <span>🕒 {p.time}</span>}
-                          {p.location && <span>📍 {p.location}</span>}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex gap-2 shrink-0 justify-end">
-                      <button
-                        onClick={() => handleEditProgramClick(p)}
-                        className="p-1.5 text-slate-555 hover:bg-slate-100 rounded-lg hover:text-slate-700 transition-colors cursor-pointer"
-                        title="Edit Program"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProgram(p.id)}
-                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg hover:text-rose-700 transition-colors cursor-pointer"
-                        title="Hapus Program"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
           </div>
         </div>
       )}

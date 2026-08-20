@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Users, Terminal, Globe, BookOpen, Rocket, ShoppingCart, Radio, Box, Send, Download, Check, ShieldCheck, Shirt, Calendar, Plus, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Users, Terminal, Globe, BookOpen, Rocket, ShoppingCart, Radio, Box, Send, Download, Check, ShieldCheck, Shirt, Calendar, Plus, MessageSquare, FileText, Code, Laptop } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -102,6 +102,7 @@ export default function DivisionDetail({ showToast }) {
   
   // Ristek tabs
   const [ristekTab, setRistekTab] = useState('vault');
+  const [vaultCategory, setVaultCategory] = useState('all'); // 'all', 'materi', 'software'
 
   // Form states
   const [ristekForm, setRistekForm] = useState({ name: currentUser?.name || '', role: 'murid', subject: '', wa: '' });
@@ -111,10 +112,12 @@ export default function DivisionDetail({ showToast }) {
 
   const loadVaultItems = () => {
     const DEFAULT_VAULT = [
-      { id: 101, title: 'Labview 2026 Community', size: '4 GB', type: 'Software', url: 'https://drive.google.com/drive/folders/1kBIWKQYOPJ84se' },
-      { id: 102, title: 'Kumpulan Soal Uas Semester 1 2024', size: '6.4 MB', type: 'Dokumen', url: 'https://drive.google.com/drive/folders/1NS7bPiYAN19edi8' },
-      { id: 103, title: 'UTS: Mikroprosesor & Mikrokontroler', size: '2.4 MB', type: 'Dokumen', url: '#' },
-      { id: 104, title: 'Modul Praktikum: Detektor Radiasi Nuklir', size: '4.8 MB', type: 'Dokumen', url: '#' }
+      { id: 101, title: 'Labview 2026 Community Edition', size: '4.2 GB', type: 'Software', url: 'https://drive.google.com/drive/folders/1kBIWKQYOPJ84se' },
+      { id: 102, title: 'Proteus Design Suite 8.16 SP3', size: '650 MB', type: 'Software', url: 'https://drive.google.com/drive/folders/1kBIWKQYOPJ84se' },
+      { id: 103, title: 'Arduino IDE 2.3.2 Installer', size: '180 MB', type: 'Software', url: 'https://www.arduino.cc/en/software' },
+      { id: 104, title: 'Kumpulan Soal UAS Semester 1 2024', size: '6.4 MB', type: 'Materi', url: 'https://drive.google.com/drive/folders/1NS7bPiYAN19edi8' },
+      { id: 105, title: 'Bank Soal UTS: Mikroprosesor & Mikrokontroler', size: '2.4 MB', type: 'Materi', url: 'https://drive.google.com/drive/folders/1NS7bPiYAN19edi8' },
+      { id: 106, title: 'Modul Praktikum: Detektor Radiasi Nuklir', size: '4.8 MB', type: 'Materi', url: 'https://drive.google.com/drive/folders/1NS7bPiYAN19edi8' }
     ];
 
     const savedVault = localStorage.getItem('hima_vault');
@@ -122,7 +125,7 @@ export default function DivisionDetail({ showToast }) {
     if (savedVault !== null) {
       try {
         const parsed = JSON.parse(savedVault);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           loadedVault = parsed;
         }
       } catch (e) {
@@ -403,90 +406,156 @@ export default function DivisionDetail({ showToast }) {
           showToast(`Pendaftaran Ristek Mengajar berhasil dikirim! Menunggu ACC Kadiv Ristek.`, 'success');
           setRistekForm({ name: currentUser?.name || '', role: 'murid', subject: '', wa: '' });
         };
+
+        const isSoftware = (item) => {
+          const t = (item.type || '').toLowerCase();
+          const title = (item.title || '').toLowerCase();
+          return t.includes('software') || t.includes('aplikasi') || t.includes('tool') || title.includes('labview') || title.includes('proteus') || title.includes('ide') || title.includes('matlab') || title.includes('multisim');
+        };
+
+        const softwareList = vaultItems.filter(i => isSoftware(i));
+        const materiList = vaultItems.filter(i => !isSoftware(i));
+        const displayVaultItems = vaultCategory === 'software' ? softwareList : vaultCategory === 'materi' ? materiList : vaultItems;
+
         return (
-          <div className="max-w-2xl mx-auto space-y-6">
-            <div className="flex overflow-x-auto whitespace-nowrap scrollbar-none border-b border-slate-200 gap-1 pb-1">
+          <div className="max-w-3xl mx-auto space-y-6">
+            {/* Top Navigation Tabs: Einsten Vault vs Ristek Mengajar */}
+            <div className="flex overflow-x-auto whitespace-nowrap scrollbar-none border-b border-slate-200 gap-2 pb-1 justify-center sm:justify-start">
               <button 
                 onClick={() => setRistekTab('vault')}
-                className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 whitespace-nowrap ${
+                className={`px-5 pb-3 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                   ristekTab === 'vault' ? 'text-gold border-b-2 border-gold font-extrabold' : 'text-slate-400 hover:text-slate-700 border-b-2 border-transparent'
                 }`}
               >
-                Einsten Vault
+                <BookOpen className="w-4 h-4" /> Einsten Vault
               </button>
               <button 
                 onClick={() => setRistekTab('les')}
-                className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 whitespace-nowrap ${
+                className={`px-5 pb-3 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                   ristekTab === 'les' ? 'text-gold border-b-2 border-gold font-extrabold' : 'text-slate-400 hover:text-slate-700 border-b-2 border-transparent'
                 }`}
               >
-                Ristek Mengajar
-              </button>
-              <button 
-                onClick={() => setRistekTab('proyek')}
-                className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 whitespace-nowrap ${
-                  ristekTab === 'proyek' ? 'text-gold border-b-2 border-gold font-extrabold' : 'text-slate-400 hover:text-slate-700 border-b-2 border-transparent'
-                }`}
-              >
-                Proyek Collab
-              </button>
-              <button 
-                onClick={() => setRistekTab('programs')}
-                className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 whitespace-nowrap ${
-                  ristekTab === 'programs' ? 'text-gold border-b-2 border-gold font-extrabold' : 'text-slate-400 hover:text-slate-700 border-b-2 border-transparent'
-                }`}
-              >
-                Program Kerja
+                <Users className="w-4 h-4" /> Ristek Mengajar
               </button>
             </div>
 
-            {/* Tab: Vault */}
+            {/* Tab: Einsten Vault (Divided into Materi & Software) */}
             {ristekTab === 'vault' && (
-              <div className="space-y-3 text-left">
-                {vaultItems.length === 0 ? (
-                  <div className="text-center py-10 bg-white border border-gold-border rounded-2xl text-slate-450 shadow-sm">
-                    Belum ada modul atau software terunggah di Vault.
-                  </div>
-                ) : (
-                  vaultItems.map((item) => (
-                    <div 
-                      key={item.id} 
-                      className="p-4 bg-white border border-gold-border rounded-2xl flex items-center justify-between hover:border-gold/30 shadow-sm transition-all group"
-                    >
-                      <div className="space-y-1">
-                        <h5 className="text-xs font-bold text-slate-800 group-hover:text-gold-dark transition-colors">
-                          {item.title}
-                        </h5>
-                        <p className="text-[10px] text-slate-500 font-mono">
-                          Tipe: {item.type || 'Dokumen'} • Ukuran: {item.size}
-                        </p>
-                        {item.url && item.url !== '#' && (
-                          <p className="text-[9px] text-slate-400 truncate max-w-[280px]">Link: {item.url}</p>
-                        )}
-                      </div>
-                      <button 
-                        onClick={() => {
-                          if (item.url && item.url !== '#') {
-                            window.open(item.url, '_blank');
-                            showToast(`Mengunduh file: ${item.title}...`, 'success');
-                          } else {
-                            showToast(`Mengunduh berkas: ${item.title}...`, 'success');
-                          }
-                        }}
-                        className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-gold hover:border-gold hover:text-white text-slate-700 transition-all active:scale-95 shadow-sm"
-                        title="Download Berkas"
-                      >
-                        <Download className="w-4 h-4" />
-                      </button>
+              <div className="space-y-5 text-left animate-in fade-in duration-200">
+                
+                {/* Category Filter Switcher */}
+                <div className="flex items-center gap-2 flex-wrap bg-slate-50 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
+                  <button
+                    type="button"
+                    onClick={() => setVaultCategory('all')}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      vaultCategory === 'all'
+                        ? 'bg-white text-gold-dark shadow-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Semua Berkas ({vaultItems.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVaultCategory('materi')}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                      vaultCategory === 'materi'
+                        ? 'bg-white text-gold-dark shadow-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <FileText className="w-3.5 h-3.5 text-gold" /> Bank Soal & Materi Ajar ({materiList.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVaultCategory('software')}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                      vaultCategory === 'software'
+                        ? 'bg-white text-gold-dark shadow-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <Code className="w-3.5 h-3.5 text-gold" /> Software Praktikum ({softwareList.length})
+                  </button>
+                </div>
+
+                {/* Items List */}
+                <div className="space-y-3">
+                  {displayVaultItems.length === 0 ? (
+                    <div className="text-center py-12 bg-white border border-gold-border rounded-2xl text-slate-450 shadow-sm space-y-2">
+                      <BookOpen className="w-10 h-10 text-slate-300 mx-auto" />
+                      <p className="text-xs text-slate-500">Tidak ada berkas yang ditemukan dalam kategori ini.</p>
                     </div>
-                  ))
-                )}
+                  ) : (
+                    displayVaultItems.map((item) => {
+                      const itemIsSoftware = isSoftware(item);
+                      return (
+                        <div 
+                          key={item.id} 
+                          className="p-4 bg-white border border-gold-border rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-gold/40 shadow-sm transition-all group hover:shadow-md"
+                        >
+                          <div className="flex items-start gap-3.5">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 border ${
+                              itemIsSoftware 
+                                ? 'bg-indigo-50 border-indigo-200 text-indigo-600 group-hover:border-gold group-hover:text-gold' 
+                                : 'bg-amber-50 border-amber-200 text-amber-600 group-hover:border-gold group-hover:text-gold'
+                            }`}>
+                              {itemIsSoftware ? <Code className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
+                                  itemIsSoftware
+                                    ? 'bg-indigo-100 text-indigo-800'
+                                    : 'bg-amber-100 text-amber-800'
+                                }`}>
+                                  {itemIsSoftware ? 'Software Praktikum' : 'Materi / Bank Soal'}
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-mono">
+                                  Ukuran: {item.size}
+                                </span>
+                              </div>
+
+                              <h5 className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-gold-dark transition-colors">
+                                {item.title}
+                              </h5>
+
+                              {item.desc && (
+                                <p className="text-[11px] text-slate-500 font-light leading-snug">
+                                  {item.desc}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          <button 
+                            onClick={() => {
+                              if (item.url && item.url !== '#') {
+                                window.open(item.url, '_blank');
+                                showToast(`Membuka link unduhan: ${item.title}...`, 'success');
+                              } else {
+                                showToast(`Berkas siap diunduh: ${item.title}`, 'info');
+                              }
+                            }}
+                            className="inline-flex items-center justify-center gap-1.5 py-2 px-4 rounded-xl bg-gold hover:brightness-110 text-white font-bold text-xs transition-all active:scale-95 shadow-sm shadow-gold/20 shrink-0 cursor-pointer"
+                            title="Unduh Berkas / Software"
+                          >
+                            <Download className="w-3.5 h-3.5 text-white" /> Download
+                          </button>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
               </div>
             )}
 
-            {/* Tab: Les */}
+            {/* Tab: Ristek Mengajar */}
             {ristekTab === 'les' && (
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start text-left">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start text-left animate-in fade-in duration-200">
                 {/* Form column */}
                 <div className="md:col-span-5 space-y-3">
                   <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -543,7 +612,7 @@ export default function DivisionDetail({ showToast }) {
 
                     <button 
                       type="submit"
-                      className="w-full py-2.5 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-gold/20"
+                      className="w-full py-2.5 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer"
                     >
                       Daftar Tutor/Murid
                     </button>
@@ -588,95 +657,6 @@ export default function DivisionDetail({ showToast }) {
                   </div>
                 </div>
               </div>
-            )}
-
-            {/* Tab: Proyek */}
-            {ristekTab === 'proyek' && (
-              <div className="space-y-4 text-left">
-                {collabProjects.length === 0 ? (
-                  <div className="text-center py-8 bg-white border border-gold-border rounded-2xl text-slate-400">
-                    Belum ada proyek kolaborasi terdaftar.
-                  </div>
-                ) : (
-                  collabProjects.map((p) => (
-                    <div 
-                      key={p.id} 
-                      className="p-5 bg-white border border-gold-border rounded-2xl space-y-3 shadow-sm hover:border-gold/30 transition-all"
-                    >
-                      <span className="inline-block px-2.5 py-0.5 rounded bg-gold/10 border border-gold/20 text-[9px] font-bold text-gold-dark uppercase tracking-wider">
-                        {p.tag}
-                      </span>
-                      <h5 className="text-sm font-bold text-slate-800">{p.title}</h5>
-                      <p className="text-xs text-slate-500 leading-normal font-light">
-                        {p.desc}
-                      </p>
-                      
-                      {/* Inline Join Project Form */}
-                      <form onSubmit={(e) => {
-                        e.preventDefault();
-                        const name = e.target.name.value;
-                        const wa = e.target.wa.value;
-                        if (!name || !wa) {
-                          showToast('Mohon lengkapi nama dan WhatsApp!', 'error');
-                          return;
-                        }
-                        const newRequest = {
-                          id: Date.now(),
-                          requesterName: name,
-                          userEmail: currentUser?.email || 'guest@einsten.com',
-                          type: 'Proyek Collab',
-                          role: 'Anggota',
-                          subject: p.title,
-                          wa: wa,
-                          status: 'Pending',
-                          timestamp: Date.now()
-                        };
-                        const saved = localStorage.getItem('hima_ristek_requests');
-                        const list = saved ? JSON.parse(saved) : [];
-                        const updated = [...list, newRequest];
-                        localStorage.setItem('hima_ristek_requests', JSON.stringify(updated));
-                        
-                        showToast('Permohonan bergabung proyek kolaborasi dikirim! Menunggu ACC Kadiv Ristek.', 'success');
-                        e.target.reset();
-                      }} className="pt-3 border-t border-slate-100 space-y-3">
-                        <p className="text-[10px] font-bold text-gold-dark uppercase tracking-widest font-mono">Formulir Kolaborasi Proyek</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div className="space-y-1">
-                            <label className="text-[9px] text-slate-500 font-semibold block">Nama Lengkap</label>
-                            <input
-                              type="text"
-                              name="name"
-                              required
-                              defaultValue={currentUser?.name || ''}
-                              placeholder="Nama Anda"
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:outline-none focus:border-gold"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[9px] text-slate-500 font-semibold block">WhatsApp Kontak</label>
-                            <input
-                              type="text"
-                              name="wa"
-                              required
-                              placeholder="08xxxxxxxxxx"
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:outline-none focus:border-gold"
-                            />
-                          </div>
-                        </div>
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-gold text-white text-xs font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all shadow-sm w-full sm:w-auto cursor-pointer"
-                        >
-                          Gabung Proyek
-                        </button>
-                      </form>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-            {ristekTab === 'programs' && (
-              <DivisionProgramsView divisionKey="ristek" divisionName="Riset & Teknologi" />
             )}
           </div>
         );
