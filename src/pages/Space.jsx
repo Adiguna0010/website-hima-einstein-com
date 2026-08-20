@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Camera, Calendar, User, IdCard, ShieldCheck, HelpCircle, ArrowRight } from 'lucide-react';
+import { Camera, Calendar, User, GraduationCap, Phone, ShieldCheck, HelpCircle, ArrowRight } from 'lucide-react';
 import ScannerModal from '../components/ScannerModal';
 import { useAuth } from '../context/AuthContext';
 
@@ -71,17 +70,29 @@ export default function Space({ showToast }) {
   
   // Reservation Form State
   const [showForm, setShowForm] = useState(false);
-  const [borrowerName, setBorrowerName] = useState(currentUser?.name || '');
-  const [borrowerNim, setBorrowerNim] = useState(currentUser?.nim || '');
+  const [borrowerName, setBorrowerName] = useState('');
+  const [prodi, setProdi] = useState('');
+  const [angkatan, setAngkatan] = useState('');
+  const [phone, setPhone] = useState('');
   const [selectedToolId, setSelectedToolId] = useState('');
   const [selectedToolName, setSelectedToolName] = useState('');
 
   useEffect(() => {
     if (currentUser) {
-      setBorrowerName(currentUser.name || '');
-      setBorrowerNim(currentUser.nim || '');
+      if (currentUser.name && !borrowerName) setBorrowerName(currentUser.name);
+      if (currentUser.phone && !phone) setPhone(currentUser.phone);
     }
   }, [currentUser]);
+
+  const handleSelectTool = (tool) => {
+    setSelectedToolId(tool.id);
+    setSelectedToolName(tool.name);
+    setShowForm(true);
+    if (currentUser) {
+      if (!borrowerName && currentUser.name) setBorrowerName(currentUser.name);
+      if (!phone && currentUser.phone) setPhone(currentUser.phone);
+    }
+  };
 
   const handleOpenScanner = (tool) => {
     setActiveToolId(tool.id);
@@ -99,24 +110,26 @@ export default function Space({ showToast }) {
 
   const handleReservationSubmit = (e) => {
     e.preventDefault();
-    if (!currentUser) {
-      showToast('Anda harus masuk ke akun HIMA EINSTEN terlebih dahulu!', 'error');
-      return;
-    }
+
     if (!selectedToolId) {
       showToast('Mohon pilih alat yang ingin dipinjam!', 'error');
       return;
     }
 
-    const bName = currentUser.name || 'Anggota Hima';
-    const bNim = currentUser.nim || 'N/A';
+    if (!borrowerName.trim() || !prodi.trim() || !angkatan.trim() || !phone.trim()) {
+      showToast('Mohon lengkapi seluruh data peminjam (Nama, Prodi, Angkatan, No. HP)!', 'warning');
+      return;
+    }
 
     // Save borrow request to localStorage
     const newRequest = {
       id: `req-${Date.now()}`,
-      borrowerName: bName,
-      borrowerNim: bNim,
-      userEmail: currentUser.email,
+      borrowerName: borrowerName.trim(),
+      prodi: prodi.trim(),
+      angkatan: angkatan.trim(),
+      phone: phone.trim(),
+      borrowerNim: currentUser?.nim || 'Peminjam Umum',
+      userEmail: currentUser?.email || 'guest@einsten.com',
       instrumentId: selectedToolId,
       instrumentName: selectedToolName,
       status: 'Pending',
@@ -128,29 +141,27 @@ export default function Space({ showToast }) {
     const updatedRequests = [newRequest, ...requests];
     localStorage.setItem('hima_borrow_requests', JSON.stringify(updatedRequests));
 
-    // Save notifications to notification bell
+    // Save notifications
     const newNotifications = [];
-    
-    // 1. Student / Borrower notification
-    newNotifications.push({
-      id: Date.now(),
-      recipientEmail: currentUser.email,
-      message: `Peminjaman berhasil diajukan! Permohonan peminjaman alat "${selectedToolName}" sedang menunggu persetujuan (ACC) dari Operator Logistik.`,
-      read: false,
-      timestamp: Date.now()
-    });
+    if (currentUser) {
+      newNotifications.push({
+        id: Date.now(),
+        recipientEmail: currentUser.email,
+        message: `Peminjaman berhasil diajukan! Permohonan peminjaman alat "${selectedToolName}" sedang menunggu persetujuan (ACC) dari Operator Logistik.`,
+        read: false,
+        timestamp: Date.now()
+      });
+    }
 
-    // 2. Operator Logistik notification
     const savedUsers = localStorage.getItem('hima_users');
     const usersList = savedUsers ? JSON.parse(savedUsers) : [];
     const operators = usersList.filter(u => u.role === 'Operator Logistik');
 
     if (operators.length === 0) {
-      // Fallback default operator Rakan
       newNotifications.push({
         id: Date.now() + 1,
         recipientEmail: 'Rakan Ibrahim Widjisasono@einsten.com',
-        message: `Permohonan Baru! ${bName} (NIM: ${bNim}) mengajukan peminjaman alat "${selectedToolName}". Mohon segera ditinjau.`,
+        message: `Permohonan Baru! ${borrowerName.trim()} (${prodi.trim()} ${angkatan.trim()}) mengajukan peminjaman alat "${selectedToolName}". Mohon segera ditinjau.`,
         read: false,
         timestamp: Date.now()
       });
@@ -159,7 +170,7 @@ export default function Space({ showToast }) {
         newNotifications.push({
           id: Date.now() + 1 + index,
           recipientEmail: op.email,
-          message: `Permohonan Baru! ${bName} (NIM: ${bNim}) mengajukan peminjaman alat "${selectedToolName}". Mohon segera ditinjau.`,
+          message: `Permohonan Baru! ${borrowerName.trim()} (${prodi.trim()} ${angkatan.trim()}) mengajukan peminjaman alat "${selectedToolName}". Mohon segera ditinjau.`,
           read: false,
           timestamp: Date.now()
         });
@@ -168,11 +179,10 @@ export default function Space({ showToast }) {
 
     const savedNotifs = localStorage.getItem('hima_notifications');
     const notifsList = savedNotifs ? JSON.parse(savedNotifs) : [];
-    const updatedNotifs = [...notifsList, ...newNotifications];
-    localStorage.setItem('hima_notifications', JSON.stringify(updatedNotifs));
+    localStorage.setItem('hima_notifications', JSON.stringify([...notifsList, ...newNotifications]));
 
     // Build WA URL
-    const text = `Halo Admin Logistik HIMPUNAN EINSTEN.COM! 📦\n\nSaya ingin mengajukan permohonan peminjaman alat laboratorium:\n- Nama Alat: ${selectedToolName}\n- ID Alat: ${selectedToolId}\n\nData Peminjam:\n- Nama: ${bName}\n- NIM: ${bNim}\n- WhatsApp: ${currentUser.phone || ''}\n\n*Reservasi terdaftar melalui Portal Einsten Space.* Mohon konfirmasi pengambilan alat. Terima kasih!`;
+    const text = `Halo Admin Logistik HIMPUNAN EINSTEN.COM! 📦\n\nSaya ingin mengajukan permohonan peminjaman alat laboratorium:\n- Nama Alat: ${selectedToolName}\n- ID Alat: ${selectedToolId}\n\nData Peminjam:\n- Nama: ${borrowerName.trim()}\n- Program Studi: ${prodi.trim()}\n- Angkatan: ${angkatan.trim()}\n- WhatsApp: ${phone.trim()}\n\n*Reservasi terdaftar melalui Portal Einsten Space.* Mohon konfirmasi pengambilan alat. Terima kasih!`;
     const waNumber = '6285175420692';
     const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
@@ -192,7 +202,7 @@ export default function Space({ showToast }) {
         <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Layanan Praktikum & Riset</span>
         <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">EINSTEN SPACE</h1>
         <p className="text-slate-555 text-xs sm:text-sm leading-relaxed font-light">
-          Portal peminjaman instrumen laboratorium elektronika milik Himpunan. Scan Barcode/QR Code pada alat fisik untuk pengisian formulir instan.
+          Portal peminjaman instrumen laboratorium elektronika milik Himpunan. Scan Barcode/QR Code pada alat fisik atau pilih alat untuk pengisian formulir peminjaman instan.
         </p>
       </div>
 
@@ -234,30 +244,21 @@ export default function Space({ showToast }) {
                 </div>
 
                 {inst.status === 'Available' ? (
-                  currentUser ? (
-                    currentUser.phone ? (
-                      <button 
-                        onClick={() => handleOpenScanner(inst)}
-                        className="w-full py-2 bg-gold hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all mt-2 shadow-md shadow-gold/20"
-                      >
-                        <Camera className="w-3.5 h-3.5 text-white" /> Pinjam via Scan
-                      </button>
-                    ) : (
-                      <button 
-                        onClick={() => showToast('Anda harus melengkapi nomor WhatsApp terlebih dahulu untuk meminjam alat!', 'warning')}
-                        className="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all mt-2 shadow-md"
-                      >
-                        Lengkapi WA untuk Pinjam
-                      </button>
-                    )
-                  ) : (
-                    <Link 
-                      to="/login"
-                      className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all mt-2 shadow-md border border-slate-700"
+                  <div className="flex gap-2 mt-2">
+                    <button 
+                      onClick={() => handleSelectTool(inst)}
+                      className="flex-1 py-2 bg-gold hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer"
                     >
-                      Login untuk Pinjam
-                    </Link>
-                  )
+                      Pinjam Barang
+                    </button>
+                    <button 
+                      onClick={() => handleOpenScanner(inst)}
+                      className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs flex items-center justify-center active:scale-95 transition-all border border-slate-200 cursor-pointer"
+                      title="Scan QR Code Alat"
+                    >
+                      <Camera className="w-4 h-4 text-slate-600" />
+                    </button>
+                  </div>
                 ) : (
                   <button 
                     disabled
@@ -281,48 +282,77 @@ export default function Space({ showToast }) {
             <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-gold/5 rounded-full blur-xl"></div>
 
             {showForm ? (
-              <form onSubmit={handleReservationSubmit} className="space-y-4">
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1 text-left">
+              <form onSubmit={handleReservationSubmit} className="space-y-3.5">
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5 text-left">
                   <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider block">Alat Yang Dipilih</span>
                   <p className="text-xs font-bold text-gold-dark truncate">{selectedToolName}</p>
                   <p className="text-[9px] font-mono text-slate-500">{selectedToolId}</p>
                 </div>
 
                 <div className="space-y-1 text-left">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Nama Peminjam</label>
+                  <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest block">
+                    Nama Lengkap <span className="text-rose-500">*</span>
+                  </label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input 
                       type="text" 
-                      disabled
-                      value={currentUser?.name || ''}
-                      className="w-full bg-slate-100 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-500 focus:outline-none cursor-not-allowed"
+                      required
+                      value={borrowerName}
+                      onChange={(e) => setBorrowerName(e.target.value)}
+                      placeholder="Masukkan nama peminjam"
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-gold rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-800 focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1 text-left">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">NIM Mahasiswa</label>
+                  <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest block">
+                    Program Studi <span className="text-rose-500">*</span>
+                  </label>
                   <div className="relative">
-                    <IdCard className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input 
                       type="text" 
-                      disabled
-                      value={currentUser?.nim || ''}
-                      className="w-full bg-slate-100 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-500 focus:outline-none cursor-not-allowed"
+                      required
+                      value={prodi}
+                      onChange={(e) => setProdi(e.target.value)}
+                      placeholder="Contoh: D4 Elektronika Instrumentasi"
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-gold rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-800 focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1 text-left">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Nomor WhatsApp</label>
+                  <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest block">
+                    Angkatan <span className="text-rose-500">*</span>
+                  </label>
                   <div className="relative">
-                    <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input 
                       type="text" 
-                      disabled
-                      value={currentUser?.phone || ''}
-                      className="w-full bg-slate-100 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-500 focus:outline-none cursor-not-allowed"
+                      required
+                      value={angkatan}
+                      onChange={(e) => setAngkatan(e.target.value)}
+                      placeholder="Contoh: 2024"
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-gold rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-800 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1 text-left">
+                  <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest block">
+                    Nomor Telepon / WhatsApp <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input 
+                      type="text" 
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Contoh: 081234567890"
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-gold rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-800 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -331,15 +361,15 @@ export default function Space({ showToast }) {
                   <button 
                     type="button"
                     onClick={() => setShowForm(false)}
-                    className="flex-1 py-2 border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-semibold transition-colors"
+                    className="flex-1 py-2.5 border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                   >
                     Batal
                   </button>
                   <button 
                     type="submit"
-                    className="flex-1 py-2 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 shadow-gold/20"
+                    className="flex-1 py-2.5 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 shadow-gold/20 cursor-pointer"
                   >
-                    Kirim WA <ArrowRight className="w-3.5 h-3.5 text-white" />
+                    Pinjam Sekarang <ArrowRight className="w-3.5 h-3.5 text-white" />
                   </button>
                 </div>
               </form>
@@ -347,7 +377,7 @@ export default function Space({ showToast }) {
               <div className="text-center py-8 space-y-3">
                 <HelpCircle className="w-10 h-10 text-slate-350 mx-auto" />
                 <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
-                  Belum ada alat laboratorium yang dipilih. Silakan klik tombol <strong className="text-slate-800 font-bold">Pinjam via Scan</strong> pada alat yang ingin dipinjam terlebih dahulu.
+                  Belum ada alat laboratorium yang dipilih. Silakan klik tombol <strong className="text-slate-800 font-bold">Pinjam Barang</strong> pada alat yang ingin dipinjam terlebih dahulu.
                 </p>
               </div>
             )}

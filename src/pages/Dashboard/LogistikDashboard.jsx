@@ -388,7 +388,14 @@ export default function LogistikDashboard({ showToast }) {
                         <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="px-6 py-4">
                             <p className="font-bold text-slate-800">{req.borrowerName}</p>
-                            <p className="text-[10px] text-slate-500 font-mono">NIM: {req.borrowerNim}</p>
+                            {req.prodi && req.angkatan ? (
+                              <p className="text-[10px] text-slate-500 font-mono">{req.prodi} ({req.angkatan})</p>
+                            ) : (
+                              <p className="text-[10px] text-slate-500 font-mono">NIM: {req.borrowerNim}</p>
+                            )}
+                            {req.phone && (
+                              <p className="text-[10px] text-gold-dark font-mono">WA: {req.phone}</p>
+                            )}
                           </td>
                           <td className="px-6 py-4">
                             <p className="font-bold text-slate-800">{req.instrumentName}</p>
