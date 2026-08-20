@@ -33,6 +33,13 @@ export default function Space({ showToast }) {
       status: 'Available',
       image: '/Media/Media Aset dan Logistik/Timah.jpg',
       desc: 'Kawat timah penyambung komponen elektro berkadar rosin flux optimal.'
+    },
+    {
+      id: 'HIMA-BOR-005',
+      name: 'Mesin Bor Tangan (Bor)',
+      status: 'Available',
+      image: '📦',
+      desc: 'Alat bor tangan listrik serbaguna untuk melubangi PCB, logam, dan kayu praktikum.'
     }
   ];
 
@@ -41,11 +48,23 @@ export default function Space({ showToast }) {
   useEffect(() => {
     const loadData = () => {
       const saved = localStorage.getItem('hima_instruments');
-      if (saved && (saved.includes('HIMA-MULT-002') || saved.includes('HIMA-ARDU-011'))) {
-        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
-        setInstruments(DEFAULT_INSTRUMENTS);
-      } else if (saved) {
-        setInstruments(JSON.parse(saved));
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          // Check if default instruments are missing in user storage
+          const existingIds = new Set(parsed.map(i => i.id.toUpperCase()));
+          const missingDefaults = DEFAULT_INSTRUMENTS.filter(d => !existingIds.has(d.id.toUpperCase()));
+          if (missingDefaults.length > 0) {
+            const merged = [...parsed, ...missingDefaults];
+            localStorage.setItem('hima_instruments', JSON.stringify(merged));
+            setInstruments(merged);
+          } else {
+            setInstruments(parsed);
+          }
+        } catch (e) {
+          localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
+          setInstruments(DEFAULT_INSTRUMENTS);
+        }
       } else {
         localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
         setInstruments(DEFAULT_INSTRUMENTS);
@@ -61,7 +80,11 @@ export default function Space({ showToast }) {
       }
     };
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', loadData);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', loadData);
+    };
   }, []);
 
   const [scannerOpen, setScannerOpen] = useState(false);

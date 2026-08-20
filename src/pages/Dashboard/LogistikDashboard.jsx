@@ -47,6 +47,13 @@ export default function LogistikDashboard({ showToast }) {
       status: 'Available',
       image: '/Media/Media Aset dan Logistik/Timah.jpg',
       desc: 'Kawat timah penyambung komponen elektro berkadar rosin flux optimal.'
+    },
+    {
+      id: 'HIMA-BOR-005',
+      name: 'Mesin Bor Tangan (Bor)',
+      status: 'Available',
+      image: '📦',
+      desc: 'Alat bor tangan listrik serbaguna untuk melubangi PCB, logam, dan kayu praktikum.'
     }
   ];
 
@@ -54,11 +61,22 @@ export default function LogistikDashboard({ showToast }) {
     const loadData = () => {
       // Load instruments
       const savedInst = localStorage.getItem('hima_instruments');
-      if (savedInst && (savedInst.includes('HIMA-MULT-002') || savedInst.includes('HIMA-ARDU-011'))) {
-        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
-        setInstruments(DEFAULT_INSTRUMENTS);
-      } else if (savedInst) {
-        setInstruments(JSON.parse(savedInst));
+      if (savedInst) {
+        try {
+          const parsed = JSON.parse(savedInst);
+          const existingIds = new Set(parsed.map(i => i.id.toUpperCase()));
+          const missingDefaults = DEFAULT_INSTRUMENTS.filter(d => !existingIds.has(d.id.toUpperCase()));
+          if (missingDefaults.length > 0) {
+            const merged = [...parsed, ...missingDefaults];
+            localStorage.setItem('hima_instruments', JSON.stringify(merged));
+            setInstruments(merged);
+          } else {
+            setInstruments(parsed);
+          }
+        } catch (e) {
+          localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
+          setInstruments(DEFAULT_INSTRUMENTS);
+        }
       } else {
         localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
         setInstruments(DEFAULT_INSTRUMENTS);
@@ -67,7 +85,11 @@ export default function LogistikDashboard({ showToast }) {
       // Load borrow requests
       const savedReqs = localStorage.getItem('hima_borrow_requests');
       if (savedReqs) {
-        setBorrowRequests(JSON.parse(savedReqs));
+        try {
+          setBorrowRequests(JSON.parse(savedReqs));
+        } catch (e) {
+          setBorrowRequests([]);
+        }
       } else {
         setBorrowRequests([]);
       }
@@ -82,7 +104,11 @@ export default function LogistikDashboard({ showToast }) {
       }
     };
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', loadData);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', loadData);
+    };
   }, []);
 
   const handleToggleStatus = (id) => {
