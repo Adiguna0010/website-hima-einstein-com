@@ -82,7 +82,25 @@ export const DEFAULT_DRIVE_VAULT = [
   },
   {
     "id": 110,
-    "title": "Software Storage (Software Lab)",
+    "title": "PLC - OMRON CX-Programmer (Software Lab)",
+    "size": "Drive Folder",
+    "type": "Software",
+    "category": "Software",
+    "desc": "Software pemrograman Ladder Diagram & automasi industri PLC OMRON (CX-Programmer / Sysmac Studio).",
+    "url": "https://drive.google.com/drive/folders/1hVkPQSoRl3ylwNVsVDIy74IxzaCJ37Uh"
+  },
+  {
+    "id": 141,
+    "title": "PLC (Programmable Logic Controller) Directory",
+    "size": "Drive Folder",
+    "type": "Software",
+    "category": "Software",
+    "desc": "Direktori utama seluruh paket installer & tools automasi PLC Laboratorium Instrumentasi Nuklir.",
+    "url": "https://drive.google.com/drive/folders/1ACudcM_ZKf8e6GEGIywIu2XyzjTBGFcQ"
+  },
+  {
+    "id": 142,
+    "title": "Software Storage (Direktori Seluruh Software Lab)",
     "size": "Drive Folder",
     "type": "Software",
     "category": "Software",

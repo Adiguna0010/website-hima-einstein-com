@@ -449,7 +449,7 @@ export default function DivisionDetail({ showToast }) {
         const isSoftware = (item) => {
           const t = (item.type || '').toLowerCase();
           const title = (item.title || '').toLowerCase();
-          return t.includes('software') || t.includes('aplikasi') || t.includes('tool') || title.includes('labview') || title.includes('proteus') || title.includes('ide') || title.includes('matlab') || title.includes('multisim') || title.includes('cvavr') || title.includes('eagle') || title.includes('fusion') || title.includes('progisp') || title.includes('webots');
+          return t.includes('software') || t.includes('aplikasi') || t.includes('tool') || title.includes('labview') || title.includes('proteus') || title.includes('ide') || title.includes('matlab') || title.includes('multisim') || title.includes('cvavr') || title.includes('eagle') || title.includes('fusion') || title.includes('progisp') || title.includes('webots') || title.includes('plc') || title.includes('omron');
         };
 
         const softwareList = vaultItems.filter(i => isSoftware(i));
