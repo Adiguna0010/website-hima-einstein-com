@@ -99,6 +99,7 @@ export default function App() {
                 <Route path="/" element={<HomeWrapper showToast={showToast} />} />
                 <Route path="/sphere" element={<Sphere showToast={showToast} />} />
                 <Route path="/sphere/:divisionKey" element={<DivisionDetail showToast={showToast} />} />
+                <Route path="/vault" element={<Navigate to="/sphere/ristek" replace />} />
                 <Route path="/market" element={<Market showToast={showToast} />} />
                 <Route path="/space" element={<Space showToast={showToast} />} />
                 <Route path="/secretariat" element={<Secretariat showToast={showToast} />} />

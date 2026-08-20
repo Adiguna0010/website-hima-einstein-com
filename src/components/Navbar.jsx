@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Shield, ShieldAlert,
   ShoppingBag, Compass, Cpu, Bell, MessageSquare, Send, ArrowLeft, Trash2, MessageCircle,
-  Handshake, TrendingUp, FileText, Coins
+  Handshake, TrendingUp, FileText, Coins, BookOpen
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -445,6 +445,23 @@ export default function Navbar() {
                         <h4 className="text-xs font-bold text-slate-800">Peminjaman Barang</h4>
                         <p className="text-[10px] text-slate-500 font-light mt-0.5 leading-snug">
                           Peminjaman instrumen lab (Einsten Space).
+                        </p>
+                      </div>
+                    </Link>
+
+                    {/* Einsten Vault */}
+                    <Link 
+                      to="/sphere/ristek" 
+                      onClick={() => setIsSuiteOpen(false)}
+                      className="flex items-start gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors group"
+                    >
+                      <div className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center bg-slate-50 shrink-0 group-hover:border-gold/20 group-hover:bg-gold/5">
+                        <BookOpen className="w-4 h-4 text-slate-600 group-hover:text-gold" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-800">Einsten Vault</h4>
+                        <p className="text-[10px] text-slate-500 font-light mt-0.5 leading-snug">
+                          Bank soal, modul ajar & software lab praktikum.
                         </p>
                       </div>
                     </Link>
@@ -982,13 +999,20 @@ export default function Navbar() {
               </button>
 
               {isMobileSuiteOpen && (
-                <div className="pl-4 pr-3 py-1.5 space-y-2 bg-slate-50 rounded-xl mt-1">
+                <div className="pl-4 pr-3 py-1.5 space-y-2 bg-slate-50 rounded-xl mt-1 text-left">
                   <Link
                     to="/space"
                     onClick={() => setIsOpen(false)}
                     className="block py-1 text-xs text-slate-650 hover:text-gold font-semibold"
                   >
                     Peminjaman Barang (Einsten Space)
+                  </Link>
+                  <Link
+                    to="/sphere/ristek"
+                    onClick={() => setIsOpen(false)}
+                    className="block py-1 text-xs text-slate-650 hover:text-gold font-semibold"
+                  >
+                    Einsten Vault (Bank Soal & Software)
                   </Link>
                   <Link
                     to="/market"

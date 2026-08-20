@@ -56,6 +56,9 @@ export default function Footer() {
               <li>
                 <Link to="/space" className="text-slate-600 hover:text-gold-dark transition-colors font-medium">Einsten Space</Link>
               </li>
+              <li>
+                <Link to="/sphere/ristek" className="text-slate-600 hover:text-gold-dark transition-colors font-medium">Einsten Vault</Link>
+              </li>
             </ul>
           </div>
 
