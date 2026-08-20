@@ -6,7 +6,6 @@ import Home from './pages/Home';
 import Sphere from './pages/Sphere';
 import DivisionDetail from './pages/DivisionDetail';
 import Market from './pages/Market';
-import Quest from './pages/Quest';
 import Space from './pages/Space';
 import Secretariat from './pages/Secretariat';
 import Calendar from './pages/Calendar';
@@ -25,7 +24,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { Toast } from './components/Toast';
 import CabinetStructure from './pages/CabinetStructure';
-import Election from './pages/Election';
 import Profile from './pages/Profile';
 
 // Redirect to home page on F5 refresh / initial mount
@@ -102,7 +100,6 @@ export default function App() {
                 <Route path="/sphere" element={<Sphere showToast={showToast} />} />
                 <Route path="/sphere/:divisionKey" element={<DivisionDetail showToast={showToast} />} />
                 <Route path="/market" element={<Market showToast={showToast} />} />
-                <Route path="/quest" element={<Quest />} />
                 <Route path="/space" element={<Space showToast={showToast} />} />
                 <Route path="/secretariat" element={<Secretariat showToast={showToast} />} />
                 <Route path="/finance" element={<Finance showToast={showToast} />} />
@@ -110,7 +107,6 @@ export default function App() {
                 <Route path="/mitra" element={<Mitra />} />
                 <Route path="/investor" element={<Investor />} />
                 <Route path="/struktur" element={<CabinetStructure />} />
-                <Route path="/pemilihan" element={<Election showToast={showToast} />} />
                 
                 {/* Auth Routes */}
                 <Route path="/login" element={<Login showToast={showToast} />} />

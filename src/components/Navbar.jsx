@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Shield, ShieldAlert,
-  ShoppingBag, Compass, History, Cpu, Bell, MessageSquare, Send, ArrowLeft, Trash2, MessageCircle,
-  Vote, Handshake, TrendingUp, FileText, Coins
+  ShoppingBag, Compass, Cpu, Bell, MessageSquare, Send, ArrowLeft, Trash2, MessageCircle,
+  Handshake, TrendingUp, FileText, Coins
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -413,7 +413,7 @@ export default function Navbar() {
               <button
                 onClick={() => setIsSuiteOpen(!isSuiteOpen)}
                 className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
-                  ['/sphere', '/market', '/quest', '/space', '/pemilihan'].some(p => location.pathname.startsWith(p))
+                  ['/sphere', '/market', '/space'].some(p => location.pathname.startsWith(p))
                     ? 'text-gold font-bold' 
                     : 'text-slate-600 hover:text-gold-dark font-medium'
                 }`}
@@ -431,23 +431,6 @@ export default function Navbar() {
                       <ShoppingBag className="w-4 h-4 text-gold" />
                       <span>Layanan Utama</span>
                     </div>
-                    
-                    {/* Pemilihan Ketua HIMA */}
-                    <Link 
-                      to="/pemilihan" 
-                      onClick={() => setIsSuiteOpen(false)}
-                      className="flex items-start gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors group"
-                    >
-                      <div className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center bg-slate-50 shrink-0 group-hover:border-gold/20 group-hover:bg-gold/5">
-                        <Vote className="w-4 h-4 text-slate-600 group-hover:text-gold" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-800">Pemilihan Ketua HIMA</h4>
-                        <p className="text-[10px] text-slate-500 font-light mt-0.5 leading-snug">
-                          Portal pemilihan ketua & wakil ketua HIMA.
-                        </p>
-                      </div>
-                    </Link>
 
                     {/* Einsten Space */}
                     <Link 
@@ -512,23 +495,6 @@ export default function Navbar() {
                           <h4 className="text-xs font-bold text-slate-800">Einsten Sphere</h4>
                           <p className="text-[10px] text-slate-500 font-light mt-0.5 leading-snug">
                             Sektor divisi kerja Kabinet Phótisma HIMA.
-                          </p>
-                        </div>
-                      </Link>
-
-                      {/* Einsten Quest */}
-                      <Link 
-                        to="/quest" 
-                        onClick={() => setIsSuiteOpen(false)}
-                        className="flex items-start gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors group"
-                      >
-                        <div className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center bg-slate-50 shrink-0 group-hover:border-gold/20 group-hover:bg-gold/5">
-                          <History className="w-4 h-4 text-slate-600 group-hover:text-gold" />
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-bold text-slate-800">Einsten Quest</h4>
-                          <p className="text-[10px] text-slate-500 font-light mt-0.5 leading-snug">
-                            Linimasa sejarah, dokumentasi & alumni.
                           </p>
                         </div>
                       </Link>
@@ -1018,13 +984,6 @@ export default function Navbar() {
               {isMobileSuiteOpen && (
                 <div className="pl-4 pr-3 py-1.5 space-y-2 bg-slate-50 rounded-xl mt-1">
                   <Link
-                    to="/pemilihan"
-                    onClick={() => setIsOpen(false)}
-                    className="block py-1 text-xs text-slate-650 hover:text-gold font-semibold"
-                  >
-                    Pemilihan Ketua HIMA
-                  </Link>
-                  <Link
                     to="/space"
                     onClick={() => setIsOpen(false)}
                     className="block py-1 text-xs text-slate-650 hover:text-gold font-semibold"
@@ -1050,13 +1009,6 @@ export default function Navbar() {
                       className="block py-1 text-[11px] text-slate-500 hover:text-gold font-medium"
                     >
                       Einsten Sphere (Divisi Kerja)
-                    </Link>
-                    <Link
-                      to="/quest"
-                      onClick={() => setIsOpen(false)}
-                      className="block py-1 text-[11px] text-slate-500 hover:text-gold font-medium"
-                    >
-                      Einsten Quest (Sejarah & Alumni)
                     </Link>
                   </div>
                 </div>

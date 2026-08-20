@@ -356,7 +356,7 @@ export default function Home() {
                 <h4 className="font-bold text-slate-800 text-sm tracking-wider uppercase font-heading">Visi Ketua Himpunan</h4>
               </div>
               <p className="text-sm text-slate-650 leading-relaxed font-light">
-                "Membawa terang bagi sains instrumentasi nuklir Indonesia melalui digitalisasi, ekspansi riset otonom, dan kemitraan berskala nasional."
+                "Menjadikan Himpunan Mahasiswa Einsten.com sebagai <strong className="font-semibold text-slate-900">ruang berproses yang inklusif dan berintegritas</strong>, <strong className="font-semibold text-slate-900">dengan tata kerja yang kuat dalam menjaga nilai kekeluargaan serta profesionalitas</strong>, guna mendukung pengembangan diri dan pembentukan karakter mahasiswa."
               </p>
             </div>
 
@@ -369,15 +369,19 @@ export default function Home() {
               <ul className="space-y-3 text-xs sm:text-sm text-slate-650 font-light pl-1">
                 <li className="flex items-start gap-2.5">
                   <span className="w-5 h-5 rounded-full bg-gold/10 text-gold flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
-                  <span>Mengotomatisasi birokrasi kemahasiswaan melalui digitalisasi persuratan dan inventarisasi aset.</span>
+                  <span><strong className="font-semibold text-slate-900">Menyusun pola kerja yang terstruktur</strong> serta evaluasi berkala setiap program berjalan efektif dan berkesinambungan.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <span className="w-5 h-5 rounded-full bg-gold/10 text-gold flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
-                  <span>Mengamankan pengelolaan logistik laboratorium dan aset Himpunan di bawah sistem pengawasan modern.</span>
+                  <span>Meningkatkan keterlibatan mahasiswa melalui <strong className="font-semibold text-slate-900">agenda yang terarah, relevan, dan objektif</strong> sehingga partisipasi tumbuh karena kebutuhan bukan sekedar formalitas.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <span className="w-5 h-5 rounded-full bg-gold/10 text-gold flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
-                  <span>Mengoptimalkan kemandirian finansial organisasi melalui program kewirausahaan kreatif Dana Usaha.</span>
+                  <span>Menegakkan <strong className="font-semibold text-slate-900">profesionalitas</strong> melalui kedisiplinan, kejelasan peran, dan mekanisme penyelesaian masalah yang tegas.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-gold/10 text-gold flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">4</span>
+                  <span><strong className="font-semibold text-slate-900">Mengembangkan kapasitas mahasiswa</strong> melalui kegiatan yang mengasah pemahaman teknis, ketelitian, serta kemampuan mengambil tanggung jawab dalam proses organisasi.</span>
                 </li>
               </ul>
             </div>
