@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, Plus, Trash2, ShieldCheck, FileText, Download, CheckCircle, 
-  XCircle, Users, Activity, Calendar, Sparkles, Code, Server, MapPin, Edit
+  XCircle, Users, Activity, Calendar, Sparkles, Code, Server, MapPin, Edit, RefreshCw, Search
 } from 'lucide-react';
+import { DEFAULT_DRIVE_VAULT } from '../../data/driveVaultItems';
 
 export default function RistekDashboard({ showToast }) {
   const [activeTab, setActiveTab] = useState('vault'); // 'vault', 'schedule', 'projects', 'requests', 'programs'
 
   // VAULT STATE
   const [vaultItems, setVaultItems] = useState([]);
+  const [vaultSearch, setVaultSearch] = useState('');
   const [vaultTitle, setVaultTitle] = useState('');
   const [vaultSize, setVaultSize] = useState('');
   const [vaultType, setVaultType] = useState('Dokumen');
   const [vaultUrl, setVaultUrl] = useState('');
+
+  const handleSyncDrive = () => {
+    localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_DRIVE_VAULT));
+    setVaultItems(DEFAULT_DRIVE_VAULT);
+    showToast('Berhasil mengimpor & menyinkronkan 39 berkas dari Google Drive!', 'success');
+  };
 
   // SCHEDULE STATE
   const [schedules, setSchedules] = useState([]);
@@ -47,26 +55,22 @@ export default function RistekDashboard({ showToast }) {
   // Load Database from LocalStorage
   useEffect(() => {
     // Vault
-    const DEFAULT_VAULT = [
-      { id: 101, title: 'Labview 2026 Community', size: '4 GB', type: 'Software', url: 'https://drive.google.com/drive/folders/1kBIWKQYOPJ84se' },
-      { id: 102, title: 'Kumpulan Soal Uas Semester 1 2024', size: '6.4 MB', type: 'Dokumen', url: 'https://drive.google.com/drive/folders/1NS7bPiYAN19edi8' },
-      { id: 103, title: 'UTS: Mikroprosesor & Mikrokontroler', size: '2.4 MB', type: 'Dokumen', url: '#' },
-      { id: 104, title: 'Modul Praktikum: Detektor Radiasi Nuklir', size: '4.8 MB', type: 'Dokumen', url: '#' }
-    ];
-
     const savedVault = localStorage.getItem('hima_vault');
-    let loadedVault = DEFAULT_VAULT;
+    let loadedVault = DEFAULT_DRIVE_VAULT;
     if (savedVault !== null) {
       try {
         const parsed = JSON.parse(savedVault);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 5) {
           loadedVault = parsed;
+        } else {
+          loadedVault = DEFAULT_DRIVE_VAULT;
+          localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_DRIVE_VAULT));
         }
       } catch (e) {
         console.error('Failed to parse vault:', e);
       }
     } else {
-      localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_VAULT));
+      localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_DRIVE_VAULT));
     }
     setVaultItems(loadedVault);
 
@@ -492,36 +496,69 @@ export default function RistekDashboard({ showToast }) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in duration-200">
           {/* List of files */}
           <div className="lg:col-span-7 space-y-4">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <ShieldCheck className="w-4.5 h-4.5 text-gold" /> Daftar File Vault Aktif ({vaultItems.length})
-            </h3>
-            <div className="space-y-3">
-              {vaultItems.length === 0 ? (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-2">
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <ShieldCheck className="w-4.5 h-4.5 text-gold" /> Daftar File Vault Aktif ({vaultItems.length})
+              </h3>
+              <button
+                type="button"
+                onClick={handleSyncDrive}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gold/10 hover:bg-gold hover:text-white text-gold-dark text-xs font-bold transition-all border border-gold/30 shadow-sm active:scale-95 cursor-pointer"
+                title="Sinkronkan seluruh folder dan berkas dari Google Drive Einsten Vault"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> ⚡ Sinkronkan Google Drive (39 Berkas)
+              </button>
+            </div>
+
+            {/* Dashboard Search */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input 
+                type="text"
+                value={vaultSearch}
+                onChange={(e) => setVaultSearch(e.target.value)}
+                placeholder="Cari file atau software di vault..."
+                className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-gold shadow-sm"
+              />
+            </div>
+
+            <div className="space-y-3 max-h-[560px] overflow-y-auto pr-1">
+              {vaultItems.filter(item => {
+                if (!vaultSearch) return true;
+                const q = vaultSearch.toLowerCase();
+                return (item.title || '').toLowerCase().includes(q) || (item.desc || '').toLowerCase().includes(q) || (item.type || '').toLowerCase().includes(q);
+              }).length === 0 ? (
                 <div className="text-center py-10 bg-white border border-gold-border rounded-2xl text-slate-455 shadow-sm">
-                  <p className="text-xs">Belum ada file di Vault.</p>
+                  <p className="text-xs">Tidak ada file yang ditemukan.</p>
                 </div>
               ) : (
-                vaultItems.map((item) => {
-                  const isSoftware = (item.type || '').toLowerCase().includes('software') || (item.title || '').toLowerCase().includes('labview') || (item.title || '').toLowerCase().includes('proteus') || (item.title || '').toLowerCase().includes('ide');
+                vaultItems.filter(item => {
+                  if (!vaultSearch) return true;
+                  const q = vaultSearch.toLowerCase();
+                  return (item.title || '').toLowerCase().includes(q) || (item.desc || '').toLowerCase().includes(q) || (item.type || '').toLowerCase().includes(q);
+                }).map((item) => {
+                  const isSoftware = (item.type || '').toLowerCase().includes('software') || (item.title || '').toLowerCase().includes('labview') || (item.title || '').toLowerCase().includes('proteus') || (item.title || '').toLowerCase().includes('ide') || (item.title || '').toLowerCase().includes('matlab') || (item.title || '').toLowerCase().includes('cvavr') || (item.title || '').toLowerCase().includes('eagle') || (item.title || '').toLowerCase().includes('fusion') || (item.title || '').toLowerCase().includes('progisp') || (item.title || '').toLowerCase().includes('webots');
                   return (
-                    <div key={item.id} className="p-4 bg-white border border-gold-border rounded-2xl flex items-center justify-between group hover:bg-slate-50/50 shadow-sm transition-colors">
+                    <div key={item.id} className="p-3.5 bg-white border border-gold-border rounded-2xl flex items-center justify-between group hover:bg-slate-50/50 shadow-sm transition-colors text-left">
                       <div className="space-y-1 min-w-0 flex-1 pr-4">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
                             isSoftware ? 'bg-indigo-100 text-indigo-800' : 'bg-amber-100 text-amber-800'
                           }`}>
                             {isSoftware ? 'Software Praktikum' : 'Materi / Bank Soal'}
                           </span>
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            {item.size}
+                          </span>
                         </div>
                         <h4 className="text-xs font-bold text-slate-800 group-hover:text-gold-dark transition-colors truncate">{item.title}</h4>
-                        <p className="text-[10px] text-slate-500 font-mono">
-                          Ukuran: {item.size} • <span className="text-slate-400 truncate max-w-[200px]">{item.url}</span>
-                        </p>
+                        <p className="text-[10px] text-slate-400 font-mono truncate max-w-[280px]">{item.url}</p>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => handleDeleteFile(item.id)}
                           className="p-2 rounded-lg hover:bg-rose-50 text-rose-600 hover:text-rose-700 transition-colors cursor-pointer"
+                          title="Hapus file"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

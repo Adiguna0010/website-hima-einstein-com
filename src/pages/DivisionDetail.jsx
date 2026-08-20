@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Users, Terminal, Globe, BookOpen, Rocket, ShoppingCart, Radio, Box, Send, Download, Check, ShieldCheck, Shirt, Calendar, Plus, MessageSquare, FileText, Code, Laptop } from 'lucide-react';
+import { ArrowLeft, Users, Terminal, Globe, BookOpen, Rocket, ShoppingCart, Radio, Box, Send, Download, Check, ShieldCheck, Shirt, Calendar, Plus, MessageSquare, FileText, Code, Laptop, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { DEFAULT_DRIVE_VAULT } from '../data/driveVaultItems';
 
 // Helper component for coming soon sections
 function ComingSoon({ title }) {
@@ -103,6 +104,7 @@ export default function DivisionDetail({ showToast }) {
   // Ristek tabs
   const [ristekTab, setRistekTab] = useState('vault');
   const [vaultCategory, setVaultCategory] = useState('all'); // 'all', 'materi', 'software'
+  const [vaultSearch, setVaultSearch] = useState('');
 
   // Form states
   const [ristekForm, setRistekForm] = useState({ name: currentUser?.name || '', role: 'murid', subject: '', wa: '' });
@@ -112,28 +114,23 @@ export default function DivisionDetail({ showToast }) {
   const [collabProjects, setCollabProjects] = useState([]);
 
   const loadVaultItems = () => {
-    const DEFAULT_VAULT = [
-      { id: 101, title: 'Labview 2026 Community Edition', size: '4.2 GB', type: 'Software', url: 'https://drive.google.com/drive/folders/1kBIWKQYOPJ84se' },
-      { id: 102, title: 'Proteus Design Suite 8.16 SP3', size: '650 MB', type: 'Software', url: 'https://drive.google.com/drive/folders/1kBIWKQYOPJ84se' },
-      { id: 103, title: 'Arduino IDE 2.3.2 Installer', size: '180 MB', type: 'Software', url: 'https://www.arduino.cc/en/software' },
-      { id: 104, title: 'Kumpulan Soal UAS Semester 1 2024', size: '6.4 MB', type: 'Materi', url: 'https://drive.google.com/drive/folders/1NS7bPiYAN19edi8' },
-      { id: 105, title: 'Bank Soal UTS: Mikroprosesor & Mikrokontroler', size: '2.4 MB', type: 'Materi', url: 'https://drive.google.com/drive/folders/1NS7bPiYAN19edi8' },
-      { id: 106, title: 'Modul Praktikum: Detektor Radiasi Nuklir', size: '4.8 MB', type: 'Materi', url: 'https://drive.google.com/drive/folders/1NS7bPiYAN19edi8' }
-    ];
-
     const savedVault = localStorage.getItem('hima_vault');
-    let loadedVault = DEFAULT_VAULT;
+    let loadedVault = DEFAULT_DRIVE_VAULT;
     if (savedVault !== null) {
       try {
         const parsed = JSON.parse(savedVault);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed) && parsed.length > 5) {
           loadedVault = parsed;
+        } else {
+          // Upgrade older short list to complete Drive vault
+          loadedVault = DEFAULT_DRIVE_VAULT;
+          localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_DRIVE_VAULT));
         }
       } catch (e) {
         console.error('Failed to parse vault:', e);
       }
     } else {
-      localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_VAULT));
+      localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_DRIVE_VAULT));
     }
     setVaultItems(loadedVault);
   };
@@ -452,12 +449,18 @@ export default function DivisionDetail({ showToast }) {
         const isSoftware = (item) => {
           const t = (item.type || '').toLowerCase();
           const title = (item.title || '').toLowerCase();
-          return t.includes('software') || t.includes('aplikasi') || t.includes('tool') || title.includes('labview') || title.includes('proteus') || title.includes('ide') || title.includes('matlab') || title.includes('multisim');
+          return t.includes('software') || t.includes('aplikasi') || t.includes('tool') || title.includes('labview') || title.includes('proteus') || title.includes('ide') || title.includes('matlab') || title.includes('multisim') || title.includes('cvavr') || title.includes('eagle') || title.includes('fusion') || title.includes('progisp') || title.includes('webots');
         };
 
         const softwareList = vaultItems.filter(i => isSoftware(i));
         const materiList = vaultItems.filter(i => !isSoftware(i));
-        const displayVaultItems = vaultCategory === 'software' ? softwareList : vaultCategory === 'materi' ? materiList : vaultItems;
+        const categoryItems = vaultCategory === 'software' ? softwareList : vaultCategory === 'materi' ? materiList : vaultItems;
+
+        const displayVaultItems = categoryItems.filter(i => {
+          if (!vaultSearch) return true;
+          const q = vaultSearch.toLowerCase();
+          return (i.title || '').toLowerCase().includes(q) || (i.desc || '').toLowerCase().includes(q) || (i.type || '').toLowerCase().includes(q);
+        });
 
         return (
           <div className="max-w-3xl mx-auto space-y-6">
@@ -483,8 +486,28 @@ export default function DivisionDetail({ showToast }) {
 
             {/* Tab: Einsten Vault (Divided into Materi & Software) */}
             {ristekTab === 'vault' && (
-              <div className="space-y-5 text-left animate-in fade-in duration-200">
+              <div className="space-y-4 text-left animate-in fade-in duration-200">
                 
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input 
+                    type="text"
+                    value={vaultSearch}
+                    onChange={(e) => setVaultSearch(e.target.value)}
+                    placeholder="Cari software, materi kuliah, bank soal UAS/UTS, modul praktikum..."
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs text-slate-800 focus:outline-none focus:border-gold shadow-sm"
+                  />
+                  {vaultSearch && (
+                    <button 
+                      onClick={() => setVaultSearch('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
                 {/* Category Filter Switcher */}
                 <div className="flex items-center gap-2 flex-wrap bg-slate-50 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
                   <button
@@ -527,7 +550,7 @@ export default function DivisionDetail({ showToast }) {
                   {displayVaultItems.length === 0 ? (
                     <div className="text-center py-12 bg-white border border-gold-border rounded-2xl text-slate-450 shadow-sm space-y-2">
                       <BookOpen className="w-10 h-10 text-slate-300 mx-auto" />
-                      <p className="text-xs text-slate-500">Tidak ada berkas yang ditemukan dalam kategori ini.</p>
+                      <p className="text-xs text-slate-500">Tidak ada berkas yang cocok dengan pencarian "{vaultSearch}".</p>
                     </div>
                   ) : (
                     displayVaultItems.map((item) => {
