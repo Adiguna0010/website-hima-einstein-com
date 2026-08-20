@@ -36,6 +36,7 @@ const DEFAULT_USERS = [
     nim: '022400031',
     email: 'Rakan Ibrahim Widjisasono@einsten.com',
     password: '022400031',
+    phone: '082171748617',
     role: 'Operator Logistik',
     photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Aset Dan Logistik/Kepala Divisi Aset dan Logistik_Rakan Ibrahim Widjisasono - 022400031.JPG',
     status: 'Active'

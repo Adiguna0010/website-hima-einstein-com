@@ -224,12 +224,12 @@ export default function Space({ showToast }) {
     localStorage.setItem('hima_notifications', JSON.stringify([...notifsList, ...newNotifications]));
 
     // Build WA URL
-    const text = `Halo Admin Logistik HIMPUNAN EINSTEN.COM! 📦\n\nSaya ingin mengajukan permohonan peminjaman alat laboratorium:\n- Nama Alat: ${selectedToolName}\n- ID Alat: ${selectedToolId}\n\nData Peminjam:\n- Nama: ${borrowerName.trim()}\n- Program Studi: ${prodi.trim()}\n- Angkatan: ${angkatan.trim()}\n- WhatsApp: ${phone.trim()}\n\n*Reservasi terdaftar melalui Portal Einsten Space.* Mohon konfirmasi pengambilan alat. Terima kasih!`;
-    const waNumber = '6285175420692';
+    const text = `Halo Admin Aset & Logistik HIMPUNAN EINSTEN.COM! 📦\n\nSaya ingin mengajukan permohonan peminjaman alat laboratorium:\n- Nama Alat: ${selectedToolName}\n- ID Alat: ${selectedToolId}\n\nData Peminjam:\n- Nama: ${borrowerName.trim()}\n- Program Studi: ${prodi.trim()}\n- Angkatan: ${angkatan.trim()}\n- WhatsApp: ${phone.trim()}\n\n*Reservasi terdaftar melalui Portal Einsten Space.* Mohon konfirmasi peminjaman & pengambilan alat. Terima kasih!`;
+    const waNumber = '6282171748617';
     const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
 
-    showToast('Permohonan peminjaman berhasil diajukan! Menghubungkan ke WhatsApp...', 'success');
+    showToast('Permohonan peminjaman berhasil diajukan! Langsung terhubung ke WhatsApp Admin Logistik...', 'success');
 
     // Reset Form
     setShowForm(false);
