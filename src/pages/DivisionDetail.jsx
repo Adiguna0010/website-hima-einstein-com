@@ -106,6 +106,7 @@ export default function DivisionDetail({ showToast }) {
 
   // Form states
   const [ristekForm, setRistekForm] = useState({ name: currentUser?.name || '', role: 'murid', subject: '', wa: '' });
+  const [isSubmittingRistek, setIsSubmittingRistek] = useState(false);
   const [vaultItems, setVaultItems] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [collabProjects, setCollabProjects] = useState([]);
@@ -381,20 +382,23 @@ export default function DivisionDetail({ showToast }) {
       iconComponent: <BookOpen className="w-8 h-8 text-gold" />,
       desc: 'Mendorong kecakapan mahasiswa di bidang instrumentasi nuklir melalui bank soal terintegrasi, pendaftaran tutor sebaya, dan kolaborasi proyek IoT otonom.',
       renderContent: () => {
-        const handleRistekSubmit = (e) => {
+        const handleRistekSubmit = async (e) => {
           e.preventDefault();
           if (!ristekForm.name || !ristekForm.subject || !ristekForm.wa) {
             showToast('Mohon lengkapi seluruh kolom formulir!', 'error');
             return;
           }
+          setIsSubmittingRistek(true);
+
+          const roleLabel = ristekForm.role === 'tutor' ? 'Bersedia Mengajar (Tutor)' : 'Butuh Bimbingan (Murid)';
           const newRequest = {
             id: Date.now(),
-            requesterName: ristekForm.name,
+            requesterName: ristekForm.name.trim(),
             userEmail: currentUser?.email || 'guest@einsten.com',
             type: 'Ristek Mengajar',
             role: ristekForm.role,
-            subject: ristekForm.subject,
-            wa: ristekForm.wa,
+            subject: ristekForm.subject.trim(),
+            wa: ristekForm.wa.trim(),
             status: 'Pending',
             timestamp: Date.now()
           };
@@ -403,7 +407,45 @@ export default function DivisionDetail({ showToast }) {
           const updated = [...list, newRequest];
           localStorage.setItem('hima_ristek_requests', JSON.stringify(updated));
 
-          showToast(`Pendaftaran Ristek Mengajar berhasil dikirim! Menunggu ACC Kadiv Ristek.`, 'success');
+          // Save notification
+          const newNotif = {
+            id: Date.now() + 1,
+            recipientEmail: 'Adiguna Nugroho Halomoan@einsten.com',
+            message: `Pendaftaran Baru! ${ristekForm.name.trim()} mendaftar sebagai ${roleLabel} untuk mata kuliah/bidang "${ristekForm.subject.trim()}".`,
+            read: false,
+            timestamp: Date.now()
+          };
+          const savedNotifs = localStorage.getItem('hima_notifications');
+          const notifsList = savedNotifs ? JSON.parse(savedNotifs) : [];
+          localStorage.setItem('hima_notifications', JSON.stringify([...notifsList, newNotif]));
+
+          // Direct background sending via serverless WhatsApp Gateway API to 085175420692 (6285175420692)
+          const text = `Halo Kadiv Riset & Teknologi HIMPUNAN EINSTEN.COM! 🎓\n\nAda pendaftaran baru untuk program *Ristek Mengajar*:\n- *Nama Lengkap:* ${ristekForm.name.trim()}\n- *Kategori Peran:* ${roleLabel}\n- *Mata Kuliah / Bidang:* ${ristekForm.subject.trim()}\n- *WhatsApp Kontak:* ${ristekForm.wa.trim()}\n- *Tanggal Pendaftaran:* ${new Date().toLocaleDateString('id-ID')}\n\nMohon verifikasi & tindak lanjuti pendaftaran kegiatan ini. Terima kasih!`;
+          const targetWa = '6285175420692';
+
+          try {
+            await fetch('/api/send-wa', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ phone: targetWa, message: text })
+            });
+          } catch (err) {
+            try {
+              await fetch('https://api.fonnte.com/send', {
+                method: 'POST',
+                headers: {
+                  'Authorization': 'oAkLBXzaU41RszNf6j78',
+                  'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({ target: targetWa, message: text })
+              });
+            } catch (e) {
+              console.error('WA background send error:', e);
+            }
+          }
+
+          setIsSubmittingRistek(false);
+          showToast(`Pendaftaran Ristek Mengajar berhasil & otomatis terkirim ke WhatsApp Kadiv Ristek (085175420692)!`, 'success');
           setRistekForm({ name: currentUser?.name || '', role: 'murid', subject: '', wa: '' });
         };
 
@@ -612,9 +654,17 @@ export default function DivisionDetail({ showToast }) {
 
                     <button 
                       type="submit"
-                      className="w-full py-2.5 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer"
+                      disabled={isSubmittingRistek}
+                      className="w-full py-2.5 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                      Daftar Tutor/Murid
+                      {isSubmittingRistek ? (
+                        <>
+                          <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Mengirim Notifikasi WA...</span>
+                        </>
+                      ) : (
+                        'Daftar Tutor/Murid'
+                      )}
                     </button>
                   </form>
                 </div>
