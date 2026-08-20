@@ -114,23 +114,28 @@ export default function DivisionDetail({ showToast }) {
   const [collabProjects, setCollabProjects] = useState([]);
 
   const loadVaultItems = () => {
+    const VAULT_VERSION = 'v4_omron_cx_designer';
+    const savedVersion = localStorage.getItem('hima_vault_version');
     const savedVault = localStorage.getItem('hima_vault');
+    
     let loadedVault = DEFAULT_DRIVE_VAULT;
-    if (savedVault !== null) {
+    if (savedVersion === VAULT_VERSION && savedVault !== null) {
       try {
         const parsed = JSON.parse(savedVault);
         if (Array.isArray(parsed) && parsed.length > 5) {
           loadedVault = parsed.filter(item => item.id !== 100 && !item.title?.includes('Google Drive Utama') && !item.title?.includes('Google Drive Induk'));
         } else {
-          // Upgrade older short list to complete Drive vault
           loadedVault = DEFAULT_DRIVE_VAULT;
           localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_DRIVE_VAULT));
+          localStorage.setItem('hima_vault_version', VAULT_VERSION);
         }
       } catch (e) {
         console.error('Failed to parse vault:', e);
       }
     } else {
       localStorage.setItem('hima_vault', JSON.stringify(DEFAULT_DRIVE_VAULT));
+      localStorage.setItem('hima_vault_version', VAULT_VERSION);
+      loadedVault = DEFAULT_DRIVE_VAULT;
     }
     setVaultItems(loadedVault);
   };
@@ -449,7 +454,7 @@ export default function DivisionDetail({ showToast }) {
         const isSoftware = (item) => {
           const t = (item.type || '').toLowerCase();
           const title = (item.title || '').toLowerCase();
-          return t.includes('software') || t.includes('aplikasi') || t.includes('tool') || title.includes('labview') || title.includes('proteus') || title.includes('ide') || title.includes('matlab') || title.includes('multisim') || title.includes('cvavr') || title.includes('eagle') || title.includes('fusion') || title.includes('progisp') || title.includes('webots') || title.includes('plc') || title.includes('omron');
+          return t.includes('software') || t.includes('aplikasi') || t.includes('tool') || title.includes('labview') || title.includes('proteus') || title.includes('ide') || title.includes('matlab') || title.includes('multisim') || title.includes('cvavr') || title.includes('eagle') || title.includes('fusion') || title.includes('progisp') || title.includes('webots') || title.includes('plc') || title.includes('omron') || title.includes('cx');
         };
 
         const softwareList = vaultItems.filter(i => isSoftware(i));

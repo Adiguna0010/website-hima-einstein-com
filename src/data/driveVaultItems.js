@@ -86,11 +86,29 @@ export const DEFAULT_DRIVE_VAULT = [
     "size": "Drive Folder",
     "type": "Software",
     "category": "Software",
-    "desc": "Software pemrograman Ladder Diagram & automasi industri PLC OMRON (CX-Programmer / Sysmac Studio).",
-    "url": "https://drive.google.com/drive/folders/1hVkPQSoRl3ylwNVsVDIy74IxzaCJ37Uh"
+    "desc": "Software resmi OMRON untuk pemrograman diagram Ladder PLC (CP1E, CP1L, CJ2, CS1).",
+    "url": "https://drive.google.com/drive/folders/1pmhtZrY15Hwno4LXAEbMXVbuWEoARsqo"
+  },
+  {
+    "id": 140,
+    "title": "PLC - OMRON CX-Designer (Software Lab)",
+    "size": "Drive Folder",
+    "type": "Software",
+    "category": "Software",
+    "desc": "Software desain antarmuka HMI (Human Machine Interface) touchscreen OMRON (NS Series).",
+    "url": "https://drive.google.com/drive/folders/1N1KN-CElUhVOfENqpd9Smed0Gi2UE2dp"
   },
   {
     "id": 141,
+    "title": "PLC - OMRON Software Suite (CX-One Full)",
+    "size": "Drive Folder",
+    "type": "Software",
+    "category": "Software",
+    "desc": "Paket lengkap OMRON CX-One (CX-Programmer, CX-Designer, CX-Integrator, CX-Simulator).",
+    "url": "https://drive.google.com/drive/folders/1hVkPQSoRl3ylwNVsVDIy74IxzaCJ37Uh"
+  },
+  {
+    "id": 142,
     "title": "PLC (Programmable Logic Controller) Directory",
     "size": "Drive Folder",
     "type": "Software",
@@ -99,7 +117,7 @@ export const DEFAULT_DRIVE_VAULT = [
     "url": "https://drive.google.com/drive/folders/1ACudcM_ZKf8e6GEGIywIu2XyzjTBGFcQ"
   },
   {
-    "id": 142,
+    "id": 143,
     "title": "Software Storage (Direktori Seluruh Software Lab)",
     "size": "Drive Folder",
     "type": "Software",

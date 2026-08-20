@@ -56,10 +56,13 @@ export default function RistekDashboard({ showToast }) {
   // Load Database from LocalStorage
   useEffect(() => {
     // Vault
+    const VAULT_VERSION = 'v4_omron_cx_designer';
+    const savedVersion = localStorage.getItem('hima_vault_version');
     const savedVault = localStorage.getItem('hima_vault');
     const cleanDefault = DEFAULT_DRIVE_VAULT.filter(i => i.id !== 100 && !i.title?.includes('Google Drive Utama') && !i.title?.includes('Google Drive Induk'));
+    
     let loadedVault = cleanDefault;
-    if (savedVault !== null) {
+    if (savedVersion === VAULT_VERSION && savedVault !== null) {
       try {
         const parsed = JSON.parse(savedVault);
         if (Array.isArray(parsed) && parsed.length > 5) {
@@ -67,12 +70,15 @@ export default function RistekDashboard({ showToast }) {
         } else {
           loadedVault = cleanDefault;
           localStorage.setItem('hima_vault', JSON.stringify(cleanDefault));
+          localStorage.setItem('hima_vault_version', VAULT_VERSION);
         }
       } catch (e) {
         console.error('Failed to parse vault:', e);
       }
     } else {
       localStorage.setItem('hima_vault', JSON.stringify(cleanDefault));
+      localStorage.setItem('hima_vault_version', VAULT_VERSION);
+      loadedVault = cleanDefault;
     }
     setVaultItems(loadedVault);
 
@@ -539,7 +545,7 @@ export default function RistekDashboard({ showToast }) {
                   const q = vaultSearch.toLowerCase();
                   return (item.title || '').toLowerCase().includes(q) || (item.desc || '').toLowerCase().includes(q) || (item.type || '').toLowerCase().includes(q);
                 }).map((item) => {
-                  const isSoftware = (item.type || '').toLowerCase().includes('software') || (item.title || '').toLowerCase().includes('labview') || (item.title || '').toLowerCase().includes('proteus') || (item.title || '').toLowerCase().includes('ide') || (item.title || '').toLowerCase().includes('matlab') || (item.title || '').toLowerCase().includes('cvavr') || (item.title || '').toLowerCase().includes('eagle') || (item.title || '').toLowerCase().includes('fusion') || (item.title || '').toLowerCase().includes('progisp') || (item.title || '').toLowerCase().includes('webots') || (item.title || '').toLowerCase().includes('plc') || (item.title || '').toLowerCase().includes('omron');
+                  const isSoftware = (item.type || '').toLowerCase().includes('software') || (item.title || '').toLowerCase().includes('labview') || (item.title || '').toLowerCase().includes('proteus') || (item.title || '').toLowerCase().includes('ide') || (item.title || '').toLowerCase().includes('matlab') || (item.title || '').toLowerCase().includes('cvavr') || (item.title || '').toLowerCase().includes('eagle') || (item.title || '').toLowerCase().includes('fusion') || (item.title || '').toLowerCase().includes('progisp') || (item.title || '').toLowerCase().includes('webots') || (item.title || '').toLowerCase().includes('plc') || (item.title || '').toLowerCase().includes('omron') || (item.title || '').toLowerCase().includes('cx');
                   return (
                     <div key={item.id} className="p-3.5 bg-white border border-gold-border rounded-2xl flex items-center justify-between group hover:bg-slate-50/50 shadow-sm transition-colors text-left">
                       <div className="space-y-1 min-w-0 flex-1 pr-4">
