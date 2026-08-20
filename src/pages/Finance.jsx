@@ -53,11 +53,21 @@ export default function Finance({ showToast }) {
     }
   }, []);
 
-  const reportTemplates = [
-    { id: 1, name: 'Laporan Keuangan Kuartal I - 2026', format: 'PDF', size: '1.2 MB', date: 'April 2026' },
-    { id: 2, name: 'Buku Kas Umum Semester Ganjil - 2026', format: 'XLSX', size: '340 KB', date: 'Juli 2026' },
-    { id: 3, name: 'Rencana Anggaran Biaya (RAB) Kabinet Photisma', format: 'PDF', size: '890 KB', date: 'Maret 2026' }
-  ];
+  const [reportTemplates, setReportTemplates] = useState([]);
+
+  useEffect(() => {
+    // 0. Load Bendahara Report Templates
+    const savedReports = localStorage.getItem('hima_finance_reports');
+    if (savedReports) {
+      try {
+        setReportTemplates(JSON.parse(savedReports));
+      } catch (e) {
+        setReportTemplates([]);
+      }
+    } else {
+      setReportTemplates([]);
+    }
+  }, []);
 
   // HIMA Main Cash Calculations
   const totalInHima = records.filter(r => r.type === 'in').reduce((acc, curr) => acc + curr.amount, 0);
@@ -315,29 +325,43 @@ export default function Finance({ showToast }) {
             </div>
 
             <div className="space-y-3">
-              {reportTemplates.map((report) => (
-                <div 
-                  key={report.id}
-                  className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between hover:bg-slate-100/50 transition-colors group"
-                >
-                  <div className="space-y-0.5">
-                    <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-gold/15 text-gold-dark border border-gold/30">{report.format}</span>
-                      {report.name}
-                    </h4>
-                    <p className="text-[9px] text-slate-400 font-mono">
-                      Ukuran: {report.size} • Terbit: {report.date}
+              {reportTemplates.length === 0 ? (
+                <div className="py-7 px-4 text-center bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+                  <div className="w-10 h-10 mx-auto rounded-full bg-amber-50 border border-amber-200/60 flex items-center justify-center text-gold">
+                    <FileSpreadsheet className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-bold text-slate-700">Belum Ada Dokumen Laporan</h4>
+                    <p className="text-[11px] text-slate-400 font-light max-w-xs mx-auto leading-relaxed">
+                      Dokumen Laporan Pertanggungjawaban Keuangan (LPJK) belum diunggah oleh Bendahara Umum.
                     </p>
                   </div>
-                  <button 
-                    onClick={() => handleDownloadReport(report.name)}
-                    className="p-2 bg-white hover:bg-gold hover:text-white rounded-lg border border-slate-200 hover:border-gold text-slate-600 transition-all cursor-pointer shadow-sm"
-                    title="Unduh Laporan"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                  </button>
                 </div>
-              ))}
+              ) : (
+                reportTemplates.map((report) => (
+                  <div 
+                    key={report.id}
+                    className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between hover:bg-slate-100/50 transition-colors group"
+                  >
+                    <div className="space-y-0.5">
+                      <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-gold/15 text-gold-dark border border-gold/30">{report.format}</span>
+                        {report.name}
+                      </h4>
+                      <p className="text-[9px] text-slate-400 font-mono">
+                        Ukuran: {report.size} • Terbit: {report.date}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => handleDownloadReport(report.name)}
+                      className="p-2 bg-white hover:bg-gold hover:text-white rounded-lg border border-slate-200 hover:border-gold text-slate-600 transition-all cursor-pointer shadow-sm"
+                      title="Unduh Laporan"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
