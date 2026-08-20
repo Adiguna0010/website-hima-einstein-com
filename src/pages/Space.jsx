@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Calendar, User, GraduationCap, Phone, ShieldCheck, HelpCircle, ArrowRight, QrCode } from 'lucide-react';
+import { Camera, Calendar, User, GraduationCap, Phone, ShieldCheck, HelpCircle, ArrowRight, QrCode, CheckCircle2 } from 'lucide-react';
 import ScannerModal from '../components/ScannerModal';
 import { useAuth } from '../context/AuthContext';
 
@@ -93,6 +93,8 @@ export default function Space({ showToast }) {
   
   // Reservation Form State
   const [showForm, setShowForm] = useState(false);
+  const [submittedSuccess, setSubmittedSuccess] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [borrowerName, setBorrowerName] = useState('');
   const [prodi, setProdi] = useState('');
   const [angkatan, setAngkatan] = useState('');
@@ -110,6 +112,7 @@ export default function Space({ showToast }) {
   const handleSelectTool = (tool) => {
     setSelectedToolId(tool.id);
     setSelectedToolName(tool.name);
+    setSubmittedSuccess(null);
     setShowForm(true);
     if (currentUser) {
       if (!borrowerName && currentUser.name) setBorrowerName(currentUser.name);
@@ -140,17 +143,19 @@ export default function Space({ showToast }) {
     if (found) {
       setSelectedToolId(found.id);
       setSelectedToolName(found.name);
+      setSubmittedSuccess(null);
       setShowForm(true);
       showToast(`Scan Berhasil: ${found.name} (${found.id}) terpilih!`, 'success');
     } else {
       setSelectedToolId(cleaned.toUpperCase());
       setSelectedToolName(activeToolName || cleaned);
+      setSubmittedSuccess(null);
       setShowForm(true);
       showToast(`Scan Berhasil: Kode ${cleaned} terpilih!`, 'success');
     }
   };
 
-  const handleReservationSubmit = (e) => {
+  const handleReservationSubmit = async (e) => {
     e.preventDefault();
 
     if (!selectedToolId) {
@@ -162,6 +167,8 @@ export default function Space({ showToast }) {
       showToast('Mohon lengkapi seluruh data peminjam (Nama, Prodi, Angkatan, No. HP)!', 'warning');
       return;
     }
+
+    setIsSubmitting(true);
 
     // Save borrow request to localStorage
     const newRequest = {
@@ -223,16 +230,44 @@ export default function Space({ showToast }) {
     const notifsList = savedNotifs ? JSON.parse(savedNotifs) : [];
     localStorage.setItem('hima_notifications', JSON.stringify([...notifsList, ...newNotifications]));
 
-    // Build WA URL
-    const text = `Halo Admin Aset & Logistik HIMPUNAN EINSTEN.COM! 📦\n\nSaya ingin mengajukan permohonan peminjaman alat laboratorium:\n- Nama Alat: ${selectedToolName}\n- ID Alat: ${selectedToolId}\n\nData Peminjam:\n- Nama: ${borrowerName.trim()}\n- Program Studi: ${prodi.trim()}\n- Angkatan: ${angkatan.trim()}\n- WhatsApp: ${phone.trim()}\n\n*Reservasi terdaftar melalui Portal Einsten Space.* Mohon konfirmasi peminjaman & pengambilan alat. Terima kasih!`;
+    // Construct text message
+    const text = `Halo Admin Aset & Logistik HIMPUNAN EINSTEN.COM! 📦\n\nAda permohonan peminjaman alat laboratorium baru dari portal Einsten Space:\n- *Nama Alat:* ${selectedToolName}\n- *ID Alat:* ${selectedToolId}\n\n*Data Peminjam:*\n- *Nama:* ${borrowerName.trim()}\n- *Program Studi:* ${prodi.trim()}\n- *Angkatan:* ${angkatan.trim()}\n- *WhatsApp:* ${phone.trim()}\n- *Tanggal Pengajuan:* ${new Date().toLocaleDateString('id-ID')}\n\nMohon konfirmasi & verifikasi permohonan peminjaman. Terima kasih!`;
     const waNumber = '6282171748617';
-    const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
 
-    showToast('Permohonan peminjaman berhasil diajukan! Langsung terhubung ke WhatsApp Admin Logistik...', 'success');
+    // Direct background sending via serverless WhatsApp Gateway API (No browser redirect/popup)
+    try {
+      await fetch('/api/send-wa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: waNumber, message: text })
+      });
+    } catch (err) {
+      // Fallback direct request
+      try {
+        await fetch('https://api.fonnte.com/send', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'oAkLBXzaU41RszNf6j78',
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({ target: waNumber, message: text })
+        });
+      } catch (e) {
+        console.error('WA background send fallback error:', e);
+      }
+    }
 
-    // Reset Form
-    setShowForm(false);
+    setIsSubmitting(false);
+    setSubmittedSuccess({
+      toolName: selectedToolName,
+      toolId: selectedToolId,
+      borrowerName: borrowerName.trim(),
+      prodi: prodi.trim(),
+      angkatan: angkatan.trim(),
+      phone: phone.trim()
+    });
+
+    showToast('Permohonan peminjaman berhasil diajukan & otomatis terkirim ke WhatsApp Admin Logistik!', 'success');
   };
 
   return (
@@ -350,7 +385,52 @@ export default function Space({ showToast }) {
           <div className="bg-white border border-gold-border rounded-2xl p-6 shadow-md relative overflow-hidden min-h-[250px] flex flex-col justify-center text-slate-800">
             <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-gold/5 rounded-full blur-xl"></div>
 
-            {showForm ? (
+            {submittedSuccess ? (
+              /* SUCCESS CONFIRMATION CARD (No external browser redirect) */
+              <div className="text-center py-4 space-y-4 animate-slide-in">
+                <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+                
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest block">
+                    Otomatis Terkirim ke WhatsApp
+                  </span>
+                  <h4 className="text-base font-extrabold text-slate-900">
+                    Permohonan Berhasil Diajukan!
+                  </h4>
+                  <p className="text-xs text-slate-500 font-light leading-relaxed">
+                    Pemberitahuan peminjaman telah <strong>langsung dikirimkan ke WhatsApp Admin Aset & Logistik (+62 821-7174-8617)</strong>.
+                  </p>
+                </div>
+
+                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-left text-xs space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 text-[11px]">Alat Lab:</span>
+                    <span className="font-bold text-slate-800">{submittedSuccess.toolName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 text-[11px]">Peminjam:</span>
+                    <span className="font-bold text-slate-800">{submittedSuccess.borrowerName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 text-[11px]">Prodi / Angkatan:</span>
+                    <span className="text-slate-700">{submittedSuccess.prodi} ({submittedSuccess.angkatan})</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSubmittedSuccess(null);
+                    setShowForm(false);
+                  }}
+                  className="w-full py-2.5 bg-gold hover:brightness-110 text-white font-bold rounded-xl text-xs active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer"
+                >
+                  Pinjam Alat Lain
+                </button>
+              </div>
+            ) : showForm ? (
               <form onSubmit={handleReservationSubmit} className="space-y-3.5">
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5 text-left">
                   <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider block">Alat Yang Dipilih</span>
@@ -436,9 +516,10 @@ export default function Space({ showToast }) {
                   </button>
                   <button 
                     type="submit"
-                    className="flex-1 py-2.5 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 shadow-gold/20 cursor-pointer"
+                    disabled={isSubmitting}
+                    className="flex-1 py-2.5 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md flex items-center justify-center gap-1 shadow-gold/20 cursor-pointer disabled:opacity-70"
                   >
-                    Pinjam Sekarang <ArrowRight className="w-3.5 h-3.5 text-white" />
+                    {isSubmitting ? 'Mengirim...' : 'Pinjam Sekarang'} <ArrowRight className="w-3.5 h-3.5 text-white" />
                   </button>
                 </div>
               </form>
