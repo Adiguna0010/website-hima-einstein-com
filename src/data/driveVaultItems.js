@@ -99,24 +99,6 @@ export const DEFAULT_DRIVE_VAULT = [
     "url": "https://drive.google.com/drive/folders/1N1KN-CElUhVOfENqpd9Smed0Gi2UE2dp"
   },
   {
-    "id": 141,
-    "title": "PLC - OMRON Software Suite (CX-One Full)",
-    "size": "Drive Folder",
-    "type": "Software",
-    "category": "Software",
-    "desc": "Paket lengkap OMRON CX-One (CX-Programmer, CX-Designer, CX-Integrator, CX-Simulator).",
-    "url": "https://drive.google.com/drive/folders/1hVkPQSoRl3ylwNVsVDIy74IxzaCJ37Uh"
-  },
-  {
-    "id": 142,
-    "title": "PLC (Programmable Logic Controller) Directory",
-    "size": "Drive Folder",
-    "type": "Software",
-    "category": "Software",
-    "desc": "Direktori utama seluruh paket installer & tools automasi PLC Laboratorium Instrumentasi Nuklir.",
-    "url": "https://drive.google.com/drive/folders/1ACudcM_ZKf8e6GEGIywIu2XyzjTBGFcQ"
-  },
-  {
     "id": 143,
     "title": "Software Storage (Direktori Seluruh Software Lab)",
     "size": "Drive Folder",

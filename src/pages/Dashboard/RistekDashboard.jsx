@@ -56,7 +56,7 @@ export default function RistekDashboard({ showToast }) {
   // Load Database from LocalStorage
   useEffect(() => {
     // Vault
-    const VAULT_VERSION = 'v4_omron_cx_designer';
+    const VAULT_VERSION = 'v5_clean_plc_items';
     const savedVersion = localStorage.getItem('hima_vault_version');
     const savedVault = localStorage.getItem('hima_vault');
     const cleanDefault = DEFAULT_DRIVE_VAULT.filter(i => i.id !== 100 && !i.title?.includes('Google Drive Utama') && !i.title?.includes('Google Drive Induk'));
