@@ -114,7 +114,7 @@ export default function DivisionDetail({ showToast }) {
   const [collabProjects, setCollabProjects] = useState([]);
 
   const loadVaultItems = () => {
-    const VAULT_VERSION = 'v5_clean_plc_items';
+    const VAULT_VERSION = 'v6_clean_titles_no_storage';
     const savedVersion = localStorage.getItem('hima_vault_version');
     const savedVault = localStorage.getItem('hima_vault');
     

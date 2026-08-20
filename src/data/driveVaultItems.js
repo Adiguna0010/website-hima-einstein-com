@@ -1,7 +1,7 @@
 export const DEFAULT_DRIVE_VAULT = [
   {
     "id": 101,
-    "title": "Arduino IDE (Software Lab)",
+    "title": "Arduino IDE",
     "size": "180 MB",
     "type": "Software",
     "category": "Software",
@@ -10,7 +10,7 @@ export const DEFAULT_DRIVE_VAULT = [
   },
   {
     "id": 102,
-    "title": "CVAVR (Software Lab)",
+    "title": "CVAVR",
     "size": "45 MB",
     "type": "Software",
     "category": "Software",
@@ -19,7 +19,7 @@ export const DEFAULT_DRIVE_VAULT = [
   },
   {
     "id": 103,
-    "title": "Eagle (Software Lab)",
+    "title": "Eagle",
     "size": "150 MB",
     "type": "Software",
     "category": "Software",
@@ -28,7 +28,7 @@ export const DEFAULT_DRIVE_VAULT = [
   },
   {
     "id": 104,
-    "title": "Fusion 360 (Software Lab)",
+    "title": "Fusion 360",
     "size": "2.1 GB",
     "type": "Software",
     "category": "Software",
@@ -37,7 +37,7 @@ export const DEFAULT_DRIVE_VAULT = [
   },
   {
     "id": 105,
-    "title": "Labview (Software Lab)",
+    "title": "Labview",
     "size": "4.2 GB",
     "type": "Software",
     "category": "Software",
@@ -46,7 +46,7 @@ export const DEFAULT_DRIVE_VAULT = [
   },
   {
     "id": 106,
-    "title": "Matlab (Software Lab)",
+    "title": "Matlab",
     "size": "18 GB",
     "type": "Software",
     "category": "Software",
@@ -55,7 +55,7 @@ export const DEFAULT_DRIVE_VAULT = [
   },
   {
     "id": 107,
-    "title": "ProgIsp (Software Lab)",
+    "title": "ProgIsp",
     "size": "15 MB",
     "type": "Software",
     "category": "Software",
@@ -64,7 +64,7 @@ export const DEFAULT_DRIVE_VAULT = [
   },
   {
     "id": 108,
-    "title": "Proteus (Software Lab)",
+    "title": "Proteus",
     "size": "650 MB",
     "type": "Software",
     "category": "Software",
@@ -73,7 +73,7 @@ export const DEFAULT_DRIVE_VAULT = [
   },
   {
     "id": 109,
-    "title": "Webots Robotic Simulation (Software Lab)",
+    "title": "Webots Robotic Simulation",
     "size": "2.4 GB",
     "type": "Software",
     "category": "Software",
@@ -82,7 +82,7 @@ export const DEFAULT_DRIVE_VAULT = [
   },
   {
     "id": 110,
-    "title": "PLC - OMRON CX-Programmer (Software Lab)",
+    "title": "PLC - OMRON CX-Programmer",
     "size": "Drive Folder",
     "type": "Software",
     "category": "Software",
@@ -91,21 +91,12 @@ export const DEFAULT_DRIVE_VAULT = [
   },
   {
     "id": 140,
-    "title": "PLC - OMRON CX-Designer (Software Lab)",
+    "title": "PLC - OMRON CX-Designer",
     "size": "Drive Folder",
     "type": "Software",
     "category": "Software",
     "desc": "Software desain antarmuka HMI (Human Machine Interface) touchscreen OMRON (NS Series).",
     "url": "https://drive.google.com/drive/folders/1N1KN-CElUhVOfENqpd9Smed0Gi2UE2dp"
-  },
-  {
-    "id": 143,
-    "title": "Software Storage (Direktori Seluruh Software Lab)",
-    "size": "Drive Folder",
-    "type": "Software",
-    "category": "Software",
-    "desc": "Direktori utama seluruh paket software & installer laboratorium instrumentasi nuklir.",
-    "url": "https://drive.google.com/drive/folders/1IdvM3vUwqi-usWqrt-fuIY1pfcGfLWEw"
   },
   {
     "id": 111,
