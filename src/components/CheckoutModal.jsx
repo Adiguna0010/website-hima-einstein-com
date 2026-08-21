@@ -125,7 +125,7 @@ export default function CheckoutModal({ isOpen, onClose }) {
     text += `*Bukti Pembayaran:* Terlampir (File: ${proofFile.name})\n\n`;
     text += `Mohon konfirmasi pesanan saya. Terima kasih!`;
 
-    const waNumber = '6285175420692'; // Official Admin WA
+    const waNumber = '6281381644505'; // Official Admin Danus / Market (+62 813-8164-4505)
     const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
 
