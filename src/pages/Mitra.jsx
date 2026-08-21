@@ -3,97 +3,101 @@ import { Handshake, ArrowRight, Crosshair, Image } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Mitra() {
-  const partnerLogos = [
-    { name: 'BRIN', path: '/Media/Logo Instansi/logo brin warna_landscape.jpg', fallback: 'https://placehold.co/120x40/ffffff/000000?text=BRIN' },
-    { name: 'Poltek Nuklir', path: '/Media/Logo Instansi/Logo Poltek (benar).png', fallback: 'https://placehold.co/120x40/ffffff/000000?text=Poltek+Nuklir' },
-    { name: 'PT. Instrumentasi Indonesia', path: '/Media/Logo Mitra/logo_ii.png', fallback: 'https://placehold.co/120x40/ffffff/000000?text=PT.+II' },
-    { name: 'BATAN Technology', path: '/Media/Logo Mitra/logo_batantek.png', fallback: 'https://placehold.co/120x40/ffffff/000000?text=BATAN+Tek' },
-    { name: 'IndoPhysics', path: '/Media/Logo Mitra/logo_indophysics.png', fallback: 'https://placehold.co/120x40/ffffff/000000?text=IndoPhysics' },
-    { name: 'Lab Instrumentasi Pusat', path: '/Media/Logo Mitra/logo_lab.png', fallback: 'https://placehold.co/120x40/ffffff/000000?text=Lab+Instr' }
+  const primaryPartners = [
+    { 
+      name: 'Badan Riset dan Inovasi Nasional (BRIN)', 
+      tag: 'Lembaga Riset Nasional',
+      desc: 'Lembaga pemerintah yang mengoordinasikan riset sains, ketenaganukliran, instrumentasi, dan inovasi nasional di Indonesia.',
+      path: '/Media/Logo Instansi/logo brin warna_landscape.jpg', 
+      fallback: 'https://placehold.co/200x60/ffffff/000000?text=BRIN' 
+    },
+    { 
+      name: 'Politeknik Teknologi Nuklir Indonesia', 
+      tag: 'Institusi Akademik',
+      desc: 'Perguruan tinggi kedinasan vokasi teknologi nuklir terapan yang menjadi payung akademis HIMA EINSTEN.',
+      path: '/Media/Logo Instansi/Logo Poltek (benar).png', 
+      fallback: 'https://placehold.co/200x60/ffffff/000000?text=Poltek+Nuklir' 
+    }
   ];
 
   return (
-    <div className="relative pt-24 pb-16 space-y-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-zinc-700">
+    <div className="relative pt-28 pb-16 space-y-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-zinc-700 font-sans">
       {/* Background decoration orbs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-gold/5 glow-orb pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-gold-light/5 glow-orb pointer-events-none"></div>
 
       {/* Page Header */}
-      <div className="text-left space-y-3 relative z-10">
-        <span className="text-xs font-mono font-semibold text-gold-dark uppercase tracking-widest block">
-          [ SPONSORSHIP // COLLABORATION ]
-        </span>
-        <h1 className="text-4xl font-serif text-zinc-900 tracking-tight flex items-center gap-2">
-          <Handshake className="w-8 h-8 text-gold" /> SPONSOR & MITRA STRATEGIS
+      <div className="text-left space-y-3 relative z-10 max-w-3xl">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold/30 bg-gold/5 text-[11px] font-mono font-semibold text-gold-dark uppercase tracking-widest">
+          <span className="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
+          AFFILIATED PARTNERS & INSTITUTIONS
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+          <Handshake className="w-8 h-8 text-gold" /> INSTANSI & MITRA TERAFILIASI
         </h1>
-        <p className="text-zinc-500 text-xs sm:text-sm leading-relaxed font-light font-sans max-w-xl">
-          Membangun integrasi antara riset kemahasiswaan Politeknik Teknologi Nuklir Indonesia dengan lembaga riset nasional serta sektor industri penunjang.
+        <p className="text-slate-600 text-xs sm:text-sm leading-relaxed font-light font-sans">
+          Daftar lembaga riset nasional dan institusi pendidikan resmi yang menaungi serta terafiliasi langsung dengan <strong>HIMA EINSTEN.COM</strong>.
         </p>
       </div>
 
-      {/* Main Info Board */}
-      <div className="border border-gray-200 bg-white grid grid-cols-1 lg:grid-cols-12 relative overflow-hidden shadow-sm z-10">
-        {/* Technical Corner Ornaments */}
-        <div className="absolute -top-1.5 -left-1.5"><Crosshair className="w-3.5 h-3.5 text-gold" /></div>
-        <div className="absolute -top-1.5 -right-1.5"><Crosshair className="w-3.5 h-3.5 text-gold" /></div>
-        <div className="absolute -bottom-1.5 -left-1.5"><Crosshair className="w-3.5 h-3.5 text-gold" /></div>
-        <div className="absolute -bottom-1.5 -right-1.5"><Crosshair className="w-3.5 h-3.5 text-gold" /></div>
+      {/* Primary Affiliated Partners Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 z-10 relative">
+        {primaryPartners.map((partner, idx) => (
+          <div 
+            key={idx}
+            className="border border-slate-200 bg-white/90 backdrop-blur-md rounded-2xl p-6 sm:p-8 shadow-sm hover:border-gold-border hover:shadow-md transition-all space-y-5 text-left group"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <span className="text-[10px] font-mono font-semibold text-gold-dark uppercase tracking-wider bg-gold/10 px-2.5 py-1 rounded-md">
+                {partner.tag}
+              </span>
+              <span className="text-[10px] font-mono text-slate-400">TERAFILIASI RESMI</span>
+            </div>
 
-        <div className="lg:col-span-8 p-8 lg:p-12 border-b lg:border-b-0 lg:border-r border-gray-200 space-y-6 text-left flex flex-col justify-center">
-          <h3 className="text-xl font-serif font-bold text-zinc-900 leading-snug">
-            Membuka Peluang Kolaborasi Riset & Dukungan Sponsor
-          </h3>
-          <p className="text-zinc-600 text-xs leading-relaxed font-sans font-light">
-            Kami membuka pintu kemitraan bagi instansi pemerintah, perusahaan teknologi, maupun alumni yang ingin bekerja sama dalam program penelitian alat ukur radiasi, otomatisasi stasiun nuklir, program pengabdian masyarakat, serta penyediaan sponsor bagi program kerja Himpunan.
-          </p>
-          <div className="pt-2">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded hover:brightness-110 active:scale-95 transition-all text-xs uppercase tracking-wider font-sans shadow-md shadow-gold/10"
-            >
-              Hubungi Kami <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
-
-        <div className="lg:col-span-4 p-8 flex flex-col justify-center text-left bg-zinc-50/30">
-          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest block">[ SPEC_GRID_MITRA ]</span>
-          <h4 className="text-sm font-bold text-zinc-800 mt-2">Segera Hadir Portal Sponsorship</h4>
-          <p className="text-[11px] text-zinc-500 leading-relaxed font-sans font-light mt-1">
-            Sistem pengajuan sponsorship online dan pelacakan proposal kemitraan saat ini sedang disinkronisasikan oleh divisi Eksternal.
-          </p>
-        </div>
-      </div>
-
-      {/* ================= MITRA LOGO GRID SECTION ================= */}
-      <div className="space-y-6 z-10 relative">
-        <div className="text-left space-y-2">
-          <h2 className="text-lg font-mono font-semibold text-zinc-900 tracking-wider flex items-center gap-2">
-            <Image className="w-4 h-4 text-gold" /> AFFILIATED PARTNERS & SPONSORSHIPS
-          </h2>
-          <p className="text-xs text-zinc-500 font-sans font-light">
-            Logo kemitraan resmi Himpunan Mahasiswa Program Studi Elektronika Instrumentasi.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {partnerLogos.map((partner, idx) => (
-            <div 
-              key={idx} 
-              className="border border-gray-200 bg-white p-4 flex items-center justify-center h-20 shadow-sm relative group rounded-xl hover:border-gold/30 hover:shadow-md transition-all"
-            >
-              <div className="absolute top-1 left-1 text-[7px] font-mono text-zinc-300 font-light">[ REF_{idx + 1} ]</div>
+            <div className="h-16 flex items-center justify-start">
               <img 
                 src={partner.path} 
-                alt={partner.name} 
-                className="max-h-10 max-w-full object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-350"
+                alt={partner.name}
+                className="max-h-14 max-w-[220px] object-contain"
                 onError={(e) => {
                   e.target.src = partner.fallback;
                 }}
               />
             </div>
-          ))}
+
+            <div className="space-y-1.5">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-gold-dark transition-colors">
+                {partner.name}
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed font-light">
+                {partner.desc}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Coming Soon Notice for Open Collaboration Portal */}
+      <div className="p-5 sm:p-6 bg-slate-50 border border-slate-200/80 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-left z-10 relative">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 rounded">
+              Coming Soon
+            </span>
+            <h4 className="text-xs sm:text-sm font-bold text-slate-800">
+              Portal Sponsorship & Kemitraan Eksternal
+            </h4>
+          </div>
+          <p className="text-[11px] text-slate-500 font-light">
+            Sistem pengajuan proposal sponsorship dan kolaborasi industri mandiri saat ini sedang disiapkan oleh Divisi Eksternal.
+          </p>
         </div>
+        <Link 
+          to="/"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-gold-dark hover:text-gold transition-colors shrink-0"
+        >
+          Kembali ke Beranda <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
       </div>
 
     </div>
