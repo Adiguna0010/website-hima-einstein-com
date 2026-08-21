@@ -3,8 +3,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext();
 
 const DEFAULT_USERS = [
+  // ── BPH CORE ──
   {
-    name: 'M. Iqbal Nur Huda',
+    name: 'Muhammad Iqbal Nur Huda',
     nim: '022400042',
     email: 'M. Iqbal Nur Huda@einsten.com',
     password: '022400042',
@@ -21,6 +22,44 @@ const DEFAULT_USERS = [
     photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Wakahim_Rafie Asfa Raditya Aryanto - 022500041.JPG',
     status: 'Active'
   },
+  {
+    name: 'Nailah Qarirah',
+    nim: '022400051',
+    email: 'Nailah Qarirah@einsten.com',
+    password: '022400051',
+    role: 'Sekretaris Umum',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Sekretaris 1_Nailah Qarirah - 022400051.JPG',
+    status: 'Active'
+  },
+  {
+    name: 'Bunga Nafisya Putri',
+    nim: '022500009',
+    email: 'Bunga Nafisya Putri@einsten.com',
+    password: '022500009',
+    role: 'Sekretaris Umum',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Sekretaris 2_Bunga Nafisya Putri - 022500009.JPG',
+    status: 'Active'
+  },
+  {
+    name: 'Relvina',
+    nim: '022400039',
+    email: 'relvina@einsten.com',
+    password: '022400039',
+    role: 'Bendahara Umum',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Bendahara 1_Relvina - 022400039.JPG',
+    status: 'Active'
+  },
+  {
+    name: 'Rizkiana Ramadhani',
+    nim: '022500046',
+    email: 'rizkiana@einsten.com',
+    password: '022500046',
+    role: 'Bendahara Umum',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Bendahara 2_Rizkiana Ramadhani - 022500046.JPG',
+    status: 'Active'
+  },
+
+  // ── JAJARAN KEPALA DIVISI (KADIV) ──
   {
     name: 'Adiguna Nugroho Halomoan',
     nim: '022400025',
@@ -51,14 +90,43 @@ const DEFAULT_USERS = [
     status: 'Active'
   },
   {
-    name: 'Nailah Qarirah',
-    nim: '022400051',
-    email: 'Nailah Qarirah@einsten.com',
-    password: '022400051',
-    role: 'Sekretaris Umum',
-    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Sekretaris 1_Nailah Qarirah - 022400051.JPG',
+    name: 'Kunti Aisyatuzzahra',
+    nim: '022400045',
+    email: 'Kunti Aisyatuzzahra@einsten.com',
+    password: '022400045',
+    role: 'Operator External',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/External/Kepala Divisi Eksternal_Kunti Aisyatuzzahra - 022400045.JPG',
     status: 'Active'
   },
+  {
+    name: 'Hafizh Maulana Wijaya',
+    nim: '022400019',
+    email: 'Hafizh Maulana Wijaya@einsten.com',
+    password: '022400019',
+    role: 'Operator Internal',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Internal/Kepala Divisi Internal_Hafizh Maulana Wijaya - 022400019.JPG',
+    status: 'Active'
+  },
+  {
+    name: 'Sunniy',
+    nim: '022400041',
+    email: 'Sunniy@einsten.com',
+    password: '022400041',
+    role: 'Operator Kominfo',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Kominfo/Kepala Divisi Komunikasi dan Informasi_Sunniy - 022400041.JPG',
+    status: 'Active'
+  },
+  {
+    name: 'Farrelega Zhafran Vito Ardhana',
+    nim: '022400038',
+    email: 'Farrelega Zhafran Vito Ardhana@einsten.com',
+    password: '022400038',
+    role: 'Operator Pengma',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Pema/Kepala Divisi Pengembangan Mahasiswa_Farrelega Zhafran Vito Ardhana - 022400038.JPG',
+    status: 'Active'
+  },
+
+  // ── AKUN CONTOH / ANGGOTA ──
   {
     name: 'Regular Member',
     nim: '240055',
@@ -73,30 +141,6 @@ const DEFAULT_USERS = [
     email: 'calon@einsten.com',
     password: 'user123',
     role: 'Anggota Biasa',
-    status: 'Active'
-  },
-  {
-    name: 'Bendahara Umum',
-    nim: '022400099',
-    email: 'bendahara@einsten.com',
-    password: 'bendahara123',
-    role: 'Bendahara Umum',
-    status: 'Active'
-  },
-  {
-    name: 'Relvina',
-    nim: '022400039',
-    email: 'relvina@einsten.com',
-    password: '022400039',
-    role: 'Bendahara Umum',
-    status: 'Active'
-  },
-  {
-    name: 'Rizkiana Ramadhani',
-    nim: '022500046',
-    email: 'rizkiana@einsten.com',
-    password: '022500046',
-    role: 'Bendahara Umum',
     status: 'Active'
   }
 ];
