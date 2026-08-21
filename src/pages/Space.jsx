@@ -276,7 +276,6 @@ export default function Space({ showToast }) {
       <div className="absolute top-1/4 right-10 w-96 h-96 bg-gold/5 glow-orb"></div>
       
       <div className="text-center max-w-2xl mx-auto space-y-3">
-        <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Layanan Praktikum & Riset</span>
         <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">EINSTEN SPACE</h1>
         <p className="text-slate-555 text-xs sm:text-sm leading-relaxed font-light">
           Portal peminjaman instrumen laboratorium elektronika milik Himpunan. Scan Barcode/QR Code pada alat fisik atau pilih alat untuk pengisian formulir peminjaman instan.
