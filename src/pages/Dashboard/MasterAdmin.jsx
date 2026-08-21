@@ -160,10 +160,13 @@ export default function MasterAdmin({ showToast }) {
                 </tr>
               ) : (
                 filteredUsers.map((user) => {
-                  const isSelf = currentUser && currentUser.email.toLowerCase() === user.email.toLowerCase();
+                  const isSelf = currentUser && (
+                    (currentUser.nim && user.nim && currentUser.nim.trim() === user.nim.trim()) ||
+                    (currentUser.email && user.email && currentUser.email.toLowerCase().replace(/\s+/g, '') === user.email.toLowerCase().replace(/\s+/g, ''))
+                  );
 
                   return (
-                    <tr key={user.email} className={`hover:bg-slate-50/50 transition-colors ${isSelf ? 'bg-gold/5' : ''}`}>
+                    <tr key={user.nim || user.email} className={`hover:bg-slate-50/50 transition-colors ${isSelf ? 'bg-gold/5' : ''}`}>
                       <td className="px-6 py-4 font-bold text-slate-800 text-left">
                         <div className="flex items-center gap-1">
                           {user.name}

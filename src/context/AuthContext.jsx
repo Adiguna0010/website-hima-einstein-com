@@ -114,6 +114,14 @@ export const AuthProvider = ({ children }) => {
       .replace(/einsten\.com$/, 'einsten.com');
   };
 
+  // Helper to generate a unique key per user (NIM takes precedence, then normalized email)
+  const getUserKey = (u) => {
+    if (!u) return '';
+    if (u.nim && u.nim.trim()) return `nim_${u.nim.trim()}`;
+    if (u.email && u.email.trim()) return `email_${normalizeEmail(u.email)}`;
+    return `name_${(u.name || '').trim().toLowerCase()}`;
+  };
+
   // Initialize DB from LocalStorage
   useEffect(() => {
     const stored = localStorage.getItem('hima_users');
@@ -147,17 +155,21 @@ export const AuthProvider = ({ children }) => {
             }
           }
           
-          // Merge to ensure new default accounts are loaded while preserving registered accounts and user updates
+          // Merge using NIM as primary unique identifier to avoid duplicates when user changes email/name
           const userMap = new Map();
           DEFAULT_USERS.forEach(u => {
-            if (u && u.email) {
-              userMap.set(normalizeEmail(u.email), u);
+            if (u) {
+              const key = getUserKey(u);
+              if (key) userMap.set(key, u);
             }
           });
           parsed.forEach(u => {
-            if (u && u.email) {
-              const defaultUser = userMap.get(normalizeEmail(u.email)) || {};
-              userMap.set(normalizeEmail(u.email), { ...defaultUser, ...u });
+            if (u) {
+              const key = getUserKey(u);
+              if (key) {
+                const defaultUser = userMap.get(key) || {};
+                userMap.set(key, { ...defaultUser, ...u });
+              }
             }
           });
           loadedUsers = Array.from(userMap.values());
@@ -186,7 +198,10 @@ export const AuthProvider = ({ children }) => {
     if (savedUser) {
       try {
         const parsedUser = JSON.parse(savedUser);
-        const latestUser = loadedUsers.find(u => normalizeEmail(u.email) === normalizeEmail(parsedUser.email));
+        const latestUser = loadedUsers.find(u => 
+          (u.nim && parsedUser.nim && u.nim.trim() === parsedUser.nim.trim()) ||
+          (u.email && normalizeEmail(u.email) === normalizeEmail(parsedUser.email))
+        );
         if (latestUser) {
           setCurrentUser(latestUser);
           sessionStorage.setItem('hima_current_user', JSON.stringify(latestUser));
@@ -197,6 +212,20 @@ export const AuthProvider = ({ children }) => {
         console.error('Failed to parse saved user:', e);
       }
     }
+
+    // Listen for storage events (e.g. Profile edited in another tab or component)
+    const handleStorageChange = (e) => {
+      if (e.key === 'hima_users' && e.newValue) {
+        try {
+          const freshUsers = JSON.parse(e.newValue);
+          if (Array.isArray(freshUsers)) {
+            setUsers(freshUsers);
+          }
+        } catch (err) {}
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const register = (name, nim, phone, password) => {
@@ -251,7 +280,12 @@ export const AuthProvider = ({ children }) => {
       if (user.status === 'Pending') {
         // Auto-activate account
         user.status = 'Active';
-        const updatedUsers = users.map(u => normalizeEmail(u.email) === normalizeEmail(user.email) ? { ...u, status: 'Active' } : u);
+        const updatedUsers = users.map(u => 
+          (u.nim && user.nim && u.nim.trim() === user.nim.trim()) ||
+          normalizeEmail(u.email) === normalizeEmail(user.email) 
+            ? { ...u, status: 'Active' } 
+            : u
+        );
         setUsers(updatedUsers);
         localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
       }
@@ -272,9 +306,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Admin and management actions
-  const updateUserStatus = (email, status) => {
+  const updateUserStatus = (emailOrNim, status) => {
+    const searchTarget = (emailOrNim || '').trim();
+    const normalizedTarget = normalizeEmail(searchTarget);
     const updatedUsers = users.map(u => {
-      if (normalizeEmail(u.email) === normalizeEmail(email)) {
+      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && u.nim.trim() === searchTarget)) {
         return { ...u, status };
       }
       return u;
@@ -283,16 +319,18 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
     // If active user is updated, keep their local state synchronized
-    if (currentUser && normalizeEmail(currentUser.email) === normalizeEmail(email)) {
+    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && currentUser.nim.trim() === searchTarget))) {
       const updatedSelf = { ...currentUser, status };
       setCurrentUser(updatedSelf);
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
   };
 
-  const updateUserRole = (email, role) => {
+  const updateUserRole = (emailOrNim, role) => {
+    const searchTarget = (emailOrNim || '').trim();
+    const normalizedTarget = normalizeEmail(searchTarget);
     const updatedUsers = users.map(u => {
-      if (normalizeEmail(u.email) === normalizeEmail(email)) {
+      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && u.nim.trim() === searchTarget)) {
         return { ...u, role };
       }
       return u;
@@ -301,7 +339,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
     // Synchronize if current logged in user role was changed
-    if (currentUser && normalizeEmail(currentUser.email) === normalizeEmail(email)) {
+    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && currentUser.nim.trim() === searchTarget))) {
       const updatedSelf = { ...currentUser, role };
       setCurrentUser(updatedSelf);
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
@@ -385,9 +423,11 @@ export const AuthProvider = ({ children }) => {
     };
   };
 
-  const updateUserPassword = (email, newPassword) => {
+  const updateUserPassword = (emailOrNim, newPassword) => {
+    const searchTarget = (emailOrNim || '').trim();
+    const normalizedTarget = normalizeEmail(searchTarget);
     const updatedUsers = users.map(u => {
-      if (normalizeEmail(u.email) === normalizeEmail(email)) {
+      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && u.nim.trim() === searchTarget)) {
         return { ...u, password: newPassword };
       }
       return u;
@@ -396,9 +436,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
   };
 
-  const updateUserProfile = (email, updates) => {
+  const updateUserProfile = (emailOrNim, updates) => {
+    const searchTarget = (emailOrNim || '').trim();
+    const normalizedTarget = normalizeEmail(searchTarget);
     const updatedUsers = users.map(u => {
-      if (normalizeEmail(u.email) === normalizeEmail(email)) {
+      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && u.nim.trim() === searchTarget)) {
         return { ...u, ...updates };
       }
       return u;
@@ -406,16 +448,18 @@ export const AuthProvider = ({ children }) => {
     setUsers(updatedUsers);
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
-    if (currentUser && normalizeEmail(currentUser.email) === normalizeEmail(email)) {
+    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && currentUser.nim.trim() === searchTarget))) {
       const updatedSelf = { ...currentUser, ...updates };
       setCurrentUser(updatedSelf);
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
   };
 
-  const updateUserPhone = (email, phone) => {
+  const updateUserPhone = (emailOrNim, phone) => {
+    const searchTarget = (emailOrNim || '').trim();
+    const normalizedTarget = normalizeEmail(searchTarget);
     const updatedUsers = users.map(u => {
-      if (normalizeEmail(u.email) === normalizeEmail(email)) {
+      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && u.nim.trim() === searchTarget)) {
         return { ...u, phone };
       }
       return u;
@@ -424,20 +468,24 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
     // Update current user if it matches
-    if (currentUser && normalizeEmail(currentUser.email) === normalizeEmail(email)) {
+    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && currentUser.nim.trim() === searchTarget))) {
       const updatedSelf = { ...currentUser, phone };
       setCurrentUser(updatedSelf);
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
   };
 
-  const deleteAccount = (email) => {
-    const targetEmail = normalizeEmail(email);
-    const updatedUsers = users.filter(u => normalizeEmail(u.email) !== targetEmail);
+  const deleteAccount = (emailOrNim) => {
+    const searchTarget = (emailOrNim || '').trim();
+    const normalizedTarget = normalizeEmail(searchTarget);
+    const updatedUsers = users.filter(u => 
+      (u.email && normalizeEmail(u.email) !== normalizedTarget) && 
+      (u.nim ? u.nim.trim() !== searchTarget : true)
+    );
     setUsers(updatedUsers);
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
-    if (currentUser && normalizeEmail(currentUser.email) === targetEmail) {
+    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && currentUser.nim.trim() === searchTarget))) {
       logout();
     }
   };
