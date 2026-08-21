@@ -1,6 +1,5 @@
 import React from 'react';
-import { Handshake, ArrowRight, Crosshair, Image } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Handshake } from 'lucide-react';
 
 export default function Mitra() {
   const primaryPartners = [
@@ -14,7 +13,7 @@ export default function Mitra() {
     { 
       name: 'Politeknik Teknologi Nuklir Indonesia', 
       tag: 'Institusi Akademik',
-      desc: 'Perguruan tinggi kedinasan vokasi teknologi nuklir terapan yang menjadi payung akademis HIMA EINSTEN.',
+      desc: 'Perguruan tinggi kedinasan vokasi teknologi nuklir terapan yang menjadi payung akademis hima einsten.',
       path: '/Media/Logo Instansi/Logo Poltek (benar).png', 
       fallback: 'https://placehold.co/200x60/ffffff/000000?text=Poltek+Nuklir' 
     }
@@ -76,30 +75,6 @@ export default function Mitra() {
           </div>
         ))}
       </div>
-
-      {/* Coming Soon Notice for Open Collaboration Portal */}
-      <div className="p-5 sm:p-6 bg-slate-50 border border-slate-200/80 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-left z-10 relative">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 rounded">
-              Coming Soon
-            </span>
-            <h4 className="text-xs sm:text-sm font-bold text-slate-800">
-              Portal Sponsorship & Kemitraan Eksternal
-            </h4>
-          </div>
-          <p className="text-[11px] text-slate-500 font-light">
-            Sistem pengajuan proposal sponsorship dan kolaborasi industri mandiri saat ini sedang disiapkan oleh Divisi Eksternal.
-          </p>
-        </div>
-        <Link 
-          to="/"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-gold-dark hover:text-gold transition-colors shrink-0"
-        >
-          Kembali ke Beranda <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
-
     </div>
   );
 }
