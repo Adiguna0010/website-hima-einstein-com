@@ -198,82 +198,80 @@ export default function Home() {
   };
 
   return (
-    <div className="relative pt-24 space-y-24 overflow-hidden pb-16 text-slate-800 font-sans">
+    <div className="relative space-y-24 overflow-hidden pb-16 text-slate-800 font-sans">
       {/* Decorative Orbs */}
       <div className="absolute top-10 left-10 w-96 h-96 rounded-full bg-gold/5 glow-orb"></div>
       <div className="absolute top-80 right-10 w-[500px] h-[500px] rounded-full bg-gold/5 glow-orb"></div>
 
-      {/* ================= HERO BANNER CONTAINER ================= */}
-      <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative rounded-3xl sm:rounded-[36px] border border-gold-border/60 bg-white/70 backdrop-blur-xl shadow-xl shadow-gold/5 p-6 sm:p-10 lg:p-14 overflow-hidden text-center">
+      {/* ================= HERO FULL-WIDTH BANNER ================= */}
+      <header className="relative w-full pt-28 pb-16 sm:pb-20 border-b border-gold-border/40 bg-gradient-to-b from-white/95 via-amber-500/[0.03] to-gold/[0.06] backdrop-blur-xl shadow-sm overflow-hidden text-center">
+        
+        {/* Subtle Background Pattern & Glow Effect */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(212,175,55,0.12),transparent_70%)] pointer-events-none"></div>
+        <div className="absolute -top-24 -right-24 w-[500px] h-[500px] rounded-full bg-gold/10 blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-24 -left-24 w-[500px] h-[500px] rounded-full bg-amber-400/10 blur-3xl pointer-events-none"></div>
+        <img 
+          src="/Media Einsten/Media Umum/hero_banner.jpg" 
+          alt="Hero Background Art" 
+          className="absolute inset-0 w-full h-full object-cover opacity-[0.06] mix-blend-multiply pointer-events-none"
+        />
+
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center space-y-7">
           
-          {/* Subtle Background Pattern & Glow Effect */}
-          <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-transparent to-gold/10 pointer-events-none"></div>
-          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-gold/10 blur-3xl pointer-events-none"></div>
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-amber-400/10 blur-3xl pointer-events-none"></div>
-          <img 
-            src="/Media Einsten/Media Umum/hero_banner.jpg" 
-            alt="Hero Background Art" 
-            className="absolute inset-0 w-full h-full object-cover opacity-[0.07] mix-blend-multiply pointer-events-none"
-          />
-
-          <div className="relative z-10 flex flex-col items-center justify-center space-y-7 max-w-4xl mx-auto">
-            
-            {/* Heading Hierarchy */}
-            <div className="space-y-3">
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-slate-900 leading-tight">
-                SELAMAT DATANG
-              </h1>
-              <p className="text-base sm:text-xl lg:text-2xl font-extrabold text-slate-800 tracking-tight leading-snug">
-                di Website Resmi <span className="bg-gradient-to-r from-gold-dark via-gold to-amber-500 bg-clip-text text-transparent">HIMA EINSTEN</span> Poltek Nuklir
-              </p>
-            </div>
-            
-            {/* Description */}
-            <p className="text-slate-600 text-xs sm:text-sm lg:text-base max-w-2xl leading-relaxed font-normal mx-auto">
-              Wadah sinergi riset teknologi nuklir, instrumentasi otonom, dan karya mahasiswa Politeknik Teknologi Nuklir Indonesia.
+          {/* Heading Hierarchy */}
+          <div className="space-y-3">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-slate-900 leading-tight">
+              SELAMAT DATANG
+            </h1>
+            <p className="text-base sm:text-xl lg:text-2xl font-extrabold text-slate-800 tracking-tight leading-snug">
+              di Website Resmi <span className="bg-gradient-to-r from-gold-dark via-gold to-amber-500 bg-clip-text text-transparent">HIMA EINSTEN</span> Poltek Nuklir
             </p>
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-3.5 pt-1">
-              <a 
-                href="#profil" 
-                className="px-6 py-3 bg-gold text-white font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all text-xs sm:text-sm shadow-md shadow-gold/25 cursor-pointer"
-              >
-                Tentang Kami
-              </a>
-              <Link 
-                to="/struktur" 
-                className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl active:scale-95 transition-all text-xs sm:text-sm shadow-md cursor-pointer flex items-center gap-2"
-              >
-                Lihat Struktur <Users className="w-4 h-4 text-white" />
-              </Link>
-              <Link 
-                to="/sphere" 
-                className="px-6 py-3 bg-white border border-gold/30 hover:bg-gold/5 text-gold-dark font-semibold rounded-xl active:scale-95 transition-all text-xs sm:text-sm flex items-center gap-2 shadow-sm"
-              >
-                Jelajahi Sphere <ArrowRight className="w-4 h-4 text-gold" />
-              </Link>
-            </div>
-
-            {/* Metrics Grid */}
-            <div className="grid grid-cols-3 gap-3.5 sm:gap-5 pt-8 border-t border-slate-200/80 w-full max-w-3xl mx-auto">
-              {metrics.map((m, idx) => (
-                <div 
-                  key={idx} 
-                  className={`p-3.5 sm:p-4 rounded-2xl border text-center transition-all ${
-                    m.highlight 
-                      ? 'bg-gold/10 border-gold/30 shadow-sm' 
-                      : 'bg-white/80 border-slate-200/70 shadow-sm'
-                  }`}
-                >
-                  <span className="block text-xl sm:text-3xl font-extrabold text-gold-dark font-heading">{m.value}</span>
-                  <span className="block text-[9px] sm:text-xs text-slate-600 font-medium tracking-wide mt-1">{m.label}</span>
-                </div>
-              ))}
-            </div>
-
           </div>
+          
+          {/* Description */}
+          <p className="text-slate-600 text-xs sm:text-sm lg:text-base max-w-2xl leading-relaxed font-normal mx-auto">
+            Wadah sinergi riset teknologi nuklir, instrumentasi otonom, dan karya mahasiswa Politeknik Teknologi Nuklir Indonesia.
+          </p>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center justify-center gap-3.5 pt-1">
+            <a 
+              href="#profil" 
+              className="px-6 py-3 bg-gold text-white font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all text-xs sm:text-sm shadow-md shadow-gold/25 cursor-pointer"
+            >
+              Tentang Kami
+            </a>
+            <Link 
+              to="/struktur" 
+              className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl active:scale-95 transition-all text-xs sm:text-sm shadow-md cursor-pointer flex items-center gap-2"
+            >
+              Lihat Struktur <Users className="w-4 h-4 text-white" />
+            </Link>
+            <Link 
+              to="/sphere" 
+              className="px-6 py-3 bg-white border border-gold/30 hover:bg-gold/5 text-gold-dark font-semibold rounded-xl active:scale-95 transition-all text-xs sm:text-sm flex items-center gap-2 shadow-sm"
+            >
+              Jelajahi Sphere <ArrowRight className="w-4 h-4 text-gold" />
+            </Link>
+          </div>
+
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-3 gap-3.5 sm:gap-5 pt-8 border-t border-slate-200/80 w-full max-w-3xl mx-auto">
+            {metrics.map((m, idx) => (
+              <div 
+                key={idx} 
+                className={`p-3.5 sm:p-4 rounded-2xl border text-center transition-all ${
+                  m.highlight 
+                    ? 'bg-gold/10 border-gold/30 shadow-sm' 
+                    : 'bg-white/80 border-slate-200/70 shadow-sm'
+                }`}
+              >
+                <span className="block text-xl sm:text-3xl font-extrabold text-gold-dark font-heading">{m.value}</span>
+                <span className="block text-[9px] sm:text-xs text-slate-600 font-medium tracking-wide mt-1">{m.label}</span>
+              </div>
+            ))}
+          </div>
+
         </div>
       </header>
 
