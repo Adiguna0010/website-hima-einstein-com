@@ -28,6 +28,10 @@ export default function Profile({ showToast }) {
 
   // ─── Profile State ─────────────────────────────────────────
   const [editMode, setEditMode] = useState(false);
+  const [name, setName] = useState(currentUser?.name || '');
+  const [nim, setNim] = useState(currentUser?.nim || '');
+  const [email, setEmail] = useState(currentUser?.email || '');
+  const [password, setPassword] = useState('');
   const [previewPhoto, setPreviewPhoto] = useState(currentUser?.photo || '');
   const [newPhoto, setNewPhoto] = useState('');
   const [bio, setBio] = useState(currentUser?.bio || '');
@@ -77,6 +81,10 @@ export default function Profile({ showToast }) {
 
   useEffect(() => {
     if (!currentUser) { navigate('/login'); return; }
+    setName(currentUser.name || '');
+    setNim(currentUser.nim || '');
+    setEmail(currentUser.email || '');
+    setPassword('');
     setPreviewPhoto(currentUser.photo || '');
     setBio(currentUser.bio || '');
     setPhone(currentUser.phone || '');
@@ -158,15 +166,62 @@ export default function Profile({ showToast }) {
   };
 
   const handleSaveProfile = () => {
-    const updates = { bio, phone };
+    if (!name.trim()) {
+      showToast('Nama Lengkap tidak boleh kosong!', 'error');
+      return;
+    }
+    if (!nim.trim()) {
+      showToast('NIM tidak boleh kosong!', 'error');
+      return;
+    }
+
+    const updates = { 
+      name: name.trim(), 
+      nim: nim.trim(), 
+      email: email.trim() || `${name.trim()}@einsten.com`,
+      bio: bio.trim(), 
+      phone: phone.trim() 
+    };
+
+    if (password.trim()) {
+      if (password.trim().length < 4) {
+        showToast('Kata sandi baru minimal 4 karakter!', 'error');
+        return;
+      }
+      updates.password = password.trim();
+    }
+
     if (newPhoto) updates.photo = newPhoto;
+
+    // Synchronize kas payments if NIM or Name changed
+    if (currentUser.nim !== nim.trim() || currentUser.name !== name.trim()) {
+      const savedKas = localStorage.getItem('hima_kas_payments');
+      if (savedKas) {
+        try {
+          const payments = JSON.parse(savedKas);
+          const updatedKas = payments.map(p => 
+            p.nim === currentUser.nim 
+              ? { ...p, nim: nim.trim(), name: name.trim(), email: updates.email } 
+              : p
+          );
+          localStorage.setItem('hima_kas_payments', JSON.stringify(updatedKas));
+          setKasPayments(updatedKas);
+        } catch (e) {}
+      }
+    }
+
     updateUserProfile(currentUser.email, updates);
     setEditMode(false);
     setNewPhoto('');
-    showToast('Profil berhasil diperbarui!', 'success');
+    setPassword('');
+    showToast('Profil & data akun berhasil disimpan!', 'success');
   };
 
   const handleCancelEdit = () => {
+    setName(currentUser.name || '');
+    setNim(currentUser.nim || '');
+    setEmail(currentUser.email || '');
+    setPassword('');
     setPreviewPhoto(currentUser.photo || '');
     setBio(currentUser.bio || '');
     setPhone(currentUser.phone || '');
@@ -336,27 +391,99 @@ export default function Profile({ showToast }) {
 
         {/* Profile Edit Section */}
         {editMode && (
-          <div className="relative mt-5 pt-5 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block mb-1.5">Nomor WhatsApp / HP</label>
-              <input
-                type="text"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                placeholder="Contoh: 085175420692"
-                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-gold"
-              />
+          <div className="relative mt-6 pt-6 border-t border-white/10 space-y-4 text-left">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-1 border-b border-white/5">
+              <span className="text-[11px] font-bold text-gold uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                <Edit3 className="w-3.5 h-3.5" /> Pengaturan Data Akun & Profil
+              </span>
+              <span className="text-[10px] text-slate-400 font-light">Perubahan akan langsung disimpan ke sistem & login</span>
             </div>
-            <div>
-              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block mb-1.5">Bio Singkat</label>
-              <textarea
-                value={bio}
-                onChange={e => setBio(e.target.value)}
-                rows={2}
-                maxLength={120}
-                placeholder="Tulis bio singkat tentang diri Anda..."
-                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-gold resize-none"
-              />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Nama Lengkap */}
+              <div>
+                <label className="text-[10px] font-semibold text-slate-300 uppercase tracking-widest block mb-1.5 font-sans">
+                  Nama Lengkap <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="Nama Lengkap Anda"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-gold font-medium"
+                />
+              </div>
+
+              {/* NIM */}
+              <div>
+                <label className="text-[10px] font-semibold text-slate-300 uppercase tracking-widest block mb-1.5 font-sans">
+                  NIM Mahasiswa <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={nim}
+                  onChange={e => setNim(e.target.value)}
+                  placeholder="Contoh: 022400042"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-gold font-mono"
+                />
+              </div>
+
+              {/* Email Akun */}
+              <div>
+                <label className="text-[10px] font-semibold text-slate-300 uppercase tracking-widest block mb-1.5 font-sans">
+                  Email Akun Login
+                </label>
+                <input
+                  type="text"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="email@einsten.com"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-gold font-mono"
+                />
+              </div>
+
+              {/* Nomor WhatsApp */}
+              <div>
+                <label className="text-[10px] font-semibold text-slate-300 uppercase tracking-widest block mb-1.5 font-sans">
+                  Nomor WhatsApp / HP
+                </label>
+                <input
+                  type="text"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  placeholder="Contoh: 085175420692"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-gold font-mono"
+                />
+              </div>
+
+              {/* Ganti Kata Sandi */}
+              <div>
+                <label className="text-[10px] font-semibold text-slate-300 uppercase tracking-widest block mb-1.5 font-sans">
+                  Ganti Kata Sandi (Opsional)
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Kosongkan jika tidak diubah"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-gold font-mono"
+                />
+              </div>
+
+              {/* Bio Singkat */}
+              <div>
+                <label className="text-[10px] font-semibold text-slate-300 uppercase tracking-widest block mb-1.5 font-sans">
+                  Bio Singkat
+                </label>
+                <input
+                  type="text"
+                  value={bio}
+                  onChange={e => setBio(e.target.value)}
+                  maxLength={120}
+                  placeholder="Tulis bio singkat tentang diri Anda..."
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-gold"
+                />
+              </div>
             </div>
           </div>
         )}
