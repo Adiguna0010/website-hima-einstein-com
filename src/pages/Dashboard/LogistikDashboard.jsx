@@ -38,9 +38,12 @@ export default function LogistikDashboard({ showToast }) {
   const [newDesc, setNewDesc] = useState('');
   const [formKey, setFormKey] = useState(Date.now());
 
+  // Classification View Mode: 'fungsi' | 'ukuran'
+  const [classificationMode, setClassificationMode] = useState('fungsi');
+
   useEffect(() => {
     const loadData = () => {
-      const INVENTORY_VERSION = 'v2_rekapitulasi_full_151';
+      const INVENTORY_VERSION = 'v3_rekapitulasi_klasifikasi_lengkap';
       const storedVersion = localStorage.getItem('hima_inventory_version');
 
       // Load instruments
@@ -128,7 +131,7 @@ export default function LogistikDashboard({ showToast }) {
   const handleRegisterInstrument = (e) => {
     e.preventDefault();
     if (!newName.trim() || !newId.trim()) {
-      showToast('Nama Alat dan Kode ID wajib diisi!', 'error');
+      showToast('Nama Barang dan Kode ID wajib diisi!', 'error');
       return;
     }
 
@@ -460,6 +463,19 @@ export default function LogistikDashboard({ showToast }) {
     }
   };
 
+  const getSizeBadgeClass = (size) => {
+    switch (size) {
+      case 'Besar':
+        return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'Medium':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'Kecil':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      default:
+        return 'bg-slate-100 text-slate-600 border-slate-200';
+    }
+  };
+
   // Filtered inventory calculation
   const filteredInstruments = instruments.filter(inst => {
     const matchesCat = selectedCategory === 'Semua' || inst.category === selectedCategory;
@@ -588,31 +604,90 @@ export default function LogistikDashboard({ showToast }) {
               </div>
             </div>
 
-            {/* Category Filter Chips Bar */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {INVENTORY_CATEGORIES.map(cat => {
-                const count = cat === 'Semua' ? instruments.length : instruments.filter(i => i.category === cat).length;
-                const isSelected = selectedCategory === cat;
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-gold text-white shadow-sm'
-                        : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span>{cat}</span>
-                    <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-                    }`}>
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
+            {/* Classification Switcher in Dashboard */}
+            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 w-fit">
+              <button
+                type="button"
+                onClick={() => {
+                  setClassificationMode('fungsi');
+                  setSelectedSize('Semua Ukuran');
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  classificationMode === 'fungsi'
+                    ? 'bg-white text-gold-dark shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                🏷️ Klasifikasi Fungsi ({INVENTORY_CATEGORIES.length - 1})
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setClassificationMode('ukuran');
+                  setSelectedCategory('Semua');
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  classificationMode === 'ukuran'
+                    ? 'bg-white text-gold-dark shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                📐 Klasifikasi Ukuran (3)
+              </button>
             </div>
+
+            {/* Filter Chips */}
+            {classificationMode === 'fungsi' ? (
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {INVENTORY_CATEGORIES.map(cat => {
+                  const count = cat === 'Semua' ? instruments.length : instruments.filter(i => i.category === cat).length;
+                  const isSelected = selectedCategory === cat;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-gold text-white shadow-sm'
+                          : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>{cat}</span>
+                      <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                        isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {INVENTORY_SIZES.map(sz => {
+                  const count = sz === 'Semua Ukuran' ? instruments.length : instruments.filter(i => i.size === sz).length;
+                  const isSelected = selectedSize === sz;
+                  return (
+                    <button
+                      key={sz}
+                      onClick={() => setSelectedSize(sz)}
+                      className={`shrink-0 px-3.5 py-1.5 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-gold text-white shadow-sm'
+                          : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>{sz}</span>
+                      <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                        isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Search & Sub-filter bar */}
             <div className="bg-white border border-slate-200 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
@@ -633,15 +708,27 @@ export default function LogistikDashboard({ showToast }) {
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <select
-                  value={selectedSize}
-                  onChange={(e) => setSelectedSize(e.target.value)}
-                  className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2.5 text-xs text-slate-700 focus:outline-none focus:border-gold"
-                >
-                  {INVENTORY_SIZES.map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
+                {classificationMode === 'fungsi' ? (
+                  <select
+                    value={selectedSize}
+                    onChange={(e) => setSelectedSize(e.target.value)}
+                    className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2.5 text-xs text-slate-700 focus:outline-none focus:border-gold"
+                  >
+                    {INVENTORY_SIZES.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2.5 text-xs text-slate-700 focus:outline-none focus:border-gold"
+                  >
+                    {INVENTORY_CATEGORIES.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                )}
 
                 <select
                   value={selectedStatus}
@@ -660,25 +747,27 @@ export default function LogistikDashboard({ showToast }) {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                      <th className="px-4 py-3.5">Barang & Kategori</th>
+                      <th className="px-4 py-3.5">Barang & Foto</th>
                       <th className="px-4 py-3.5">Kode ID</th>
-                      <th className="px-4 py-3.5">Stok & Kondisi</th>
-                      <th className="px-4 py-3.5">QR Code</th>
+                      <th className="px-4 py-3.5">Klasifikasi</th>
+                      <th className="px-4 py-3.5">Stok</th>
+                      <th className="px-4 py-3.5">Kondisi</th>
                       <th className="px-4 py-3.5">Status</th>
+                      <th className="px-4 py-3.5">QR</th>
                       <th className="px-4 py-3.5 text-center">Tindakan</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 text-xs text-slate-750">
                     {filteredInstruments.length === 0 ? (
                       <tr>
-                        <td colSpan="6" className="px-6 py-10 text-center text-slate-400">
+                        <td colSpan="8" className="px-6 py-10 text-center text-slate-400">
                           Tidak ada barang yang cocok dengan filter / pencarian.
                         </td>
                       </tr>
                     ) : (
                       filteredInstruments.map((inst) => (
                         <tr key={inst.id} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="px-4 py-3.5 flex items-center gap-3">
+                          <td className="px-4 py-3 flex items-center gap-3">
                             {inst.image && (inst.image.startsWith('/') || inst.image.startsWith('http') || inst.image.startsWith('data:')) ? (
                               <img src={inst.image} alt={inst.name} className="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0" />
                             ) : (
@@ -686,41 +775,39 @@ export default function LogistikDashboard({ showToast }) {
                             )}
                             <div className="min-w-0">
                               <p className="font-bold text-slate-800">{inst.name}</p>
-                              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                {inst.category && (
-                                  <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold border ${getCategoryBadgeClass(inst.category)}`}>
-                                    {inst.category}
-                                  </span>
-                                )}
-                                {inst.size && (
-                                  <span className="px-1 py-0.2 rounded bg-slate-100 text-slate-600 text-[9px] border border-slate-200">
-                                    {inst.size}
-                                  </span>
-                                )}
-                              </div>
+                              {inst.desc && (
+                                <p className="text-[10px] text-slate-400 font-light truncate max-w-[180px]">{inst.desc}</p>
+                              )}
                             </div>
                           </td>
-                          <td className="px-4 py-3.5 font-mono text-slate-600 font-bold text-[11px]">{inst.id}</td>
-                          <td className="px-4 py-3.5">
-                            <div className="text-slate-700">
-                              <span className="font-bold text-slate-900">{inst.quantity || 1}</span> Unit
+                          <td className="px-4 py-3 font-mono text-slate-700 font-bold text-[11px]">{inst.id}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-col gap-1 items-start">
+                              {inst.category && (
+                                <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold border ${getCategoryBadgeClass(inst.category)}`}>
+                                  {inst.category}
+                                </span>
+                              )}
+                              {inst.size && (
+                                <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold border ${getSizeBadgeClass(inst.size)}`}>
+                                  Ukuran: {inst.size}
+                                </span>
+                              )}
                             </div>
-                            <span className="text-[10px] text-slate-500 font-light block">
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="font-bold text-slate-900 text-xs">{inst.quantity || 1}</span> <span className="text-[10px] text-slate-500">Unit</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
+                              (inst.condition || 'Baik') === 'Baik' 
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                : 'bg-rose-50 text-rose-700 border-rose-200'
+                            }`}>
                               {inst.condition || 'Baik'}
                             </span>
                           </td>
-                          <td className="px-4 py-3.5">
-                            <button
-                              type="button"
-                              onClick={() => setSelectedQrInstrument(inst)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-gold/10 hover:text-gold-dark text-slate-700 text-[10px] font-bold border border-slate-200 transition-all active:scale-95 cursor-pointer"
-                              title="Lihat & Cetak QR Code Barang"
-                            >
-                              <QrCode className="w-3.5 h-3.5 text-gold-dark" />
-                              <span>QR</span>
-                            </button>
-                          </td>
-                          <td className="px-4 py-3.5">
+                          <td className="px-4 py-3">
                             <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
                               inst.status === 'Available' 
                                 ? 'bg-emerald-50 text-emerald-600 border-emerald-500/20' 
@@ -729,7 +816,18 @@ export default function LogistikDashboard({ showToast }) {
                               {inst.status === 'Available' ? 'Tersedia' : 'Dipinjam'}
                             </span>
                           </td>
-                          <td className="px-4 py-3.5">
+                          <td className="px-4 py-3">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedQrInstrument(inst)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-gold/10 hover:text-gold-dark text-slate-700 text-[10px] font-bold border border-slate-200 transition-all active:scale-95 cursor-pointer"
+                              title="Lihat & Cetak QR Code Barang"
+                            >
+                              <QrCode className="w-3.5 h-3.5 text-gold-dark" />
+                              <span>QR</span>
+                            </button>
+                          </td>
+                          <td className="px-4 py-3">
                             <div className="flex items-center justify-center gap-1.5">
                               <button
                                 onClick={() => handleToggleStatus(inst.id)}

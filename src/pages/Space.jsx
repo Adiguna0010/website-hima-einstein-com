@@ -269,6 +269,19 @@ export default function Space({ showToast }) {
     }
   };
 
+  const getSizeBadgeClass = (size) => {
+    switch (size) {
+      case 'Besar':
+        return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'Medium':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'Kecil':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      default:
+        return 'bg-slate-100 text-slate-600 border-slate-200';
+    }
+  };
+
   // Filtered inventory calculation
   const filteredInstruments = instruments.filter(inst => {
     const matchesCat = selectedCategory === 'Semua' || inst.category === selectedCategory;
@@ -302,93 +315,184 @@ export default function Space({ showToast }) {
         </p>
       </div>
 
-      {/* Category Pills Filtering Bar */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5 text-gold" /> Filter Kategori:
-          </span>
-          <span className="text-xs font-medium text-slate-500">
-            Menampilkan <strong className="text-slate-900">{filteredInstruments.length}</strong> dari {instruments.length} barang
-          </span>
-        </div>
+      {/* Classification Mode Switcher Tabs */}
+      <div className="bg-white border border-gold-border rounded-2xl p-4 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <Tag className="w-4 h-4 text-gold" />
+            <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">Mode Klasifikasi Inventaris:</span>
+          </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {INVENTORY_CATEGORIES.map(cat => {
-            const count = cat === 'Semua' ? instruments.length : instruments.filter(i => i.category === cat).length;
-            const isSelected = selectedCategory === cat;
-            return (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-gradient-to-r from-gold to-gold-light text-white shadow-md shadow-gold/20'
-                    : 'bg-white border border-slate-200 text-slate-700 hover:border-gold/50 hover:bg-slate-50'
-                }`}
-              >
-                <span>{cat}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                  isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
-                }`}>
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Search & Sub-filters Bar */}
-      <div className="bg-white border border-gold-border rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-        {/* Search Box */}
-        <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Cari nama barang, kode ID, atau deskripsi..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-9 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
-          />
-          {searchQuery && (
+          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
             <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              onClick={() => {
+                setClassificationMode('fungsi');
+                setSelectedSize('Semua Ukuran');
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                classificationMode === 'fungsi'
+                  ? 'bg-gold text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
             >
-              <X className="w-3.5 h-3.5" />
+              🏷️ Berdasarkan Kategori Fungsi ({INVENTORY_CATEGORIES.length - 1})
             </button>
-          )}
+            <button
+              onClick={() => {
+                setClassificationMode('ukuran');
+                setSelectedCategory('Semua');
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                classificationMode === 'ukuran'
+                  ? 'bg-gold text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              📐 Berdasarkan Ukuran Fisik (3)
+            </button>
+          </div>
         </div>
 
-        {/* Size and Status Dropdowns & Scan */}
-        <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
-          <select
-            value={selectedSize}
-            onChange={(e) => setSelectedSize(e.target.value)}
-            className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold"
-          >
-            {INVENTORY_SIZES.map(s => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
+        {/* Classification Filters based on active mode */}
+        {classificationMode === 'fungsi' ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                <Filter className="w-3.5 h-3.5 text-gold" /> Klasifikasi Kategori / Fungsi:
+              </span>
+              <span className="text-xs font-medium text-slate-500">
+                Menampilkan <strong className="text-slate-900">{filteredInstruments.length}</strong> dari {instruments.length} barang
+              </span>
+            </div>
 
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold"
-          >
-            <option value="Semua">Semua Status</option>
-            <option value="Tersedia">Tersedia</option>
-            <option value="Dipinjam">Sedang Dipinjam</option>
-          </select>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {INVENTORY_CATEGORIES.map(cat => {
+                const count = cat === 'Semua' ? instruments.length : instruments.filter(i => i.category === cat).length;
+                const isSelected = selectedCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-gold to-gold-light text-white shadow-md shadow-gold/20'
+                        : 'bg-white border border-slate-200 text-slate-700 hover:border-gold/50 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>{cat}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                <Filter className="w-3.5 h-3.5 text-gold" /> Klasifikasi Ukuran Fisik:
+              </span>
+              <span className="text-xs font-medium text-slate-500">
+                Menampilkan <strong className="text-slate-900">{filteredInstruments.length}</strong> dari {instruments.length} barang
+              </span>
+            </div>
 
-          <button
-            onClick={() => handleOpenScanner(null)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark font-bold text-xs border border-gold/30 transition-all active:scale-95 cursor-pointer shrink-0"
-          >
-            <QrCode className="w-3.5 h-3.5 text-gold-dark" /> Scan QR
-          </button>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {INVENTORY_SIZES.map(sz => {
+                const count = sz === 'Semua Ukuran' ? instruments.length : instruments.filter(i => i.size === sz).length;
+                const isSelected = selectedSize === sz;
+                return (
+                  <button
+                    key={sz}
+                    onClick={() => setSelectedSize(sz)}
+                    className={`shrink-0 px-4 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-gold to-gold-light text-white shadow-md shadow-gold/20'
+                        : 'bg-white border border-slate-200 text-slate-700 hover:border-gold/50 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>{sz}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Search & Sub-filters Bar */}
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">
+          {/* Search Box */}
+          <div className="relative w-full sm:max-w-md">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari nama barang, kode ID, atau deskripsi..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-9 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Status Dropdowns & Scan */}
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+            {classificationMode === 'fungsi' && (
+              <select
+                value={selectedSize}
+                onChange={(e) => setSelectedSize(e.target.value)}
+                className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold"
+              >
+                {INVENTORY_SIZES.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            )}
+
+            {classificationMode === 'ukuran' && (
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold"
+              >
+                {INVENTORY_CATEGORIES.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            )}
+
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold"
+            >
+              <option value="Semua">Semua Status</option>
+              <option value="Tersedia">Tersedia</option>
+              <option value="Dipinjam">Sedang Dipinjam / Tidak Tersedia</option>
+            </select>
+
+            <button
+              onClick={() => handleOpenScanner(null)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark font-bold text-xs border border-gold/30 transition-all active:scale-95 cursor-pointer shrink-0"
+            >
+              <QrCode className="w-3.5 h-3.5 text-gold-dark" /> Scan QR
+            </button>
+          </div>
         </div>
       </div>
 
@@ -398,7 +502,7 @@ export default function Space({ showToast }) {
         <div className="lg:col-span-8 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider text-left flex items-center gap-1.5">
-              <ShieldCheck className="w-4.5 h-4.5 text-gold" /> Daftar Ketersediaan Barang & Aset
+              <ShieldCheck className="w-4.5 h-4.5 text-gold" /> Daftar Ketersediaan Barang & Aset ({filteredInstruments.length})
             </h3>
           </div>
 
@@ -441,7 +545,7 @@ export default function Space({ showToast }) {
                         <h4 className="text-sm font-bold text-slate-900 group-hover:text-gold-dark transition-colors">
                           {inst.name}
                         </h4>
-                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-mono text-[9px] font-bold border border-slate-200">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[9px] font-bold border border-slate-200">
                           {inst.id}
                         </span>
                         {inst.category && (
@@ -450,8 +554,8 @@ export default function Space({ showToast }) {
                           </span>
                         )}
                         {inst.size && (
-                          <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[9px] font-medium border border-slate-200">
-                            {inst.size}
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${getSizeBadgeClass(inst.size)}`}>
+                            Ukuran: {inst.size}
                           </span>
                         )}
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
@@ -459,19 +563,23 @@ export default function Space({ showToast }) {
                             ? 'bg-emerald-50 text-emerald-600 border-emerald-500/20' 
                             : 'bg-rose-50 text-rose-600 border-rose-500/20'
                         }`}>
-                          {inst.status === 'Available' ? 'Tersedia' : 'Sedang Dipinjam'}
+                          {inst.status === 'Available' ? 'Tersedia' : 'Tidak Tersedia'}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-3 text-[11px] text-slate-500 flex-wrap">
-                        <span>Stok: <strong className="text-slate-800 font-semibold">{inst.quantity || 1} Unit</strong></span>
-                        <span>•</span>
-                        <span>Kondisi: <strong className="text-slate-800">{inst.condition || 'Baik'}</strong></span>
+                        <span className="bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                          Stok: <strong className="text-slate-800 font-semibold">{inst.quantity || 1} Unit</strong>
+                        </span>
+                        <span className={`px-2 py-0.5 rounded border ${
+                          (inst.condition || 'Baik') === 'Baik' 
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                            : 'bg-rose-50 text-rose-700 border-rose-200'
+                        }`}>
+                          Kondisi: <strong className="font-semibold">{inst.condition || 'Baik'}</strong>
+                        </span>
                         {inst.desc && (
-                          <>
-                            <span>•</span>
-                            <span className="text-slate-500 font-light truncate max-w-xs">{inst.desc}</span>
-                          </>
+                          <span className="text-slate-500 font-light truncate max-w-xs">{inst.desc}</span>
                         )}
                       </div>
                     </div>
