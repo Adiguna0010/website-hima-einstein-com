@@ -203,70 +203,77 @@ export default function Home() {
       <div className="absolute top-10 left-10 w-96 h-96 rounded-full bg-gold/5 glow-orb"></div>
       <div className="absolute top-80 right-10 w-[500px] h-[500px] rounded-full bg-gold/5 glow-orb"></div>
 
-      {/* ================= HERO SECTION ================= */}
+      {/* ================= HERO BANNER CONTAINER ================= */}
       <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center justify-center text-center space-y-8 py-8 lg:py-16">
+        <div className="relative rounded-3xl sm:rounded-[36px] border border-gold-border/60 bg-white/70 backdrop-blur-xl shadow-xl shadow-gold/5 p-6 sm:p-10 lg:p-14 overflow-hidden text-center">
           
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4.5 py-1.5 rounded-full border border-gold/40 bg-gradient-to-r from-gold/10 via-gold/5 to-transparent text-xs font-bold text-gold-dark tracking-widest uppercase shadow-sm">
-            <span className="w-2.5 h-2.5 rounded-full bg-gold animate-pulse"></span>
-            PORTAL RESMI HIMA EINSTEN • POLTEK NUKLIR
-          </div>
-          
-          {/* Heading Hierarchy */}
-          <div className="space-y-3 max-w-4xl mx-auto">
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tight text-slate-900 leading-none">
-              SELAMAT DATANG
-            </h1>
-            <p className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-800 tracking-tight leading-snug">
-              di Website Resmi <span className="bg-gradient-to-r from-gold-dark via-gold to-amber-500 bg-clip-text text-transparent">HIMA EINSTEN</span> Poltek Nuklir
+          {/* Subtle Background Pattern & Glow Effect */}
+          <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-transparent to-gold/10 pointer-events-none"></div>
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-gold/10 blur-3xl pointer-events-none"></div>
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-amber-400/10 blur-3xl pointer-events-none"></div>
+          <img 
+            src="/Media Einsten/Media Umum/hero_banner.jpg" 
+            alt="Hero Background Art" 
+            className="absolute inset-0 w-full h-full object-cover opacity-[0.07] mix-blend-multiply pointer-events-none"
+          />
+
+          <div className="relative z-10 flex flex-col items-center justify-center space-y-7 max-w-4xl mx-auto">
+            
+            {/* Heading Hierarchy */}
+            <div className="space-y-3">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-slate-900 leading-tight">
+                SELAMAT DATANG
+              </h1>
+              <p className="text-base sm:text-xl lg:text-2xl font-extrabold text-slate-800 tracking-tight leading-snug">
+                di Website Resmi <span className="bg-gradient-to-r from-gold-dark via-gold to-amber-500 bg-clip-text text-transparent">HIMA EINSTEN</span> Poltek Nuklir
+              </p>
+            </div>
+            
+            {/* Description */}
+            <p className="text-slate-600 text-xs sm:text-sm lg:text-base max-w-2xl leading-relaxed font-normal mx-auto">
+              Wadah sinergi riset teknologi nuklir, instrumentasi otonom, dan karya mahasiswa Politeknik Teknologi Nuklir Indonesia.
             </p>
-          </div>
-          
-          {/* Description */}
-          <p className="text-slate-600 text-sm sm:text-base max-w-xl leading-relaxed font-normal mx-auto pt-1">
-            Wadah sinergi riset teknologi nuklir, instrumentasi otonom, dan karya mahasiswa Politeknik Teknologi Nuklir Indonesia.
-          </p>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-            <a 
-              href="#profil" 
-              className="px-6 py-3.5 bg-gold text-white font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all text-sm shadow-md shadow-gold/25 cursor-pointer"
-            >
-              Tentang Kami
-            </a>
-            <Link 
-              to="/struktur" 
-              className="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl active:scale-95 transition-all text-sm shadow-md cursor-pointer flex items-center gap-2"
-            >
-              Lihat Struktur <Users className="w-4 h-4 text-white" />
-            </Link>
-            <Link 
-              to="/sphere" 
-              className="px-6 py-3.5 border border-gold/30 hover:bg-gold/5 text-gold-dark font-semibold rounded-xl active:scale-95 transition-all text-sm flex items-center gap-2"
-            >
-              Jelajahi Sphere <ArrowRight className="w-4 h-4 text-gold" />
-            </Link>
-          </div>
-
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-3 gap-4 pt-12 border-t border-slate-200 w-full max-w-3xl mx-auto">
-            {metrics.map((m, idx) => (
-              <div 
-                key={idx} 
-                className={`p-4 sm:p-5 rounded-2xl border text-center transition-all ${
-                  m.highlight 
-                    ? 'bg-gold/5 border-gold/20 shadow-sm' 
-                    : 'bg-slate-50 border-slate-200/60 shadow-sm'
-                }`}
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-3.5 pt-1">
+              <a 
+                href="#profil" 
+                className="px-6 py-3 bg-gold text-white font-bold rounded-xl hover:brightness-110 active:scale-95 transition-all text-xs sm:text-sm shadow-md shadow-gold/25 cursor-pointer"
               >
-                <span className="block text-2xl sm:text-3.5xl font-extrabold text-gold-dark font-heading">{m.value}</span>
-                <span className="block text-[10px] sm:text-xs text-slate-500 font-medium tracking-wide mt-1.5">{m.label}</span>
-              </div>
-            ))}
-          </div>
+                Tentang Kami
+              </a>
+              <Link 
+                to="/struktur" 
+                className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl active:scale-95 transition-all text-xs sm:text-sm shadow-md cursor-pointer flex items-center gap-2"
+              >
+                Lihat Struktur <Users className="w-4 h-4 text-white" />
+              </Link>
+              <Link 
+                to="/sphere" 
+                className="px-6 py-3 bg-white border border-gold/30 hover:bg-gold/5 text-gold-dark font-semibold rounded-xl active:scale-95 transition-all text-xs sm:text-sm flex items-center gap-2 shadow-sm"
+              >
+                Jelajahi Sphere <ArrowRight className="w-4 h-4 text-gold" />
+              </Link>
+            </div>
 
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-3 gap-3.5 sm:gap-5 pt-8 border-t border-slate-200/80 w-full max-w-3xl mx-auto">
+              {metrics.map((m, idx) => (
+                <div 
+                  key={idx} 
+                  className={`p-3.5 sm:p-4 rounded-2xl border text-center transition-all ${
+                    m.highlight 
+                      ? 'bg-gold/10 border-gold/30 shadow-sm' 
+                      : 'bg-white/80 border-slate-200/70 shadow-sm'
+                  }`}
+                >
+                  <span className="block text-xl sm:text-3xl font-extrabold text-gold-dark font-heading">{m.value}</span>
+                  <span className="block text-[9px] sm:text-xs text-slate-600 font-medium tracking-wide mt-1">{m.label}</span>
+                </div>
+              ))}
+            </div>
+
+          </div>
         </div>
       </header>
 
