@@ -13,6 +13,15 @@ const DEFAULT_USERS = [
     status: 'Active'
   },
   {
+    name: 'Rafie Asfa Raditya Aryanto',
+    nim: '022500041',
+    email: 'Rafie Asfa Raditya Aryanto@einsten.com',
+    password: '022500041',
+    role: 'Master Admin',
+    photo: '/Media/Pengurus Hima Kabinet Photisma 2026/BPH/Wakahim_Rafie Asfa Raditya Aryanto - 022500041.JPG',
+    status: 'Active'
+  },
+  {
     name: 'Adiguna Nugroho Halomoan',
     nim: '022400025',
     email: 'Adiguna Nugroho Halomoan@einsten.com',
@@ -224,10 +233,15 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  const login = (email, password) => {
+  const login = (emailOrNim, password) => {
     return new Promise((resolve, reject) => {
+      const inputStr = (emailOrNim || '').trim();
       const user = users.find(
-        u => normalizeEmail(u.email) === normalizeEmail(email) && u.password === password
+        u => (
+          normalizeEmail(u.email) === normalizeEmail(inputStr) ||
+          (u.nim && u.nim.trim() === inputStr) ||
+          (u.name && u.name.trim().toLowerCase() === inputStr.toLowerCase())
+        ) && u.password === (password || '').trim()
       );
 
       if (!user) {
