@@ -68,7 +68,19 @@ export default function BendaharaDashboard({ showToast }) {
     // Letters requests list
     const savedLetters = localStorage.getItem('hima_letters');
     if (savedLetters) {
-      setLetters(JSON.parse(savedLetters));
+      try {
+        const parsed = JSON.parse(savedLetters);
+        const filtered = Array.isArray(parsed) ? parsed.filter(l => 
+          l && 
+          l.id !== 1 && 
+          l.id !== 2 && 
+          !l.requester?.includes('Ristek / Dian') && 
+          !l.requester?.includes('Pengma / Budi')
+        ) : [];
+        setLetters(filtered);
+      } catch (e) {
+        setLetters([]);
+      }
     }
 
     // Kas Anggota

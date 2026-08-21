@@ -37,10 +37,7 @@ export default function Secretariat({ showToast, isDashboard = false }) {
   const [backofficeTab, setBackofficeTab] = useState('letters');
 
   // Initial dummy databases
-  const DEFAULT_LETTERS = [
-    { id: 1, requester: 'Ristek / Dian', category: 'Surat Permohonan', subject: 'Peminjaman Laboratorium Komputasi', status: 'ACC', letterNumber: '001/HIMA-EINSTEN/VII/2026', fileUrl: '/Media/Template Persuratan-20260715T225003Z-1-001/Template Persuratan/Template Permohonan Peminjaman Ruang Rapat KSTE A. Baiquni.docx' },
-    { id: 2, requester: 'Pengma / Budi', category: 'Surat Undangan', subject: 'Undangan Pembicara PLC Siemens', status: 'Pending', letterNumber: '', fileUrl: '' }
-  ];
+  const DEFAULT_LETTERS = [];
 
   const DEFAULT_TEMPLATES = [
     { id: 1, name: 'Format Surat Undangan HIMA', format: 'DOCX', size: '130 KB', date: 'Juli 2026', url: '/Media/Template Persuratan-20260715T225003Z-1-001/Template Persuratan/Surat Peminjaman Alat kepada Ormawa_Hima_UKM.docx' },
@@ -54,10 +51,23 @@ export default function Secretariat({ showToast, isDashboard = false }) {
     // Load Letters
     const savedLetters = localStorage.getItem('hima_letters');
     if (savedLetters) {
-      setLetters(JSON.parse(savedLetters));
+      try {
+        const parsed = JSON.parse(savedLetters);
+        const filtered = Array.isArray(parsed) ? parsed.filter(l => 
+          l && 
+          l.id !== 1 && 
+          l.id !== 2 && 
+          !l.requester?.includes('Ristek / Dian') && 
+          !l.requester?.includes('Pengma / Budi')
+        ) : [];
+        localStorage.setItem('hima_letters', JSON.stringify(filtered));
+        setLetters(filtered);
+      } catch (e) {
+        setLetters([]);
+      }
     } else {
-      localStorage.setItem('hima_letters', JSON.stringify(DEFAULT_LETTERS));
-      setLetters(DEFAULT_LETTERS);
+      localStorage.setItem('hima_letters', JSON.stringify([]));
+      setLetters([]);
     }
 
     // Load Templates
