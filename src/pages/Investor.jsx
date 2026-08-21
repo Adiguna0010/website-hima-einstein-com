@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Sparkles, Clock, Rocket } from 'lucide-react';
+import { ArrowRight, Sparkles, Rocket } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Investor() {
@@ -12,12 +12,6 @@ export default function Investor() {
 
       {/* Main Centered Coming Soon Container */}
       <div className="w-full max-w-3xl mx-auto text-center space-y-8 relative z-10">
-        
-        {/* Top Coming Soon Tag */}
-        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-gold/40 bg-gold/10 text-xs font-mono font-bold text-gold-dark uppercase tracking-widest shadow-sm">
-          <Clock className="w-4 h-4 text-gold animate-spin-slow" />
-          <span>COMING SOON // PORTAL PENDANAAN & INVESTOR</span>
-        </div>
 
         {/* Large Decorative Icon */}
         <div className="flex justify-center">
