@@ -200,6 +200,7 @@ export default function Market({ showToast }) {
       <CheckoutModal 
         isOpen={isCheckoutOpen} 
         onClose={() => setIsCheckoutOpen(false)} 
+        showToast={showToast}
       />
     </div>
   );
