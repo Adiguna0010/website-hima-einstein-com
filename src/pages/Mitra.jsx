@@ -36,7 +36,7 @@ export default function Mitra() {
           <Handshake className="w-8 h-8 text-gold" /> INSTANSI & MITRA TERAFILIASI
         </h1>
         <p className="text-slate-600 text-xs sm:text-sm leading-relaxed font-light font-sans">
-          Daftar lembaga riset nasional dan institusi pendidikan resmi yang menaungi serta terafiliasi langsung dengan <strong>HIMA EINSTEN.COM</strong>.
+          Daftar lembaga riset nasional dan institusi pendidikan resmi yang menaungi serta terafiliasi langsung dengan <strong>Hima Einsten.com</strong>.
         </p>
       </div>
 

@@ -68,7 +68,7 @@ export default function Calendar({ showToast }) {
         <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Agenda & Timeline Kegiatan</span>
         <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">EINSTEN KALENDER</h1>
         <p className="text-slate-500 text-xs sm:text-sm leading-relaxed font-light">
-          Pantau jadwal program kerja HIMA EINSTEN serta agenda ormawa eksternal kampus Politeknik Teknologi Nuklir Indonesia.
+          Pantau jadwal program kerja Hima Einsten serta agenda ormawa eksternal kampus Politeknik Teknologi Nuklir Indonesia.
         </p>
       </div>
 
@@ -91,7 +91,7 @@ export default function Calendar({ showToast }) {
                     ? 'bg-gold/10 text-gold-dark border-gold/20' 
                     : 'bg-slate-100 text-gold border border-gold-border'
                 }`}>
-                  {activeEvent.type === 'hima' ? 'HIMA EINSTEN' : 'ORMAWA Kampus'}
+                  {activeEvent.type === 'hima' ? 'Hima Einsten' : 'ORMAWA Kampus'}
                 </span>
                 
                 <h4 className="text-sm font-bold text-slate-950 uppercase tracking-wider">{activeEvent.title}</h4>
@@ -122,7 +122,7 @@ export default function Calendar({ showToast }) {
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Keterangan Warna</span>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded bg-gold shrink-0"></span>
-              <span className="text-slate-700">Agenda Internal HIMA EINSTEN</span>
+              <span className="text-slate-700">Agenda Internal Hima Einsten</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded bg-gold-light shrink-0"></span>

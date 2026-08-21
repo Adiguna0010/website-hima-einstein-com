@@ -1,105 +1,68 @@
 import React from 'react';
-import { TrendingUp, ArrowRight, Sparkles, Clock, Coins, Target, Rocket } from 'lucide-react';
+import { ArrowRight, Sparkles, Clock, Rocket } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Investor() {
   return (
-    <div className="relative pt-28 pb-16 space-y-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-zinc-700 font-sans">
-      {/* Background decoration orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-gold/5 glow-orb pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-gold-light/5 glow-orb pointer-events-none"></div>
+    <div className="relative min-h-[75vh] flex items-center justify-center pt-24 pb-20 px-4 sm:px-6 lg:px-8 text-zinc-700 font-sans overflow-hidden">
+      {/* Background decoration glow orbs */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] rounded-full bg-gold/10 blur-3xl pointer-events-none -z-10 animate-pulse"></div>
+      <div className="absolute top-1/4 right-1/4 w-80 h-80 rounded-full bg-amber-200/20 blur-2xl pointer-events-none -z-10"></div>
+      <div className="absolute bottom-10 left-1/4 w-96 h-96 rounded-full bg-gold-light/10 blur-3xl pointer-events-none -z-10"></div>
 
-      {/* Page Header */}
-      <div className="text-left space-y-3 relative z-10 max-w-3xl">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold/30 bg-gold/5 text-[11px] font-mono font-semibold text-gold-dark uppercase tracking-widest">
-          <Clock className="w-3.5 h-3.5 text-gold animate-spin-slow" />
-          COMING SOON // PORTAL PENDANAAN
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-          <TrendingUp className="w-8 h-8 text-gold" /> INVESTOR & PENDANAAN
-        </h1>
-        <p className="text-slate-600 text-xs sm:text-sm leading-relaxed font-light font-sans">
-          Portal khusus pendanaan riset komersial, program inkubasi bisnis mahasiswa, serta kolaborasi ventura bersama <strong>HIMA EINSTEN.COM</strong>.
-        </p>
-      </div>
-
-      {/* Main Coming Soon Banner Card */}
-      <div className="border border-gold-border/60 bg-white/90 backdrop-blur-xl rounded-3xl p-8 sm:p-12 shadow-lg shadow-gold/5 relative overflow-hidden text-left z-10">
-        <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-gold/10 blur-2xl pointer-events-none"></div>
+      {/* Main Centered Coming Soon Container */}
+      <div className="w-full max-w-3xl mx-auto text-center space-y-8 relative z-10">
         
-        <div className="max-w-2xl space-y-5 relative z-10">
-          <div className="w-12 h-12 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center text-gold">
-            <Rocket className="w-6 h-6" />
-          </div>
-          
-          <div className="space-y-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-              Portal Investor Sedang Dalam Pengembangan
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-light">
-              Fitur transparansi portofolio prototipe teknologi nuklir, skema pendanaan ventura mahasiswa, dan monitoring inkubasi riset saat ini sedang dipersiapkan oleh tim pengembang untuk rilis mendatang.
-            </p>
-          </div>
+        {/* Top Coming Soon Tag */}
+        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-gold/40 bg-gold/10 text-xs font-mono font-bold text-gold-dark uppercase tracking-widest shadow-sm">
+          <Clock className="w-4 h-4 text-gold animate-spin-slow" />
+          <span>COMING SOON // PORTAL PENDANAAN & INVESTOR</span>
+        </div>
 
-          <div className="pt-2 flex flex-wrap gap-3">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 active:scale-95 transition-all text-xs font-sans shadow-md"
-            >
-              Kembali ke Beranda <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-            <Link
-              to="/mitra"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gold/30 text-gold-dark font-bold rounded-xl hover:bg-gold/5 active:scale-95 transition-all text-xs font-sans shadow-sm"
-            >
-              Lihat Mitra Terafiliasi
-            </Link>
+        {/* Large Decorative Icon */}
+        <div className="flex justify-center">
+          <div className="relative">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-br from-amber-50 to-gold/20 border-2 border-gold/30 flex items-center justify-center text-gold-dark shadow-xl shadow-gold/15 transition-transform hover:scale-105">
+              <Rocket className="w-12 h-12 sm:w-14 sm:h-14 text-gold" />
+            </div>
+            <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-slate-900 border-2 border-white flex items-center justify-center text-gold shadow-md">
+              <Sparkles className="w-4 h-4" />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Incubation & Funding Pillars Preview */}
-      <div className="space-y-6 z-10 relative">
-        <div className="text-left space-y-1">
-          <h3 className="text-sm font-mono font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-gold" /> Rencana Skema Pendanaan Masa Depan
-          </h3>
-          <p className="text-xs text-slate-500 font-sans font-light">
-            Tiga pilar utama yang akan diakomodasi melalui ekosistem digital Himpunan:
+        {/* Title & Description */}
+        <div className="space-y-4 max-w-2xl mx-auto">
+          <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+            Portal Investor & Pendanaan
+          </h1>
+          <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-light font-sans max-w-xl mx-auto">
+            Halaman kemitraan investor, skema pendanaan ventura riset, dan program inkubasi bisnis mahasiswa <strong>Hima Einsten.com</strong> saat ini sedang dalam tahap perancangan & pengembangan.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div className="bg-white/80 border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-3 text-left">
-            <div className="w-10 h-10 rounded-xl bg-gold/5 border border-gold/15 flex items-center justify-center text-gold">
-              <Coins className="w-5 h-5" />
-            </div>
-            <h4 className="font-bold text-xs sm:text-sm text-slate-800">Inkubasi Bisnis Mahasiswa</h4>
-            <p className="text-[11px] text-slate-550 leading-relaxed font-light">
-              Pendampingan mentor dan penyediaan modal awal bagi ide bisnis teknologi dan kewirausahaan mandiri mahasiswa.
-            </p>
-          </div>
-
-          <div className="bg-white/80 border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-3 text-left">
-            <div className="w-10 h-10 rounded-xl bg-gold/5 border border-gold/15 flex items-center justify-center text-gold">
-              <Target className="w-5 h-5" />
-            </div>
-            <h4 className="font-bold text-xs sm:text-sm text-slate-800">Komersialisasi Riset Alat</h4>
-            <p className="text-[11px] text-slate-550 leading-relaxed font-light">
-              Mendukung akselerasi prototipe riset mahasiswa (alat ukur radiasi, otomasi sistem) agar siap uji sertifikasi industri.
-            </p>
-          </div>
-
-          <div className="bg-white/80 border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-3 text-left">
-            <div className="w-10 h-10 rounded-xl bg-gold/5 border border-gold/15 flex items-center justify-center text-gold">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <h4 className="font-bold text-xs sm:text-sm text-slate-800">Kemitraan Ventura Riset</h4>
-            <p className="text-[11px] text-slate-550 leading-relaxed font-light">
-              Kolaborasi strategis korporasi untuk pendaftaran paten riset dan partisipasi kompetisi sains nasional & global.
-            </p>
-          </div>
+        {/* Status Pill */}
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/80 border border-slate-200 shadow-sm text-xs font-medium text-slate-700">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+          <span>Tahap Perancangan & Integrasi Sistem Kabinet Phótisma</span>
         </div>
+
+        {/* Action Buttons */}
+        <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 active:scale-95 transition-all text-xs sm:text-sm font-sans shadow-md hover:shadow-lg"
+          >
+            Kembali ke Beranda <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link
+            to="/mitra"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-gold/40 text-gold-dark font-bold rounded-xl hover:bg-gold/5 active:scale-95 transition-all text-xs sm:text-sm font-sans shadow-sm hover:border-gold"
+          >
+            Lihat Mitra Terafiliasi
+          </Link>
+        </div>
+
       </div>
     </div>
   );

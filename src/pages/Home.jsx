@@ -405,7 +405,7 @@ export default function Home() {
           <iframe 
             className="w-full h-full"
             src="https://www.youtube.com/embed/rlw_VDUuNOk" 
-            title="Teaser Profile HIMPUNAN EINSTEN.COM"
+            title="Teaser Profile Hima Einsten.com"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
             allowFullScreen

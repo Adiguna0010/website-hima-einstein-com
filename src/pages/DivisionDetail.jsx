@@ -32,7 +32,7 @@ function DivisionProgramsView({ divisionKey, divisionName }) {
         {
           id: 1,
           name: `Program Kerja Unggulan ${divisionName}`,
-          desc: `Pemaparan program kerja awal divisi ${divisionName} untuk menyelaraskan target Kabinet Photisma HIMA EINSTEN.`,
+          desc: `Pemaparan program kerja awal divisi ${divisionName} untuk menyelaraskan target Kabinet Photisma Hima Einsten.`,
           status: 'Terencana'
         }
       ];
@@ -375,7 +375,7 @@ export default function DivisionDetail({ showToast }) {
       title: 'Eksternal',
       icon: '🌐',
       iconComponent: <Globe className="w-8 h-8 text-gold" />,
-      desc: 'Menghubungkan HIMA EINSTEN dengan alumni, korporasi industri nuklir/kesehatan, BRIN, serta himpunan mahasiswa luar.',
+      desc: 'Menghubungkan Hima Einsten dengan alumni, korporasi industri nuklir/kesehatan, BRIN, serta himpunan mahasiswa luar.',
       renderContent: () => <DivisionProgramsView divisionKey="external" divisionName="Eksternal" />
     },
     ristek: {
@@ -751,7 +751,7 @@ export default function DivisionDetail({ showToast }) {
       title: 'Dana Usaha',
       icon: '🛒',
       iconComponent: <ShoppingCart className="w-8 h-8 text-gold" />,
-      desc: 'Wirausaha mandiri Himpunan. Pembelian produk eksklusif PDH, barang dagangan, dan merchandise resmi HIMA EINSTEN.',
+      desc: 'Wirausaha mandiri Himpunan. Pembelian produk eksklusif PDH, barang dagangan, dan merchandise resmi Hima Einsten.',
       renderContent: () => (
         <div className="space-y-6 max-w-xl mx-auto">
           <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-left">Produk Populer Danus</h4>
@@ -804,7 +804,7 @@ export default function DivisionDetail({ showToast }) {
       title: 'Komunikasi dan Informatika',
       icon: '📢',
       iconComponent: <Radio className="w-8 h-8 text-gold" />,
-      desc: 'Media publikasi berita sains nuklir, dokumentasi kegiatan, rilis buletin triwulan EINSTEN, dan podcast audio visual.',
+      desc: 'Media publikasi berita sains nuklir, dokumentasi kegiatan, rilis buletin triwulan Einsten, dan podcast audio visual.',
       renderContent: () => <DivisionProgramsView divisionKey="kominfo" divisionName="Komunikasi dan Informatika" />
     },
     logistik: {

@@ -22,7 +22,7 @@ export default function Sphere() {
       key: 'external',
       title: 'Eksternal',
       iconComponent: <Globe className="w-6 h-6 text-gold" />,
-      desc: 'Menghubungkan HIMA EINSTEN dengan alumni, korporasi industri nuklir/kesehatan, BRIN, serta himpunan mahasiswa luar.',
+      desc: 'Menghubungkan Hima Einsten dengan alumni, korporasi industri nuklir/kesehatan, BRIN, serta himpunan mahasiswa luar.',
     },
     {
       key: 'ristek',
@@ -40,13 +40,13 @@ export default function Sphere() {
       key: 'danus',
       title: 'Dana Usaha',
       iconComponent: <ShoppingCart className="w-6 h-6 text-gold" />,
-      desc: 'Wirausaha mandiri Himpunan. Pembelian produk eksklusif PDH, barang dagangan, dan merchandise resmi HIMA EINSTEN.',
+      desc: 'Wirausaha mandiri Himpunan. Pembelian produk eksklusif PDH, barang dagangan, dan merchandise resmi Hima Einsten.',
     },
     {
       key: 'kominfo',
       title: 'Komunikasi dan Informatika',
       iconComponent: <Radio className="w-6 h-6 text-gold" />,
-      desc: 'Media publikasi berita sains nuklir, dokumentasi kegiatan, rilis buletin triwulan EINSTEN, dan podcast audio visual.',
+      desc: 'Media publikasi berita sains nuklir, dokumentasi kegiatan, rilis buletin triwulan Einsten, dan podcast audio visual.',
     },
     {
       key: 'logistik',

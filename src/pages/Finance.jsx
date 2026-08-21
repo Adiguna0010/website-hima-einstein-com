@@ -151,7 +151,7 @@ export default function Finance({ showToast }) {
           <Coins className="w-8 h-8 text-gold" /> TRANSPARANSI & KEUANGAN ORGANISASI
         </h1>
         <p className="text-zinc-500 text-xs sm:text-sm leading-relaxed font-light font-sans max-w-3xl">
-          Laporan keuangan transparan, transparansi arus kas operasional, pertanggungjawaban portofolio Dana Usaha (Danus), serta alokasi anggaran Kabinet Phótisma HIMA EINSTEN.
+          Laporan keuangan transparan, transparansi arus kas operasional, pertanggungjawaban portofolio Dana Usaha (Danus), serta alokasi anggaran Kabinet Phótisma Hima Einsten.
         </p>
       </div>
 
