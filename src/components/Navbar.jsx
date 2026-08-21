@@ -368,10 +368,10 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 border-b ${
+      <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-white/95 backdrop-blur-md border-gold-border py-1 shadow-md' 
-          : 'bg-white/90 backdrop-blur-md border-gold-border/30 py-1.5 shadow-sm'
+          ? 'bg-white/95 backdrop-blur-md border-b border-gold-border py-1 shadow-md' 
+          : 'bg-white/40 backdrop-blur-md border-b border-gold-border/20 py-1.5'
       }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-12 sm:h-14">
