@@ -27,10 +27,6 @@ export default function Mitra() {
 
       {/* Page Header */}
       <div className="text-left space-y-3 relative z-10 max-w-3xl">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold/30 bg-gold/5 text-[11px] font-mono font-semibold text-gold-dark uppercase tracking-widest">
-          <span className="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
-          AFFILIATED PARTNERS & INSTITUTIONS
-        </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
           <Handshake className="w-8 h-8 text-gold" /> INSTANSI & MITRA TERAFILIASI
         </h1>
