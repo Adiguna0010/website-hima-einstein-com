@@ -323,7 +323,6 @@ export default function Home() {
       {/* ================= KAHIM VISI MISI SECTION (Replacing Values) ================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-200 pt-20">
         <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
-          <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Kepemimpinan</span>
           <h2 className="text-3xl font-extrabold uppercase text-slate-900">VISI & MISI KETUA HIMPUNAN</h2>
           <p className="text-xs text-slate-500 font-light">Arah pergerakan Himpunan Mahasiswa di bawah pimpinan Kahim Kabinet Phótisma</p>
         </div>
