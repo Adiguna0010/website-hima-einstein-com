@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Mail, Loader2, ArrowRight, Phone, Check, X, ShieldAlert } from 'lucide-react';
+import { Lock, Mail, Loader2, ArrowRight, Phone, Check, X, ShieldAlert, Info } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login({ showToast }) {
@@ -152,24 +152,39 @@ export default function Login({ showToast }) {
         </div>
 
         <div className="glass-glow rounded-2xl p-8 relative overflow-hidden shadow-md bg-white border border-gold-border">
+          {/* Info Banner Login */}
+          <div className="mb-5 p-3 bg-amber-50/90 border border-amber-200/90 rounded-xl text-left flex items-start gap-2.5">
+            <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div className="text-[11px] text-amber-900 leading-relaxed">
+              <span className="font-semibold text-amber-950 block mb-0.5">Petunjuk Login Mahasiswa:</span>
+              Gunakan email berakhiran <strong className="font-mono text-amber-950 bg-amber-100/80 px-1 py-0.5 rounded">@einsten.com</strong> (contoh: <em>dianpratama@einsten.com</em>). Anda juga dapat masuk menggunakan <strong>NIM</strong> atau <strong>Nama Lengkap</strong>.
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
             {/* Fake inputs to prevent browser autofill */}
             <input type="text" name="prevent_autofill_username" style={{ display: 'none' }} tabIndex={-1} />
             <input type="password" name="prevent_autofill_password" style={{ display: 'none' }} tabIndex={-1} />
 
             <div className="space-y-1.5 text-left">
-              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block">Email Mahasiswa</label>
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block font-sans">Email Mahasiswa</label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
                 <input
                   type="text"
                   required
-                  placeholder="nama@einsten.com"
+                  placeholder="nama@einsten.com atau NIM"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   autoComplete="off"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
                 />
+              </div>
+              <div className="flex items-start gap-1.5 text-[11px] text-slate-500 mt-1 px-1">
+                <Info className="w-3.5 h-3.5 text-gold-dark shrink-0 mt-0.5" />
+                <p className="leading-tight">
+                  Format email: <strong className="text-slate-700 font-mono">nama@einsten.com</strong> (Anda juga dapat masuk menggunakan <strong>NIM</strong> atau <strong>Nama Lengkap</strong>).
+                </p>
               </div>
             </div>
 

@@ -1,73 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Calendar, User, GraduationCap, Phone, ShieldCheck, HelpCircle, ArrowRight, QrCode, CheckCircle2 } from 'lucide-react';
+import { Camera, Calendar, User, GraduationCap, Phone, ShieldCheck, HelpCircle, ArrowRight, QrCode, CheckCircle2, Search, Filter, Layers, Box, Tag, Sparkles, X } from 'lucide-react';
 import ScannerModal from '../components/ScannerModal';
 import { useAuth } from '../context/AuthContext';
+import { DEFAULT_INVENTORY_ITEMS, INVENTORY_CATEGORIES, INVENTORY_SIZES } from '../data/inventoryData';
 
 export default function Space({ showToast }) {
   const { currentUser } = useAuth();
-  const DEFAULT_INSTRUMENTS = [
-    {
-      id: 'HIMA-ARDU-001',
-      name: 'Arduino Uno R3',
-      status: 'Available',
-      image: '/Media/Media Aset dan Logistik/Arduino Uno.webp',
-      desc: 'Papan mikrokontroler berbasis ATmega328P untuk pengembangan IoT dan elektronika dasar.'
-    },
-    {
-      id: 'HIMA-GERI-002',
-      name: 'Mesin Gerinda Tangan',
-      status: 'Available',
-      image: '/Media/Media Aset dan Logistik/Gerinda.png',
-      desc: 'Mesin gerinda listrik pemotong logam, kayu, atau penghalus material proyek mekanik.'
-    },
-    {
-      id: 'HIMA-SOLD-003',
-      name: 'Solder Listrik',
-      status: 'Available',
-      image: '/Media/Media Aset dan Logistik/Solder.jpg',
-      desc: 'Solder tangan dengan pemanas cepat untuk perakitan dan penyolderan komponen kelistrikan.'
-    },
-    {
-      id: 'HIMA-TIMA-004',
-      name: 'Timah Solder (Roll)',
-      status: 'Available',
-      image: '/Media/Media Aset dan Logistik/Timah.jpg',
-      desc: 'Kawat timah penyambung komponen elektro berkadar rosin flux optimal.'
-    },
-    {
-      id: 'HIMA-BOR-005',
-      name: 'Mesin Bor Tangan (Bor)',
-      status: 'Available',
-      image: '📦',
-      desc: 'Alat bor tangan listrik serbaguna untuk melubangi PCB, logam, dan kayu praktikum.'
-    }
-  ];
-
   const [instruments, setInstruments] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('Semua');
+  const [selectedSize, setSelectedSize] = useState('Semua Ukuran');
+  const [selectedStatus, setSelectedStatus] = useState('Semua');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const loadData = () => {
+      const INVENTORY_VERSION = 'v2_rekapitulasi_full_151';
+      const storedVersion = localStorage.getItem('hima_inventory_version');
+
+      if (storedVersion !== INVENTORY_VERSION) {
+        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
+        localStorage.setItem('hima_inventory_version', INVENTORY_VERSION);
+        setInstruments(DEFAULT_INVENTORY_ITEMS);
+        return;
+      }
+
       const saved = localStorage.getItem('hima_instruments');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          // Check if default instruments are missing in user storage
-          const existingIds = new Set(parsed.map(i => i.id.toUpperCase()));
-          const missingDefaults = DEFAULT_INSTRUMENTS.filter(d => !existingIds.has(d.id.toUpperCase()));
-          if (missingDefaults.length > 0) {
-            const merged = [...parsed, ...missingDefaults];
-            localStorage.setItem('hima_instruments', JSON.stringify(merged));
-            setInstruments(merged);
-          } else {
-            setInstruments(parsed);
+          if (!Array.isArray(parsed) || parsed.length < 50) {
+            localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
+            localStorage.setItem('hima_inventory_version', INVENTORY_VERSION);
+            setInstruments(DEFAULT_INVENTORY_ITEMS);
+            return;
           }
+          setInstruments(parsed);
         } catch (e) {
-          localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
-          setInstruments(DEFAULT_INSTRUMENTS);
+          localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
+          localStorage.setItem('hima_inventory_version', INVENTORY_VERSION);
+          setInstruments(DEFAULT_INVENTORY_ITEMS);
         }
       } else {
-        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INSTRUMENTS));
-        setInstruments(DEFAULT_INSTRUMENTS);
+        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
+        localStorage.setItem('hima_inventory_version', INVENTORY_VERSION);
+        setInstruments(DEFAULT_INVENTORY_ITEMS);
       }
     };
 
@@ -270,42 +246,182 @@ export default function Space({ showToast }) {
     showToast('Permohonan peminjaman berhasil diajukan & otomatis terkirim ke WhatsApp Admin Logistik!', 'success');
   };
 
+  const getCategoryBadgeClass = (category) => {
+    switch (category) {
+      case 'Elektronik':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'Furniture':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'Properti Kegiatan':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'ATK':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'P3K':
+        return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'DANUS':
+        return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'Olahraga':
+        return 'bg-teal-50 text-teal-700 border-teal-200';
+      case 'Pemakaian Bersama':
+        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+      default:
+        return 'bg-slate-100 text-slate-700 border-slate-200';
+    }
+  };
+
+  // Filtered inventory calculation
+  const filteredInstruments = instruments.filter(inst => {
+    const matchesCat = selectedCategory === 'Semua' || inst.category === selectedCategory;
+    const matchesSize = selectedSize === 'Semua Ukuran' || inst.size === selectedSize;
+    const matchesStatus = selectedStatus === 'Semua' 
+      ? true 
+      : selectedStatus === 'Tersedia' 
+        ? inst.status === 'Available' 
+        : inst.status !== 'Available';
+    const q = searchQuery.toLowerCase().trim();
+    const matchesSearch = !q || 
+      inst.name.toLowerCase().includes(q) || 
+      (inst.id && inst.id.toLowerCase().includes(q)) || 
+      (inst.category && inst.category.toLowerCase().includes(q)) ||
+      (inst.desc && inst.desc.toLowerCase().includes(q));
+    return matchesCat && matchesSize && matchesStatus && matchesSearch;
+  });
+
   return (
-    <div className="relative pt-24 pb-16 space-y-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-slate-800">
+    <div className="relative pt-24 pb-16 space-y-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-slate-800">
       {/* Background glowing decorations */}
       <div className="absolute top-1/4 right-10 w-96 h-96 bg-gold/5 glow-orb"></div>
       
       <div className="text-center max-w-2xl mx-auto space-y-3">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 text-gold-dark text-xs font-bold border border-gold/30">
+          <Layers className="w-3.5 h-3.5" /> REKAPITULASI INVENTARIS LIVE
+        </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">EINSTEN SPACE</h1>
-        <p className="text-slate-555 text-xs sm:text-sm leading-relaxed font-light">
-          Portal peminjaman instrumen laboratorium elektronika milik Himpunan. Scan Barcode/QR Code pada alat fisik atau pilih alat untuk pengisian formulir peminjaman instan.
+        <p className="text-slate-500 text-xs sm:text-sm leading-relaxed font-light">
+          Portal terpadu peminjaman & katalog inventaris aset, logistik, instrumen laboratorium, ATK, P3K, properti dan perlengkapan HIMA EINSTEN.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-6">
+      {/* Category Pills Filtering Bar */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+            <Filter className="w-3.5 h-3.5 text-gold" /> Filter Kategori:
+          </span>
+          <span className="text-xs font-medium text-slate-500">
+            Menampilkan <strong className="text-slate-900">{filteredInstruments.length}</strong> dari {instruments.length} barang
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {INVENTORY_CATEGORIES.map(cat => {
+            const count = cat === 'Semua' ? instruments.length : instruments.filter(i => i.category === cat).length;
+            const isSelected = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-gold to-gold-light text-white shadow-md shadow-gold/20'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:border-gold/50 hover:bg-slate-50'
+                }`}
+              >
+                <span>{cat}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                  isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Search & Sub-filters Bar */}
+      <div className="bg-white border border-gold-border rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+        {/* Search Box */}
+        <div className="relative w-full sm:max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Cari nama barang, kode ID, atau deskripsi..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-9 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Size and Status Dropdowns & Scan */}
+        <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+          <select
+            value={selectedSize}
+            onChange={(e) => setSelectedSize(e.target.value)}
+            className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold"
+          >
+            {INVENTORY_SIZES.map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold"
+          >
+            <option value="Semua">Semua Status</option>
+            <option value="Tersedia">Tersedia</option>
+            <option value="Dipinjam">Sedang Dipinjam</option>
+          </select>
+
+          <button
+            onClick={() => handleOpenScanner(null)}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark font-bold text-xs border border-gold/30 transition-all active:scale-95 cursor-pointer shrink-0"
+          >
+            <QrCode className="w-3.5 h-3.5 text-gold-dark" /> Scan QR
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left Column: Instruments status board in LIST VIEW */}
         <div className="lg:col-span-8 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider text-left flex items-center gap-1.5">
-              <ShieldCheck className="w-4.5 h-4.5 text-gold" /> Daftar Ketersediaan Alat
+              <ShieldCheck className="w-4.5 h-4.5 text-gold" /> Daftar Ketersediaan Barang & Aset
             </h3>
-            
-            {/* Quick General Scan Button */}
-            <button
-              onClick={() => handleOpenScanner(null)}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark font-bold text-xs border border-gold/30 transition-all active:scale-95 cursor-pointer self-start sm:self-auto"
-            >
-              <QrCode className="w-4 h-4 text-gold-dark" /> Scan QR / Barcode Fisik
-            </button>
           </div>
 
           {/* List items container */}
           <div className="bg-white border border-gold-border rounded-2xl shadow-sm overflow-hidden divide-y divide-slate-100">
-            {instruments.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 text-xs">Belum ada alat laboratorium yang terdaftar.</div>
+            {filteredInstruments.length === 0 ? (
+              <div className="p-12 text-center text-slate-400 text-xs space-y-2">
+                <Box className="w-8 h-8 text-slate-300 mx-auto" />
+                <p>Tidak ada barang yang sesuai dengan filter atau pencarian.</p>
+                <button
+                  onClick={() => {
+                    setSelectedCategory('Semua');
+                    setSelectedSize('Semua Ukuran');
+                    setSelectedStatus('Semua');
+                    setSearchQuery('');
+                  }}
+                  className="text-gold-dark hover:underline font-semibold text-xs"
+                >
+                  Reset Filter
+                </button>
+              </div>
             ) : (
-              instruments.map((inst) => (
+              filteredInstruments.map((inst) => (
                 <div 
                   key={inst.id}
                   className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition-all text-left group"
@@ -320,14 +436,24 @@ export default function Space({ showToast }) {
                       )}
                     </div>
 
-                    <div className="space-y-1 min-w-0 flex-1">
+                    <div className="space-y-1.5 min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="text-sm font-bold text-slate-800 group-hover:text-gold-dark transition-colors truncate">
+                        <h4 className="text-sm font-bold text-slate-900 group-hover:text-gold-dark transition-colors">
                           {inst.name}
                         </h4>
                         <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-mono text-[9px] font-bold border border-slate-200">
                           {inst.id}
                         </span>
+                        {inst.category && (
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold border ${getCategoryBadgeClass(inst.category)}`}>
+                            {inst.category}
+                          </span>
+                        )}
+                        {inst.size && (
+                          <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[9px] font-medium border border-slate-200">
+                            {inst.size}
+                          </span>
+                        )}
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
                           inst.status === 'Available' 
                             ? 'bg-emerald-50 text-emerald-600 border-emerald-500/20' 
@@ -336,9 +462,18 @@ export default function Space({ showToast }) {
                           {inst.status === 'Available' ? 'Tersedia' : 'Sedang Dipinjam'}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 leading-relaxed font-light line-clamp-2">
-                        {inst.desc}
-                      </p>
+
+                      <div className="flex items-center gap-3 text-[11px] text-slate-500 flex-wrap">
+                        <span>Stok: <strong className="text-slate-800 font-semibold">{inst.quantity || 1} Unit</strong></span>
+                        <span>•</span>
+                        <span>Kondisi: <strong className="text-slate-800">{inst.condition || 'Baik'}</strong></span>
+                        {inst.desc && (
+                          <>
+                            <span>•</span>
+                            <span className="text-slate-500 font-light truncate max-w-xs">{inst.desc}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -348,7 +483,7 @@ export default function Space({ showToast }) {
                       <>
                         <button 
                           onClick={() => handleSelectTool(inst)}
-                          className="px-4 py-2 bg-gold hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer"
+                          className="px-4 py-2 bg-gradient-to-r from-gold to-gold-light hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer"
                         >
                           Pinjam Barang
                         </button>
@@ -405,7 +540,7 @@ export default function Space({ showToast }) {
 
                 <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-left text-xs space-y-1">
                   <div className="flex justify-between">
-                    <span className="text-slate-500 text-[11px]">Alat Lab:</span>
+                    <span className="text-slate-500 text-[11px]">Alat Lab / Barang:</span>
                     <span className="font-bold text-slate-800">{submittedSuccess.toolName}</span>
                   </div>
                   <div className="flex justify-between">
@@ -432,7 +567,7 @@ export default function Space({ showToast }) {
             ) : showForm ? (
               <form onSubmit={handleReservationSubmit} className="space-y-3.5">
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5 text-left">
-                  <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider block">Alat Yang Dipilih</span>
+                  <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider block">Alat / Barang Yang Dipilih</span>
                   <p className="text-xs font-bold text-gold-dark truncate">{selectedToolName}</p>
                   <p className="text-[9px] font-mono text-slate-500">{selectedToolId}</p>
                 </div>

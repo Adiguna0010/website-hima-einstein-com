@@ -302,9 +302,13 @@ export const AuthProvider = ({ children }) => {
   const login = (emailOrNim, password) => {
     return new Promise((resolve, reject) => {
       const inputStr = (emailOrNim || '').trim();
+      const normInput = normalizeEmail(inputStr);
+      const normInputWithDomain = normInput.includes('@') ? normInput : normalizeEmail(`${inputStr}@einsten.com`);
+
       const user = users.find(
         u => (
-          normalizeEmail(u.email) === normalizeEmail(inputStr) ||
+          normalizeEmail(u.email) === normInput ||
+          normalizeEmail(u.email) === normInputWithDomain ||
           (u.nim && u.nim.trim() === inputStr) ||
           (u.name && u.name.trim().toLowerCase() === inputStr.toLowerCase())
         ) && u.password === (password || '').trim()
