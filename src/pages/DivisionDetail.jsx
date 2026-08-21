@@ -204,7 +204,7 @@ export default function DivisionDetail({ showToast }) {
 
   const divisions = {
     bph: {
-      title: 'Badan Pengurus Harian',
+      title: 'Pengurus Harian',
       icon: '⚡',
       iconComponent: <Users className="w-8 h-8 text-gold" />,
       desc: 'Pilar komando pusat, administrasi kesekretariatan, pengarsipan surat resmi, serta transparansi pengelolaan anggaran keuangan Himpunan.',
@@ -282,7 +282,7 @@ export default function DivisionDetail({ showToast }) {
           {
             name: 'Sunniy',
             nim: '022400041',
-            role: 'Kadiv Komunikasi & Informasi',
+            role: 'Kadiv Komunikasi dan Informatika',
             photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Kominfo/Kepala Divisi Komunikasi dan Informasi_Sunniy - 022400041.JPG'
           },
           {
@@ -298,7 +298,7 @@ export default function DivisionDetail({ showToast }) {
             {/* Core BPH Section */}
             <div className="space-y-4">
               <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest border-l-2 border-gold pl-2">
-                Struktur Organisasi Inti (BPH Core)
+                Struktur Pengurus Harian
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {bphCore.map((p) => (
@@ -372,11 +372,11 @@ export default function DivisionDetail({ showToast }) {
       renderContent: () => <DivisionProgramsView divisionKey="internal" divisionName="Internal" />
     },
     external: {
-      title: 'External Division',
+      title: 'Eksternal',
       icon: '🌐',
       iconComponent: <Globe className="w-8 h-8 text-gold" />,
       desc: 'Menghubungkan HIMA EINSTEN dengan alumni, korporasi industri nuklir/kesehatan, BRIN, serta himpunan mahasiswa luar.',
-      renderContent: () => <DivisionProgramsView divisionKey="external" divisionName="External" />
+      renderContent: () => <DivisionProgramsView divisionKey="external" divisionName="Eksternal" />
     },
     ristek: {
       title: 'Riset & Teknologi',
@@ -801,14 +801,14 @@ export default function DivisionDetail({ showToast }) {
       )
     },
     kominfo: {
-      title: 'Komunikasi & Informasi',
+      title: 'Komunikasi dan Informatika',
       icon: '📢',
       iconComponent: <Radio className="w-8 h-8 text-gold" />,
       desc: 'Media publikasi berita sains nuklir, dokumentasi kegiatan, rilis buletin triwulan EINSTEN, dan podcast audio visual.',
-      renderContent: () => <DivisionProgramsView divisionKey="kominfo" divisionName="Komunikasi & Informasi" />
+      renderContent: () => <DivisionProgramsView divisionKey="kominfo" divisionName="Komunikasi dan Informatika" />
     },
     logistik: {
-      title: 'Logistik',
+      title: 'Aset dan Logistik',
       icon: '📦',
       iconComponent: <Box className="w-8 h-8 text-gold" />,
       desc: 'Portal peminjaman alat penunjang praktikum mahasiswa (solder, multimeter, starter kit Arduino) secara transparan.',

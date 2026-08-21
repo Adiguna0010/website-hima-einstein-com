@@ -151,7 +151,7 @@ export default function Home() {
       ]
     },
     {
-      title: 'Divisi Komunikasi dan Informasi (Kominfo)',
+      title: 'Divisi Komunikasi dan Informatika (Kominfo)',
       kadiv: {
         name: 'Sunniy',
         nim: '022400041',
@@ -279,14 +279,14 @@ export default function Home() {
             <div className="relative bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md aspect-video sm:aspect-square">
               <img 
                 src="/Media Einsten/Media Umum/Foto Umum Beranda/DSC_7954.JPG" 
-                alt="Keluarga Besar Himpunan Einstein.com" 
+                alt="Keluarga Besar Himpunan Einsten.com" 
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.target.src = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80";
                 }}
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-left">
-                <p className="text-xs font-semibold text-white">Keluarga Besar Himpunan Einstein.com</p>
+                <p className="text-xs font-semibold text-white">Keluarga Besar Himpunan Einsten.com</p>
                 <p className="text-[10px] text-gold-light font-medium mt-0.5">Kabinet Phótisma 2026/2027</p>
               </div>
             </div>

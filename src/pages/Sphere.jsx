@@ -8,7 +8,7 @@ export default function Sphere() {
   const divisions = [
     {
       key: 'bph',
-      title: 'BPH (Badan Pengurus Harian)',
+      title: 'Pengurus Harian',
       iconComponent: <Users className="w-6 h-6 text-gold" />,
       desc: 'Pilar komando pusat, administrasi kesekretariatan, pengarsipan surat resmi, serta transparansi pengelolaan anggaran keuangan Himpunan.',
     },
@@ -20,7 +20,7 @@ export default function Sphere() {
     },
     {
       key: 'external',
-      title: 'External Division',
+      title: 'Eksternal',
       iconComponent: <Globe className="w-6 h-6 text-gold" />,
       desc: 'Menghubungkan HIMA EINSTEN dengan alumni, korporasi industri nuklir/kesehatan, BRIN, serta himpunan mahasiswa luar.',
     },
@@ -44,13 +44,13 @@ export default function Sphere() {
     },
     {
       key: 'kominfo',
-      title: 'Komunikasi & Informasi',
+      title: 'Komunikasi dan Informatika',
       iconComponent: <Radio className="w-6 h-6 text-gold" />,
       desc: 'Media publikasi berita sains nuklir, dokumentasi kegiatan, rilis buletin triwulan EINSTEN, dan podcast audio visual.',
     },
     {
       key: 'logistik',
-      title: 'Logistik',
+      title: 'Aset dan Logistik',
       iconComponent: <Box className="w-6 h-6 text-gold" />,
       desc: 'Portal peminjaman alat penunjang praktikum mahasiswa (solder, multimeter, starter kit Arduino) secara transparan.',
     }

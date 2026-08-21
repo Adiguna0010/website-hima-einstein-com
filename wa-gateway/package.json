@@ -1,5 +1,5 @@
 {
-  "name": "hima-einstein-wa-gateway",
+  "name": "hima-einsten-wa-gateway",
   "version": "1.0.0",
   "description": "Self-Hosted WhatsApp Gateway Server for HIMA EINSTEN",
   "main": "server.js",

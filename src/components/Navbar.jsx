@@ -329,13 +329,13 @@ export default function Navbar() {
   };
 
   const divisions = [
-    { label: 'BPH', key: 'bph' },
+    { label: 'Pengurus Harian', key: 'bph' },
     { label: 'Internal', key: 'internal' },
-    { label: 'External', key: 'external' },
+    { label: 'Eksternal', key: 'external' },
     { label: 'Riset & Teknologi', key: 'ristek' },
     { label: 'Pengembangan Mhs', key: 'pengma' },
     { label: 'Dana Usaha', key: 'danus' },
-    { label: 'Kominfo', key: 'kominfo' },
+    { label: 'Komunikasi dan Informatika', key: 'kominfo' },
     { label: 'Aset & Logistik', key: 'logistik' },
   ];
 

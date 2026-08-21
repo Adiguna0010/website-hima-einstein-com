@@ -144,7 +144,7 @@ export default function CabinetStructure() {
       ]
     },
     {
-      title: 'Divisi Komunikasi dan Informasi (Kominfo)',
+      title: 'Divisi Komunikasi dan Informatika (Kominfo)',
       kadiv: {
         name: 'Sunniy',
         nim: '022400041',
@@ -228,7 +228,7 @@ export default function CabinetStructure() {
 
         {/* Core BPH */}
         <div className="space-y-6 pt-4">
-          <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-center">Badan Pengurus Harian (BPH Core)</h4>
+          <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-center">Pengurus Harian</h4>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {bphCore.map((p) => (
               <div 

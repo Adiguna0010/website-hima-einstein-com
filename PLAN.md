@@ -1,6 +1,6 @@
-# Rencana Implementasi: Website HIMA EINSTEIN.COM (Kabinet Phótisma)
+# Rencana Implementasi: Website HIMA EINSTEN.COM (Kabinet Phótisma)
 
-Rencana ini dibuat untuk merancang dan membangun website resmi **Himpunan Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia** (**HIMA EINSTEIN.COM**) dengan mengusung tema **Kabinet Phótisma**. Website ini akan dirancang dengan standar internasional, elegan, dan fungsional—terinspirasi dari konsep situs [HMTC ITS](https://hmtc-its.com/) yang modern dan dinamis.
+Rencana ini dibuat untuk merancang dan membangun website resmi **Himpunan Elektronika Instrumentasi Politeknik Teknologi Nuklir Indonesia** (**HIMA EINSTEN.COM**) dengan mengusung tema **Kabinet Phótisma**. Website ini akan dirancang dengan standar internasional, elegan, dan fungsional—terinspirasi dari konsep situs [HMTC ITS](https://hmtc-its.com/) yang modern dan dinamis.
 
 ---
 
@@ -27,19 +27,19 @@ Setiap tab pada navigasi utama akan diimplementasikan sebagai halaman (route) ma
 ### 1. Halaman Beranda (Home)
 * *Konten:* Profil lengkap HIMA, Sambutan Ketua Himpunan, Visi & Misi Kabinet Phótisma, Nilai-nilai organisasi, dan Video profil Himpunan.
 
-### 2. Halaman Einstein Sphere (Sektor Divisi Hub)
+### 2. Halaman Einsten Sphere (Sektor Divisi Hub)
 * *Konten:* Hub khusus yang memaparkan 8 divisi kerja Himpunan (BPH, Internal, External, Ristek, Pengma, Danus, Kominfo, Logistik).
 * *Fitur:* Dropdown cepat pada navbar and kartu interaktif yang meluncurkan *Console Drawer* detail program kerja masing-masing divisi dari kanan layar.
 
-### 3. Halaman Einstein Market (Dana Usaha Store)
-* *Konten:* Toko online e-commerce resmi HIMA EINSTEIN untuk penjualan merchandise eksklusif (PDH, Kaos, Jaket, Ganci).
+### 3. Halaman Einsten Market (Dana Usaha Store)
+* *Konten:* Toko online e-commerce resmi HIMA EINSTEN untuk penjualan merchandise eksklusif (PDH, Kaos, Jaket, Ganci).
 * *Fitur:* Grid produk dinamis, Shopping Cart terintegrasi, dan tombol checkout instan terhubung ke WhatsApp.
 
-### 4. Halaman Einstein Quest (Sejarah & Dokumentasi)
+### 4. Halaman Einsten Quest (Sejarah & Dokumentasi)
 * *Konten:* Linimasa (Timeline) perjalanan Himpunan dari tahun berdiri hingga era Kabinet Phótisma.
 * *Fitur:* Dokumenter sejarah interaktif, arsip foto-foto kegiatan penting, dan sorotan pencapaian Himpunan.
 
-### 5. Halaman Einstein Space (Peminjaman Alat)
+### 5. Halaman Einsten Space (Peminjaman Alat)
 * *Konten:* Portal peminjaman instrumen laboratorium (Multimeter, Solder, Arduino Kit) milik Himpunan.
 * *Fitur:* Status ketersediaan alat secara real-time (Tersedia / Dipinjam) dan form reservasi booking WhatsApp otomatis.
 
@@ -47,9 +47,9 @@ Setiap tab pada navigasi utama akan diimplementasikan sebagai halaman (route) ma
 * *Konten:* Portal administrasi digital bagi seluruh anggota Himpunan.
 * *Fitur:* Download center untuk template berkas resmi (Proposal, LPJ, Surat Undangan) dan form pengajuan nomor surat resmi ke BPH.
 
-### 7. Halaman Einstein Kalender (Agenda Ormawa)
+### 7. Halaman Einsten Kalender (Agenda Ormawa)
 * *Konten:* Kalender agenda kegiatan terintegrasi bulanan.
-* *Fitur:* Kalender ormawa interaktif yang menayangkan jadwal kegiatan HIMA EINSTEIN dan agenda ormawa eksternal kampus Poltek Nuklir.
+* *Fitur:* Kalender ormawa interaktif yang menayangkan jadwal kegiatan HIMA EINSTEN dan agenda ormawa eksternal kampus Poltek Nuklir.
 
 ---
 

@@ -37,7 +37,7 @@ export default function BendaharaDashboard({ showToast }) {
 
   // BUDGET STATE
   const defaultBudgets = [
-    { division: 'BPH (Badan Pengurus Harian)', allocated: 0, used: 0, color: 'bg-amber-500' },
+    { division: 'Pengurus Harian', allocated: 0, used: 0, color: 'bg-amber-500' },
     { division: 'Dana Usaha (Danus)', allocated: 0, used: 0, color: 'bg-emerald-500' },
     { division: 'Riset & Teknologi (Ristek)', allocated: 0, used: 0, color: 'bg-blue-500' },
     { division: 'Pengembangan Mahasiswa (Pengma)', allocated: 0, used: 0, color: 'bg-purple-500' },

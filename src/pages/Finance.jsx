@@ -6,7 +6,7 @@ import {
 
 export default function Finance({ showToast }) {
   const defaultBudgets = [
-    { division: 'BPH (Badan Pengurus Harian)', allocated: 0, used: 0, color: 'bg-amber-500' },
+    { division: 'Pengurus Harian', allocated: 0, used: 0, color: 'bg-amber-500' },
     { division: 'Dana Usaha (Danus)', allocated: 0, used: 0, color: 'bg-emerald-500' },
     { division: 'Riset & Teknologi (Ristek)', allocated: 0, used: 0, color: 'bg-blue-500' },
     { division: 'Pengembangan Mahasiswa (Pengma)', allocated: 0, used: 0, color: 'bg-purple-500' },
@@ -368,7 +368,7 @@ export default function Finance({ showToast }) {
           <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex gap-2.5 items-start mt-4">
             <Info className="w-4.5 h-4.5 text-amber-600 shrink-0 mt-0.5" />
             <p className="text-[10px] text-amber-800 leading-relaxed font-light">
-              <strong>Info Aksesibilitas:</strong> Semua laporan keuangan di atas telah diaudit secara internal oleh BPH (Badan Pengurus Harian) dan disetujui oleh Pembina Himpunan.
+              <strong>Info Aksesibilitas:</strong> Semua laporan keuangan di atas telah diaudit secara internal oleh Pengurus Harian dan disetujui oleh Pembina Himpunan.
             </p>
           </div>
         </div>

@@ -9,15 +9,15 @@ export default function DivisionDashboard({ showToast }) {
   const getDivisionInfo = (role) => {
     switch (role) {
       case 'Operator BPH':
-        return { key: 'bph', name: 'Badan Pengurus Harian' };
+        return { key: 'bph', name: 'Pengurus Harian' };
       case 'Operator Internal':
         return { key: 'internal', name: 'Internal' };
       case 'Operator External':
-        return { key: 'external', name: 'External' };
+        return { key: 'external', name: 'Eksternal' };
       case 'Operator Pengma':
         return { key: 'pengma', name: 'Pengembangan Mahasiswa' };
       case 'Operator Kominfo':
-        return { key: 'kominfo', name: 'Komunikasi & Informasi' };
+        return { key: 'kominfo', name: 'Komunikasi dan Informatika' };
       case 'Operator Ristek':
         return { key: 'ristek', name: 'Riset & Teknologi' };
       case 'Operator Danus':
