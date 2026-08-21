@@ -85,30 +85,17 @@ export default function RistekDashboard({ showToast }) {
     // Schedules
     const savedSchedules = localStorage.getItem('hima_ristek_schedules');
     if (savedSchedules) {
-      setSchedules(JSON.parse(savedSchedules));
+      try {
+        const parsed = JSON.parse(savedSchedules);
+        const filtered = parsed.filter(s => s.id !== 1 && s.id !== 2);
+        localStorage.setItem('hima_ristek_schedules', JSON.stringify(filtered));
+        setSchedules(filtered);
+      } catch (e) {
+        setSchedules([]);
+      }
     } else {
-      const DEFAULT_SCHEDULES = [
-        {
-          id: 1,
-          date: 'Senin, 20 Juli 2026',
-          time: '15.30 - 17.00 WIB',
-          title: 'Kelas Dasar Pemrograman C++',
-          desc: 'Pengenalan Sintaks Dasar, Variabel, Array, dan Pointers untuk mahasiswa baru.',
-          tutor: 'Adiguna Nugroho Halomoan (Kadiv Ristek)',
-          room: 'Lab Komputasi 3'
-        },
-        {
-          id: 2,
-          date: 'Rabu, 22 Juli 2026',
-          time: '13.00 - 15.00 WIB',
-          title: 'Praktikum Elektronika Lanjut',
-          desc: 'Desain Sirkuit Analog, Penggunaan Osiloskop, & Lab Virtual Proteus.',
-          tutor: 'Dian Ristek (Operator)',
-          room: 'Laboratorium Elektronika Dasar'
-        }
-      ];
-      localStorage.setItem('hima_ristek_schedules', JSON.stringify(DEFAULT_SCHEDULES));
-      setSchedules(DEFAULT_SCHEDULES);
+      localStorage.setItem('hima_ristek_schedules', JSON.stringify([]));
+      setSchedules([]);
     }
 
     // Collab Projects
