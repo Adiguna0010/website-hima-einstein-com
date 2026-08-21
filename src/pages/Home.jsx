@@ -301,7 +301,7 @@ export default function Home() {
           <div className="lg:col-span-7 space-y-6 text-left">
             <div>
               <span className="text-xs font-bold text-gold-dark uppercase tracking-widest block">Tentang Kami</span>
-              <h2 className="text-3xl font-extrabold uppercase text-slate-900 mt-1">HIMPUNAN EINSTEN.COM</h2>
+              <h2 className="text-3xl font-extrabold text-slate-900 mt-1">Hima Einsten.com</h2>
             </div>
             
             <p className="text-slate-650 text-sm leading-relaxed font-light">
