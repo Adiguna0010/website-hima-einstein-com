@@ -124,24 +124,6 @@ const DEFAULT_USERS = [
     role: 'Operator Pengma',
     photo: '/Media/Pengurus Hima Kabinet Photisma 2026/Pema/Kepala Divisi Pengembangan Mahasiswa_Farrelega Zhafran Vito Ardhana - 022400038.JPG',
     status: 'Active'
-  },
-
-  // ── AKUN CONTOH / ANGGOTA ──
-  {
-    name: 'Regular Member',
-    nim: '240055',
-    email: 'member@einsten.com',
-    password: 'user123',
-    role: 'Anggota Biasa',
-    status: 'Active'
-  },
-  {
-    name: 'Calon Anggota',
-    nim: '240066',
-    email: 'calon@einsten.com',
-    password: 'user123',
-    role: 'Anggota Biasa',
-    status: 'Active'
   }
 ];
 
@@ -178,6 +160,17 @@ export const AuthProvider = ({ children }) => {
       try {
         let parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
+          // Filter out dummy test accounts (Regular Member, Calon Anggota)
+          parsed = parsed.filter(u => 
+            u && 
+            u.nim !== '240055' && 
+            u.nim !== '240066' && 
+            normalizeEmail(u.email) !== 'member@einsten.com' && 
+            normalizeEmail(u.email) !== 'calon@einsten.com' &&
+            u.name !== 'Regular Member' &&
+            u.name !== 'Calon Anggota'
+          );
+
           if (!hasWipedPhones) {
             parsed = parsed.map(u => {
               if (u) {
