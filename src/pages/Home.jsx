@@ -224,7 +224,7 @@ export default function Home() {
               SELAMAT DATANG
             </h1>
             <p className="text-base sm:text-xl lg:text-2xl font-extrabold text-slate-800 tracking-tight leading-snug">
-              di Website Resmi <span className="bg-gradient-to-r from-gold-dark via-gold to-amber-500 bg-clip-text text-transparent">HIMA EINSTEN</span> Poltek Nuklir
+              di Website Resmi <span className="bg-gradient-to-r from-gold-dark via-gold to-amber-500 bg-clip-text text-transparent">Hima Einsten.com</span> Poltek Nuklir
             </p>
           </div>
           
