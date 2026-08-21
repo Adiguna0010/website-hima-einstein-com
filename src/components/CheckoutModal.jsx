@@ -189,7 +189,7 @@ export default function CheckoutModal({ isOpen, onClose }) {
               />
             </div>
             <p className="text-center text-xs text-slate-500 leading-normal max-w-xs">
-              Silakan scan QRIS di atas untuk melakukan transfer pembayaran resmi Hima Einsten.com.
+              Silakan scan QRIS di atas untuk melakukan transfer pembayaran resmi hima einsten.com.
             </p>
           </div>
 

@@ -91,7 +91,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-slate-200 mt-10 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500">
-          <p>&copy; {new Date().getFullYear()} Hima Einsten.com Kabinet Phótisma. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} hima einsten.com Kabinet Phótisma. All Rights Reserved.</p>
           <p className="mt-2 md:mt-0 flex items-center gap-1">
             <span>Powered by BRIN Yogyakarta</span>
           </p>

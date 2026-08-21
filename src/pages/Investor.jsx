@@ -37,7 +37,7 @@ export default function Investor() {
             Portal Investor & Pendanaan
           </h1>
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-light font-sans max-w-xl mx-auto">
-            Halaman kemitraan investor, skema pendanaan ventura riset, dan program inkubasi bisnis mahasiswa <strong>Hima Einsten.com</strong> saat ini sedang dalam tahap perancangan & pengembangan.
+            Halaman kemitraan investor, skema pendanaan ventura riset, dan program inkubasi bisnis mahasiswa <strong>hima einsten.com</strong> saat ini sedang dalam tahap perancangan & pengembangan.
           </p>
         </div>
 
