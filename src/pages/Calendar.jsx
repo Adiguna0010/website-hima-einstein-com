@@ -65,7 +65,6 @@ export default function Calendar({ showToast }) {
       <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-gold/5 glow-orb"></div>
 
       <div className="text-center max-w-2xl mx-auto space-y-3">
-        <span className="text-xs font-bold text-gold-dark uppercase tracking-widest">Agenda & Timeline Kegiatan</span>
         <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">EINSTEN KALENDER</h1>
         <p className="text-slate-500 text-xs sm:text-sm leading-relaxed font-light">
           Pantau jadwal program kerja Hima Einsten serta agenda ormawa eksternal kampus Politeknik Teknologi Nuklir Indonesia.
