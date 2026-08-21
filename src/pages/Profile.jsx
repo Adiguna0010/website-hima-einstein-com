@@ -653,15 +653,20 @@ export default function Profile({ showToast }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {/* QRIS */}
                   <div className="space-y-3 text-center">
-                    <p className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1.5"><QrCode className="w-4 h-4 text-gold" /> QRIS Pembayaran</p>
+                    <p className="text-xs font-bold text-slate-700 uppercase tracking-widest flex items-center justify-center gap-1.5"><QrCode className="w-4 h-4 text-gold" /> QRIS Pembayaran Kas</p>
                     <div className="border-2 border-dashed border-gold/40 rounded-2xl p-3 bg-slate-50">
                       <img
-                        src="/Media/QRIS/AT-Service.jpeg"
-                        alt="QRIS HIMA EINSTEN"
-                        className="w-full max-w-[200px] mx-auto rounded-xl object-contain"
+                        src="/Media/QRIS/qris-hima-einsten.jpg"
+                        alt="QRIS hima einsten.com"
+                        className="w-full max-w-[200px] mx-auto rounded-xl object-contain shadow-sm"
                       />
                     </div>
-                    <p className="text-[10px] text-slate-400">Scan QRIS di atas menggunakan m-Banking / e-Wallet Anda</p>
+                    <div className="space-y-0.5">
+                      <span className="text-[9px] font-mono font-bold text-slate-700 bg-slate-200/80 px-2 py-0.5 rounded">
+                        NMID: ID1026485962678
+                      </span>
+                      <p className="text-[10px] text-slate-400">Scan QRIS di atas menggunakan m-Banking / e-Wallet Anda</p>
+                    </div>
                     <div className="bg-gold/10 border border-gold/30 rounded-xl px-4 py-3">
                       <p className="text-[10px] text-slate-500 uppercase tracking-wider">Tagihan / Sisa Pembayaran</p>
                       <p className="text-xl font-extrabold text-gold-dark">{formatRupiah(selectedSem.remaining ?? selectedSem.fee)}</p>

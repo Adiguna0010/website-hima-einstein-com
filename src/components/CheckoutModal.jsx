@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, QrCode, Upload, CheckCircle2, AlertTriangle, Send, Loader2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
-const STATIC_QRIS = '00020101021126610014COM.GO-JEK.WWW01189360091432097791970210G2097791970303UMI51440014ID.CO.QRIS.WWW0215ID10254006622310303UMI5204762953033605802ID5910At-Service6014KOTA TANGERANG61051515762070703A016304EC70';
+const STATIC_QRIS = '00020101021126610014COM.GO-JEK.WWW01189360091438247187090210G8247187090303UMI51440014ID.CO.QRIS.WWW0215ID10264859626780303UMI5204573253033605802ID5916Hima Einsten.com6004AGAM61052618162070703A01630482E8';
 
 function generateDynamicQRIS(staticQris, amount) {
   function crc16(str) {
@@ -303,20 +303,25 @@ export default function CheckoutModal({ isOpen, onClose, showToast }) {
 
               {/* QRIS section */}
               <div className="flex flex-col items-center p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-                <div className="w-48 h-48 bg-white p-2 rounded-xl flex items-center justify-center relative shadow-md">
-                  {/* QR Image Placeholder / Real QRIS */}
+                <div className="w-52 h-52 bg-white p-2 rounded-xl flex items-center justify-center relative shadow-md">
+                  {/* QR Image Dynamic / Real QRIS */}
                   <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(dynamicQris)}`}
-                    alt="QRIS HIMA EINSTEN" 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(dynamicQris)}`}
+                    alt="QRIS HIMA EINSTEN.COM" 
                     className="w-full h-full object-contain rounded-lg"
                     onError={(e) => {
-                      e.target.src = "/Media/QRIS/AT-Service.jpeg";
+                      e.target.src = "/Media/QRIS/qris-hima-einsten.jpg";
                     }}
                   />
                 </div>
-                <p className="text-center text-xs text-slate-500 leading-normal max-w-xs">
-                  Silakan scan QRIS di atas untuk melakukan transfer pembayaran resmi hima einsten.com.
-                </p>
+                <div className="text-center space-y-1">
+                  <span className="text-[10px] font-mono font-bold text-slate-700 bg-slate-200/70 px-2 py-0.5 rounded">
+                    NMID: ID1026485962678
+                  </span>
+                  <p className="text-center text-xs text-slate-500 leading-normal max-w-xs">
+                    Silakan scan QRIS di atas untuk melakukan transfer pembayaran resmi <strong>hima einsten.com</strong>.
+                  </p>
+                </div>
               </div>
 
               {/* Upload Receipt */}
