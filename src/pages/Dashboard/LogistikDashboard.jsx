@@ -43,7 +43,7 @@ export default function LogistikDashboard({ showToast }) {
 
   useEffect(() => {
     const loadData = () => {
-      const INVENTORY_VERSION = 'v3_rekapitulasi_klasifikasi_lengkap';
+      const INVENTORY_VERSION = 'v5_spreadsheet_rekapitulasi_live_2026';
       const storedVersion = localStorage.getItem('hima_inventory_version');
 
       // Load instruments
@@ -55,7 +55,7 @@ export default function LogistikDashboard({ showToast }) {
       } else {
         try {
           const parsed = JSON.parse(savedInst);
-          if (!Array.isArray(parsed) || parsed.length < 50) {
+          if (!Array.isArray(parsed) || parsed.length < 100) {
             localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
             localStorage.setItem('hima_inventory_version', INVENTORY_VERSION);
             setInstruments(DEFAULT_INVENTORY_ITEMS);

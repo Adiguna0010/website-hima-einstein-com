@@ -11,10 +11,11 @@ export default function Space({ showToast }) {
   const [selectedSize, setSelectedSize] = useState('Semua Ukuran');
   const [selectedStatus, setSelectedStatus] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
+  const [classificationMode, setClassificationMode] = useState('fungsi');
 
   useEffect(() => {
     const loadData = () => {
-      const INVENTORY_VERSION = 'v2_rekapitulasi_full_151';
+      const INVENTORY_VERSION = 'v5_spreadsheet_rekapitulasi_live_2026';
       const storedVersion = localStorage.getItem('hima_inventory_version');
 
       if (storedVersion !== INVENTORY_VERSION) {
@@ -28,7 +29,7 @@ export default function Space({ showToast }) {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          if (!Array.isArray(parsed) || parsed.length < 50) {
+          if (!Array.isArray(parsed) || parsed.length < 100) {
             localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
             localStorage.setItem('hima_inventory_version', INVENTORY_VERSION);
             setInstruments(DEFAULT_INVENTORY_ITEMS);
