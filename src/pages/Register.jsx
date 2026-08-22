@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Phone, User, ShieldAlert, Loader2, ArrowRight, IdCard, Check, X, Info } from 'lucide-react';
+import { Lock, Phone, User, Loader2, ArrowRight, IdCard, Check, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register({ showToast }) {
@@ -100,15 +100,6 @@ export default function Register({ showToast }) {
         </div>
 
         <div className="glass-glow rounded-2xl p-8 relative overflow-hidden shadow-md bg-white border border-gold-border">
-          {/* Email Info Banner */}
-          <div className="mb-5 p-3 bg-amber-50/90 border border-amber-200/90 rounded-xl text-left flex items-start gap-2.5">
-            <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <div className="text-[11px] text-amber-900 leading-relaxed">
-              <span className="font-semibold text-amber-950 block mb-0.5">Informasi Email Akun Mahasiswa:</span>
-              Akun Anda otomatis mendapatkan email resmi mahasiswa dengan domain <strong className="font-mono text-amber-950 bg-amber-100/80 px-1 py-0.5 rounded">@einsten.com</strong> (berdasarkan Nama Lengkap) untuk masuk ke portal.
-            </div>
-          </div>
-
           <form onSubmit={handlePreSubmit} className="space-y-4" autoComplete="off">
             {/* Fake inputs to prevent browser autofill */}
             <input type="text" name="prevent_autofill_username" style={{ display: 'none' }} tabIndex={-1} />

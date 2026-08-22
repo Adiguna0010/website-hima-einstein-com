@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Mail, Loader2, ArrowRight, Phone, Check, X, ShieldAlert, Info } from 'lucide-react';
+import { Lock, Mail, Loader2, ArrowRight, Phone, Check, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login({ showToast }) {
@@ -170,12 +170,6 @@ export default function Login({ showToast }) {
                   autoComplete="off"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
                 />
-              </div>
-              <div className="flex items-start gap-1.5 text-[11px] text-slate-500 mt-1 px-1">
-                <Info className="w-3.5 h-3.5 text-gold-dark shrink-0 mt-0.5" />
-                <p className="leading-tight">
-                  Format email: <strong className="text-slate-700 font-mono">nama@einsten.com</strong> (Anda juga dapat masuk menggunakan <strong>NIM</strong> atau <strong>Nama Lengkap</strong>).
-                </p>
               </div>
             </div>
 
