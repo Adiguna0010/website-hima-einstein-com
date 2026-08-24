@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Shield, ShieldAlert,
   ShoppingBag, Compass, Cpu, Bell, MessageSquare, Send, ArrowLeft, Trash2, MessageCircle,
-  Handshake, TrendingUp, FileText, Coins, BookOpen
+  Handshake, TrendingUp, FileText, Coins, BookOpen, Phone
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';

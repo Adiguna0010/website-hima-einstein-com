@@ -4,9 +4,9 @@ import QRCode from 'qrcode';
 import JSZip from 'jszip';
 import { 
   Box, ToggleLeft, ToggleRight, Radio, ShieldCheck, Plus, Trash2, Edit3, UserCheck, UserX, 
-  Users, FileText, QrCode, Upload, Download, FileSpreadsheet, Eye, X, Printer, CheckCircle2, 
-  Layers, AlertCircle, Search, Filter, Tag, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, 
-  RefreshCw, Sparkles, Check, Image as ImageIcon, ExternalLink, SlidersHorizontal, Activity
+  FileText, QrCode, Upload, Download, FileSpreadsheet, X, Printer, CheckCircle2, 
+  Layers, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, 
+  RefreshCw, Sparkles, Check
 } from 'lucide-react';
 import { DEFAULT_INVENTORY_ITEMS, INVENTORY_CATEGORIES, INVENTORY_SIZES } from '../../data/inventoryData';
 
