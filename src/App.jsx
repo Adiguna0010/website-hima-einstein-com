@@ -26,20 +26,6 @@ import { Toast } from './components/Toast';
 import CabinetStructure from './pages/CabinetStructure';
 import Profile from './pages/Profile';
 
-// Redirect to home page on F5 refresh / initial mount
-function RefreshRedirect() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    if (location.pathname !== '/') {
-      navigate('/', { replace: true });
-    }
-  }, []);
-
-  return null;
-}
-
 // Route Guarding Component
 function ProtectedRoute({ children, allowedRoles }) {
   const { currentUser } = useAuth();
@@ -88,7 +74,6 @@ export default function App() {
     <AuthProvider>
       <CartProvider>
         <Router>
-          <RefreshRedirect />
           <div className="flex flex-col min-h-screen">
             <Navbar />
             

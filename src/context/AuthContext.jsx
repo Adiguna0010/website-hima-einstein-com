@@ -174,11 +174,17 @@ export const AuthProvider = ({ children }) => {
 
   const CLOUD_FALLBACK_URL = 'https://api.restful-api.dev/objects/ff8081819ff5b11001a0333097b60c32';
 
-  // Resilient cloud fetcher (tries /api/users, falls back to direct Cloud DB)
+  // Resilient cloud fetcher (tries /api/users, falls back to direct Cloud DB with strict timeouts)
   const fetchFromAnyCloud = async () => {
     // 1. Try Vercel Serverless Function
     try {
-      const res = await fetch('/api/users', { credentials: 'omit' });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+      const res = await fetch('/api/users', { 
+        credentials: 'omit',
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
@@ -193,9 +199,13 @@ export const AuthProvider = ({ children }) => {
 
     // 2. Direct Cloud DB Object Store Fallback
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
       const res = await fetch(CLOUD_FALLBACK_URL, {
-        headers: { 'Accept': 'application/json' }
+        headers: { 'Accept': 'application/json' },
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
       if (res.ok) {
         const data = await res.json();
         if (data && data.data) {
@@ -212,32 +222,36 @@ export const AuthProvider = ({ children }) => {
     return null;
   };
 
-  // Resilient cloud saver
+  // Resilient non-blocking cloud saver
   const saveToAnyCloud = async (allUsersList, allLogsList) => {
     const currentLogs = allLogsList !== undefined ? allLogsList : JSON.parse(localStorage.getItem('hima_login_logs') || '[]');
     
     // 1. Send to Vercel API
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
       fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ users: allUsersList, login_logs: currentLogs })
-      }).catch(() => {});
+        body: JSON.stringify({ users: allUsersList, login_logs: currentLogs }),
+        signal: controller.signal
+      }).then(() => clearTimeout(timeoutId)).catch(() => {});
     } catch (e) {}
 
     // 2. Save directly to Cloud DB Object Store
     try {
-      await fetch(CLOUD_FALLBACK_URL, {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      fetch(CLOUD_FALLBACK_URL, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: 'hima_einsten_users_db',
           data: { users: allUsersList, login_logs: currentLogs }
-        })
-      });
-    } catch (e) {
-      console.warn('Cloud DB direct save error:', e.message);
-    }
+        }),
+        signal: controller.signal
+      }).then(() => clearTimeout(timeoutId)).catch(() => {});
+    } catch (e) {}
   };
 
   // Cloud sync function
