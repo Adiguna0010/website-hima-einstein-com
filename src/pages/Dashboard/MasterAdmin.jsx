@@ -116,18 +116,18 @@ export default function MasterAdmin({ showToast }) {
   };
 
   const rolesList = [
-    'Anggota Biasa',
-    'Operator BPH',
-    'Operator Internal',
-    'Operator External',
-    'Operator Ristek',
-    'Operator Pengma',
-    'Operator Danus',
-    'Operator Kominfo',
-    'Operator Logistik',
-    'Sekretaris Umum',
-    'Bendahara Umum',
-    'Master Admin'
+    { value: 'Anggota Biasa', label: 'Anggota Biasa (Portal Mahasiswa)', db: null },
+    { value: 'Operator Logistik', label: '📦 Operator Logistik (Dashboard Aset & Logistik)', db: '/dashboard/logistik' },
+    { value: 'Operator Danus', label: '🛍️ Operator Danus (Dashboard Dana Usaha & Market)', db: '/dashboard/danus' },
+    { value: 'Operator Ristek', label: '🔬 Operator Ristek (Dashboard Riset & Teknologi)', db: '/dashboard/ristek' },
+    { value: 'Operator Kominfo', label: '📢 Operator Kominfo (Dashboard Komunikasi & Info)', db: '/dashboard/division' },
+    { value: 'Operator Internal', label: '🤝 Operator Internal (Dashboard Hubungan Internal)', db: '/dashboard/division' },
+    { value: 'Operator External', label: '🌐 Operator External (Dashboard Hubungan Eksternal)', db: '/dashboard/division' },
+    { value: 'Operator Pengma', label: '🎓 Operator Pengma (Dashboard Pengembangan Mhs)', db: '/dashboard/division' },
+    { value: 'Operator BPH', label: '🏛️ Operator BPH (Dashboard Pengurus Harian)', db: '/dashboard/division' },
+    { value: 'Sekretaris Umum', label: '📝 Sekretaris Umum (Dashboard Administrasi & Surat)', db: '/dashboard/sekretaris' },
+    { value: 'Bendahara Umum', label: '💰 Bendahara Umum (Dashboard Keuangan & Kas)', db: '/dashboard/bendahara' },
+    { value: 'Master Admin', label: '👑 Master Admin (Otoritas Ketua / Wakil Himpunan)', db: '/dashboard/master' }
   ];
 
   // Filter users
@@ -183,8 +183,8 @@ export default function MasterAdmin({ showToast }) {
               className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
             >
               <option value="All">Semua Peran</option>
-              {rolesList.map((role) => (
-                <option key={role} value={role}>{role}</option>
+              {rolesList.map((r) => (
+                <option key={r.value} value={r.value}>{r.value}</option>
               ))}
             </select>
           </div>
@@ -433,9 +433,27 @@ export default function MasterAdmin({ showToast }) {
                         </span>
                       </td>
                       <td className="px-6 py-4 font-bold text-slate-800">
-                        <span className={user.role === 'Master Admin' ? 'text-gold-dark font-extrabold' : user.role === 'Anggota Biasa' ? 'text-slate-500 font-normal' : 'text-gold font-bold'}>
-                          {user.role}
-                        </span>
+                        {(() => {
+                          const roleObj = rolesList.find(r => r.value === user.role);
+                          return (
+                            <div className="flex flex-col gap-1">
+                              <span className={user.role === 'Master Admin' ? 'text-gold-dark font-extrabold' : user.role === 'Anggota Biasa' ? 'text-slate-500 font-normal' : 'text-gold font-bold'}>
+                                {user.role}
+                              </span>
+                              {roleObj?.db && user.role !== 'Master Admin' && (
+                                <a
+                                  href={roleObj.db}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1 text-[9px] text-blue-600 hover:text-blue-800 hover:underline font-mono"
+                                  title={`Buka ${roleObj.label}`}
+                                >
+                                  Buka Dashboard <ArrowUpRight className="w-2.5 h-2.5" />
+                                </a>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
@@ -464,10 +482,10 @@ export default function MasterAdmin({ showToast }) {
                               <select
                                 value={user.role}
                                 onChange={(e) => handleRoleChange(user.email, e.target.value)}
-                                className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-[10px] font-bold text-slate-800 focus:outline-none focus:border-gold"
+                                className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-[10px] font-bold text-slate-800 focus:outline-none focus:border-gold max-w-[200px]"
                               >
-                                {rolesList.map((role) => (
-                                  <option key={role} value={role}>{role}</option>
+                                {rolesList.map((r) => (
+                                  <option key={r.value} value={r.value}>{r.label}</option>
                                 ))}
                               </select>
 
@@ -663,7 +681,7 @@ export default function MasterAdmin({ showToast }) {
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-800 font-bold focus:outline-none focus:border-gold"
                 >
                   {rolesList.map((r) => (
-                    <option key={r} value={r}>{r}</option>
+                    <option key={r.value} value={r.value}>{r.label}</option>
                   ))}
                 </select>
               </div>

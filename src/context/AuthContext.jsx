@@ -438,6 +438,28 @@ export const AuthProvider = ({ children }) => {
     // Save to Cloud (dual-layer API & Cloud DB)
     saveToAnyCloud(updatedUsers);
 
+    // Notify Master Admins about new registration
+    try {
+      const now = Date.now();
+      const savedNotifs = JSON.parse(localStorage.getItem('hima_notifications') || '[]');
+      const adminEmails = [
+        'Muhammad Iqbal Nur Huda@einsten.com',
+        'M. Iqbal Nur Huda@einsten.com',
+        'Rafie Asfa Raditya Aryanto@einsten.com'
+      ];
+      
+      const newNotifs = adminEmails.map((adminEmail, idx) => ({
+        id: `notif_reg_${now}_${idx}`,
+        recipientEmail: adminEmail,
+        message: `👤 PENDAFTARAN BARU: ${newUser.name} (NIM: ${newUser.nim}) baru saja mendaftar akun ke portal. Anda dapat menetapkan peran/divisinya di Master Admin Dashboard.`,
+        read: false,
+        timestamp: now
+      }));
+
+      const allNotifs = [...newNotifs, ...savedNotifs].slice(0, 100);
+      localStorage.setItem('hima_notifications', JSON.stringify(allNotifs));
+    } catch (e) {}
+
     return newUser;
   };
 
@@ -603,9 +625,12 @@ export const AuthProvider = ({ children }) => {
   const updateUserRole = (emailOrNim, role) => {
     const searchTarget = (emailOrNim || '').trim();
     const normalizedTarget = normalizeEmail(searchTarget);
+    let targetUser = null;
+
     const updatedUsers = users.map(u => {
       if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && String(u.nim).trim() === searchTarget)) {
-        return { ...u, role };
+        targetUser = { ...u, role };
+        return targetUser;
       }
       return u;
     });
@@ -616,6 +641,23 @@ export const AuthProvider = ({ children }) => {
       const updatedSelf = { ...currentUser, role };
       setCurrentUser(updatedSelf);
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
+    }
+
+    // Send notification to the user about their role change
+    if (targetUser && targetUser.email) {
+      try {
+        const now = Date.now();
+        const savedNotifs = JSON.parse(localStorage.getItem('hima_notifications') || '[]');
+        const roleNotif = {
+          id: `notif_role_${now}_${Math.random().toString(36).slice(2, 6)}`,
+          recipientEmail: targetUser.email,
+          message: `🎉 TUGAS & PERAN DIPERBARUI: Akun Anda telah ditetapkan sebagai "${role}" oleh Ketua/Wakil Himpunan. Anda sekarang memiliki wewenang membuka Dashboard ${role}!`,
+          read: false,
+          timestamp: now
+        };
+        const allNotifs = [roleNotif, ...savedNotifs].slice(0, 100);
+        localStorage.setItem('hima_notifications', JSON.stringify(allNotifs));
+      } catch (e) {}
     }
 
     saveToAnyCloud(updatedUsers);
