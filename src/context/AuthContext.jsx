@@ -171,39 +171,94 @@ export const AuthProvider = ({ children }) => {
     return Array.from(userMap.values());
   };
 
-  // Cloud API sync function
+  const CLOUD_FALLBACK_URL = 'https://api.restful-api.dev/objects/ff8081819ff5b11001a0333097b60c32';
+
+  // Resilient cloud fetcher (tries /api/users, falls back to direct Cloud DB)
+  const fetchFromAnyCloud = async () => {
+    // 1. Try Vercel Serverless Function
+    try {
+      const res = await fetch('/api/users', { credentials: 'omit' });
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.users)) {
+          return data.users;
+        }
+      }
+    } catch (e) {}
+
+    // 2. Direct Cloud DB Object Store Fallback
+    try {
+      const res = await fetch(CLOUD_FALLBACK_URL, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.data && Array.isArray(data.data.users)) {
+          return mergeUserLists(DEFAULT_USERS, data.data.users);
+        }
+      }
+    } catch (e) {}
+
+    return null;
+  };
+
+  // Resilient cloud saver
+  const saveToAnyCloud = async (allUsersList) => {
+    // 1. Send to Vercel API
+    try {
+      fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ users: allUsersList })
+      }).catch(() => {});
+    } catch (e) {}
+
+    // 2. Save directly to Cloud DB Object Store
+    try {
+      await fetch(CLOUD_FALLBACK_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'hima_einsten_users_db',
+          data: { users: allUsersList }
+        })
+      });
+    } catch (e) {
+      console.warn('Cloud DB direct save error:', e.message);
+    }
+  };
+
+  // Cloud sync function
   const syncUsersWithCloud = async () => {
     setIsSyncing(true);
     try {
-      const res = await fetch('/api/users', { credentials: 'omit' });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.success && Array.isArray(data.users)) {
-          const currentLocal = JSON.parse(localStorage.getItem('hima_users') || '[]');
-          const merged = mergeUserLists(DEFAULT_USERS, mergeUserLists(currentLocal, data.users));
-          
-          setUsers(merged);
-          localStorage.setItem('hima_users', JSON.stringify(merged));
-          setLastSyncedAt(new Date());
+      const cloudUsers = await fetchFromAnyCloud();
+      if (cloudUsers && Array.isArray(cloudUsers)) {
+        const currentLocal = JSON.parse(localStorage.getItem('hima_users') || '[]');
+        const merged = mergeUserLists(DEFAULT_USERS, mergeUserLists(currentLocal, cloudUsers));
+        
+        setUsers(merged);
+        localStorage.setItem('hima_users', JSON.stringify(merged));
+        setLastSyncedAt(new Date());
 
-          // Refresh current user session if updated
-          const savedUser = sessionStorage.getItem('hima_current_user');
-          if (savedUser) {
-            const parsed = JSON.parse(savedUser);
-            const freshSelf = merged.find(u => 
-              (u.nim && parsed.nim && String(u.nim).trim() === String(parsed.nim).trim()) ||
-              (u.email && normalizeEmail(u.email) === normalizeEmail(parsed.email))
-            );
-            if (freshSelf) {
-              setCurrentUser(freshSelf);
-              sessionStorage.setItem('hima_current_user', JSON.stringify(freshSelf));
-            }
+        // Refresh current user session if updated
+        const savedUser = sessionStorage.getItem('hima_current_user');
+        if (savedUser) {
+          const parsed = JSON.parse(savedUser);
+          const freshSelf = merged.find(u => 
+            (u.nim && parsed.nim && String(u.nim).trim() === String(parsed.nim).trim()) ||
+            (u.email && normalizeEmail(u.email) === normalizeEmail(parsed.email))
+          );
+          if (freshSelf) {
+            setCurrentUser(freshSelf);
+            sessionStorage.setItem('hima_current_user', JSON.stringify(freshSelf));
           }
-          return merged;
         }
+        return merged;
       }
     } catch (err) {
-      console.log('Cloud sync unavailable (offline/local):', err.message);
+      console.log('Cloud sync error:', err.message);
     } finally {
       setIsSyncing(false);
     }
@@ -358,23 +413,8 @@ export const AuthProvider = ({ children }) => {
     setUsers(updatedUsers);
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
-    // Send to Cloud API
-    try {
-      const res = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newUser)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.users && Array.isArray(data.users)) {
-          setUsers(data.users);
-          localStorage.setItem('hima_users', JSON.stringify(data.users));
-        }
-      }
-    } catch (err) {
-      console.warn('API cloud registration queued locally:', err.message);
-    }
+    // Save to Cloud (dual-layer API & Cloud DB)
+    saveToAnyCloud(updatedUsers);
 
     return newUser;
   };
@@ -450,12 +490,7 @@ export const AuthProvider = ({ children }) => {
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
 
-    // Cloud sync
-    fetch('/api/users', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target: searchTarget, status })
-    }).catch(e => console.warn('Cloud update status error:', e.message));
+    saveToAnyCloud(updatedUsers);
   };
 
   const updateUserRole = (emailOrNim, role) => {
@@ -476,12 +511,7 @@ export const AuthProvider = ({ children }) => {
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
 
-    // Cloud sync
-    fetch('/api/users', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target: searchTarget, role })
-    }).catch(e => console.warn('Cloud update role error:', e.message));
+    saveToAnyCloud(updatedUsers);
   };
 
   const sendOTP = async (phone, code) => {
@@ -573,12 +603,7 @@ export const AuthProvider = ({ children }) => {
     setUsers(updatedUsers);
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
-    // Cloud sync
-    fetch('/api/users', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target: searchTarget, password: newPassword })
-    }).catch(e => console.warn('Cloud update password error:', e.message));
+    saveToAnyCloud(updatedUsers);
   };
 
   const updateUserProfile = (emailOrNim, updates) => {
@@ -599,12 +624,7 @@ export const AuthProvider = ({ children }) => {
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
 
-    // Cloud sync
-    fetch('/api/users', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target: searchTarget, updates })
-    }).catch(e => console.warn('Cloud update profile error:', e.message));
+    saveToAnyCloud(updatedUsers);
   };
 
   const updateUserPhone = (emailOrNim, phone) => {
@@ -625,12 +645,7 @@ export const AuthProvider = ({ children }) => {
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
 
-    // Cloud sync
-    fetch('/api/users', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target: searchTarget, phone })
-    }).catch(e => console.warn('Cloud update phone error:', e.message));
+    saveToAnyCloud(updatedUsers);
   };
 
   const deleteAccount = (emailOrNim) => {
@@ -647,12 +662,7 @@ export const AuthProvider = ({ children }) => {
       logout();
     }
 
-    // Cloud sync
-    fetch('/api/users', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target: searchTarget })
-    }).catch(e => console.warn('Cloud delete error:', e.message));
+    saveToAnyCloud(updatedUsers);
   };
 
   return (
