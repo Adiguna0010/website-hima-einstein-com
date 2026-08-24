@@ -3,13 +3,26 @@ import { useAuth } from '../../context/AuthContext';
 import { Shield, ShieldAlert, CheckCircle, XCircle, ArrowUpRight, ArrowDownRight, RefreshCw, Users, ShieldCheck } from 'lucide-react';
 
 export default function MasterAdmin({ showToast }) {
-  const { users, currentUser, updateUserStatus, updateUserRole } = useAuth();
+  const { users, currentUser, updateUserStatus, updateUserRole, syncUsersWithCloud, isSyncing, lastSyncedAt } = useAuth();
   const [filterRole, setFilterRole] = useState('All');
   const [fonnteToken, setFonnteToken] = useState(localStorage.getItem('fonnte_token') || '');
 
   const [gatewayUrl, setGatewayUrl] = useState(localStorage.getItem('self_hosted_gateway_url') || 'http://localhost:5001');
   const [gatewayStatus, setGatewayStatus] = useState(null);
   const [checkingGateway, setCheckingGateway] = useState(false);
+
+  const handleManualSync = async () => {
+    try {
+      const result = await syncUsersWithCloud();
+      if (result) {
+        showToast(`Sinkronisasi Cloud Berhasil! Total ${result.length} akun termuat.`, 'success');
+      } else {
+        showToast('Sinkronisasi selesai (menggunakan data lokal).', 'info');
+      }
+    } catch (err) {
+      showToast('Gagal sinkronisasi cloud: ' + err.message, 'error');
+    }
+  };
 
   const checkGatewayStatus = async () => {
     setCheckingGateway(true);
@@ -73,8 +86,11 @@ export default function MasterAdmin({ showToast }) {
     <div className="pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 text-left text-slate-800">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1 text-xs text-gold-dark font-bold tracking-widest uppercase">
-            <Shield className="w-3.5 h-3.5 text-gold" /> MASTER CONTROL PANEL
+          <div className="inline-flex items-center gap-2 text-xs text-gold-dark font-bold tracking-widest uppercase">
+            <span className="inline-flex items-center gap-1"><Shield className="w-3.5 h-3.5 text-gold" /> MASTER CONTROL PANEL</span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Cloud DB Active
+            </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 uppercase tracking-wider">
             User Management & Permissions
@@ -84,19 +100,31 @@ export default function MasterAdmin({ showToast }) {
           </p>
         </div>
 
-        {/* Filters */}
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Filter Peran:</span>
-          <select
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
-            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
+        {/* Action Controls & Filters */}
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <button
+            onClick={handleManualSync}
+            disabled={isSyncing}
+            className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all disabled:opacity-50"
+            title="Sinkronkan database dengan Cloud Vercel"
           >
-            <option value="All">Semua Peran</option>
-            {rolesList.map((role) => (
-              <option key={role} value={role}>{role}</option>
-            ))}
-          </select>
+            <RefreshCw className={`w-3.5 h-3.5 text-gold ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>{isSyncing ? 'Menyinkronkan...' : 'Sinkronkan Data Cloud'}</span>
+          </button>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Filter Peran:</span>
+            <select
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
+            >
+              <option value="All">Semua Peran</option>
+              {rolesList.map((role) => (
+                <option key={role} value={role}>{role}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 

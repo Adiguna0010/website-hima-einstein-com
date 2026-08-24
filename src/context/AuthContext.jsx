@@ -130,6 +130,8 @@ const DEFAULT_USERS = [
 export const AuthProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState(null);
 
   // Robust email normalization (lowercase, strips all spaces, and handles domain aliases)
   const normalizeEmail = (emailStr) => {
@@ -143,12 +145,72 @@ export const AuthProvider = ({ children }) => {
   // Helper to generate a unique key per user (NIM takes precedence, then normalized email)
   const getUserKey = (u) => {
     if (!u) return '';
-    if (u.nim && u.nim.trim()) return `nim_${u.nim.trim()}`;
+    if (u.nim && String(u.nim).trim()) return `nim_${String(u.nim).trim()}`;
     if (u.email && u.email.trim()) return `email_${normalizeEmail(u.email)}`;
     return `name_${(u.name || '').trim().toLowerCase()}`;
   };
 
-  // Initialize DB from LocalStorage
+  // Helper to merge arrays of users without duplicates
+  const mergeUserLists = (baseList, incomingList) => {
+    const userMap = new Map();
+    (baseList || []).forEach(u => {
+      if (u) {
+        const key = getUserKey(u);
+        if (key) userMap.set(key, { ...u });
+      }
+    });
+    (incomingList || []).forEach(u => {
+      if (u) {
+        const key = getUserKey(u);
+        if (key) {
+          const defaultUser = userMap.get(key) || {};
+          userMap.set(key, { ...defaultUser, ...u });
+        }
+      }
+    });
+    return Array.from(userMap.values());
+  };
+
+  // Cloud API sync function
+  const syncUsersWithCloud = async () => {
+    setIsSyncing(true);
+    try {
+      const res = await fetch('/api/users', { credentials: 'omit' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.users)) {
+          const currentLocal = JSON.parse(localStorage.getItem('hima_users') || '[]');
+          const merged = mergeUserLists(DEFAULT_USERS, mergeUserLists(currentLocal, data.users));
+          
+          setUsers(merged);
+          localStorage.setItem('hima_users', JSON.stringify(merged));
+          setLastSyncedAt(new Date());
+
+          // Refresh current user session if updated
+          const savedUser = sessionStorage.getItem('hima_current_user');
+          if (savedUser) {
+            const parsed = JSON.parse(savedUser);
+            const freshSelf = merged.find(u => 
+              (u.nim && parsed.nim && String(u.nim).trim() === String(parsed.nim).trim()) ||
+              (u.email && normalizeEmail(u.email) === normalizeEmail(parsed.email))
+            );
+            if (freshSelf) {
+              setCurrentUser(freshSelf);
+              sessionStorage.setItem('hima_current_user', JSON.stringify(freshSelf));
+            }
+          }
+          return merged;
+        }
+      }
+    } catch (err) {
+      console.log('Cloud sync unavailable (offline/local):', err.message);
+    } finally {
+      setIsSyncing(false);
+    }
+    return null;
+  };
+
+  // Initialize DB from LocalStorage & Cloud API
   useEffect(() => {
     const stored = localStorage.getItem('hima_users');
     let loadedUsers = DEFAULT_USERS;
@@ -181,7 +243,6 @@ export const AuthProvider = ({ children }) => {
             });
             localStorage.setItem('hima_phone_wipe_v1', 'true');
             
-            // Also clean active session user
             const savedUser = sessionStorage.getItem('hima_current_user');
             if (savedUser) {
               const parsedUser = JSON.parse(savedUser);
@@ -192,24 +253,7 @@ export const AuthProvider = ({ children }) => {
             }
           }
           
-          // Merge using NIM as primary unique identifier to avoid duplicates when user changes email/name
-          const userMap = new Map();
-          DEFAULT_USERS.forEach(u => {
-            if (u) {
-              const key = getUserKey(u);
-              if (key) userMap.set(key, u);
-            }
-          });
-          parsed.forEach(u => {
-            if (u) {
-              const key = getUserKey(u);
-              if (key) {
-                const defaultUser = userMap.get(key) || {};
-                userMap.set(key, { ...defaultUser, ...u });
-              }
-            }
-          });
-          loadedUsers = Array.from(userMap.values());
+          loadedUsers = mergeUserLists(DEFAULT_USERS, parsed);
         }
       } catch (e) {
         console.error('Failed to parse hima_users from localStorage:', e);
@@ -236,7 +280,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const parsedUser = JSON.parse(savedUser);
         const latestUser = loadedUsers.find(u => 
-          (u.nim && parsedUser.nim && u.nim.trim() === parsedUser.nim.trim()) ||
+          (u.nim && parsedUser.nim && String(u.nim).trim() === String(parsedUser.nim).trim()) ||
           (u.email && normalizeEmail(u.email) === normalizeEmail(parsedUser.email))
         );
         if (latestUser) {
@@ -250,7 +294,19 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    // Listen for storage events (e.g. Profile edited in another tab or component)
+    // Fetch fresh database from cloud immediately
+    syncUsersWithCloud();
+
+    // Setup periodic cloud polling (every 15 seconds)
+    const pollInterval = setInterval(() => {
+      syncUsersWithCloud();
+    }, 15000);
+
+    // Sync on tab focus
+    const handleFocus = () => syncUsersWithCloud();
+    window.addEventListener('focus', handleFocus);
+
+    // Listen for storage events across tabs
     const handleStorageChange = (e) => {
       if (e.key === 'hima_users' && e.newValue) {
         try {
@@ -262,83 +318,112 @@ export const AuthProvider = ({ children }) => {
       }
     };
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+
+    return () => {
+      clearInterval(pollInterval);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
-  const register = (name, nim, phone, password) => {
-    return new Promise((resolve, reject) => {
-      const generatedEmail = `${name.trim()}@einsten.com`;
-      const emailExists = users.some(u => normalizeEmail(u.email) === normalizeEmail(generatedEmail));
-      const nimExists = users.some(u => u.nim === nim);
-      const phoneExists = users.some(u => u.phone === phone);
+  const register = async (name, nim, phone, password) => {
+    const generatedEmail = `${name.trim()}@einsten.com`;
+    const emailExists = users.some(u => normalizeEmail(u.email) === normalizeEmail(generatedEmail));
+    const nimExists = users.some(u => String(u.nim).trim() === String(nim).trim());
+    const phoneExists = phone ? users.some(u => u.phone && String(u.phone).trim() === String(phone).trim()) : false;
 
-      if (emailExists) {
-        return reject(new Error('Nama lengkap ini sudah terdaftar sebagai akun (email sudah ada)!'));
-      }
-      if (nimExists) {
-        return reject(new Error('NIM sudah terdaftar!'));
-      }
-      if (phone && phoneExists) {
-        return reject(new Error('Nomor telepon sudah terdaftar!'));
-      }
+    if (emailExists) {
+      throw new Error('Nama lengkap ini sudah terdaftar sebagai akun (email sudah ada)!');
+    }
+    if (nimExists) {
+      throw new Error('NIM sudah terdaftar!');
+    }
+    if (phone && phoneExists) {
+      throw new Error('Nomor WhatsApp sudah terdaftar!');
+    }
 
-      const newUser = {
-        name,
-        nim,
-        phone,
-        email: generatedEmail,
-        password,
-        role: 'Anggota Biasa',
-        status: 'Active'
-      };
+    const newUser = {
+      name: name.trim(),
+      nim: String(nim).trim(),
+      phone: phone ? String(phone).trim() : '',
+      email: generatedEmail,
+      password: password || String(nim).trim(),
+      role: 'Anggota Biasa',
+      status: 'Active',
+      createdAt: new Date().toISOString()
+    };
 
-      const updatedUsers = [...users, newUser];
-      setUsers(updatedUsers);
-      localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
-      resolve(newUser);
-    });
+    // Optimistic local update
+    const updatedUsers = mergeUserLists(users, [newUser]);
+    setUsers(updatedUsers);
+    localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
+
+    // Send to Cloud API
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.users && Array.isArray(data.users)) {
+          setUsers(data.users);
+          localStorage.setItem('hima_users', JSON.stringify(data.users));
+        }
+      }
+    } catch (err) {
+      console.warn('API cloud registration queued locally:', err.message);
+    }
+
+    return newUser;
   };
 
-  const login = (emailOrNim, password) => {
-    return new Promise((resolve, reject) => {
-      const inputStr = (emailOrNim || '').trim();
-      const normInput = normalizeEmail(inputStr);
-      const normInputWithDomain = normInput.includes('@') ? normInput : normalizeEmail(`${inputStr}@einsten.com`);
+  const login = async (emailOrNim, password) => {
+    const inputStr = (emailOrNim || '').trim();
+    const normInput = normalizeEmail(inputStr);
+    const normInputWithDomain = normInput.includes('@') ? normInput : normalizeEmail(`${inputStr}@einsten.com`);
 
-      const user = users.find(
-        u => (
-          normalizeEmail(u.email) === normInput ||
-          normalizeEmail(u.email) === normInputWithDomain ||
-          (u.nim && u.nim.trim() === inputStr) ||
-          (u.name && u.name.trim().toLowerCase() === inputStr.toLowerCase())
-        ) && u.password === (password || '').trim()
-      );
+    let user = users.find(
+      u => (
+        normalizeEmail(u.email) === normInput ||
+        normalizeEmail(u.email) === normInputWithDomain ||
+        (u.nim && String(u.nim).trim() === inputStr) ||
+        (u.name && u.name.trim().toLowerCase() === inputStr.toLowerCase())
+      ) && u.password === (password || '').trim()
+    );
 
-      if (!user) {
-        return reject(new Error('Email atau Password salah!'));
-      }
-
-      if (user.status === 'Pending') {
-        // Auto-activate account
-        user.status = 'Active';
-        const updatedUsers = users.map(u => 
-          (u.nim && user.nim && u.nim.trim() === user.nim.trim()) ||
-          normalizeEmail(u.email) === normalizeEmail(user.email) 
-            ? { ...u, status: 'Active' } 
-            : u
+    // If not found in local cache, try fetching from cloud API before failing
+    if (!user) {
+      const freshList = await syncUsersWithCloud();
+      if (freshList) {
+        user = freshList.find(
+          u => (
+            normalizeEmail(u.email) === normInput ||
+            normalizeEmail(u.email) === normInputWithDomain ||
+            (u.nim && String(u.nim).trim() === inputStr) ||
+            (u.name && u.name.trim().toLowerCase() === inputStr.toLowerCase())
+          ) && u.password === (password || '').trim()
         );
-        setUsers(updatedUsers);
-        localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
       }
+    }
 
-      if (user.status === 'Rejected') {
-        return reject(new Error('Login gagal. Akun Anda telah ditolak oleh Admin BPH.'));
-      }
+    if (!user) {
+      throw new Error('Email atau Password salah!');
+    }
 
-      setCurrentUser(user);
-      sessionStorage.setItem('hima_current_user', JSON.stringify(user));
-      resolve(user);
-    });
+    if (user.status === 'Pending') {
+      user.status = 'Active';
+      updateUserStatus(user.email, 'Active');
+    }
+
+    if (user.status === 'Rejected') {
+      throw new Error('Login gagal. Akun Anda telah ditolak oleh Admin BPH.');
+    }
+
+    setCurrentUser(user);
+    sessionStorage.setItem('hima_current_user', JSON.stringify(user));
+    return user;
   };
 
   const logout = () => {
@@ -351,7 +436,7 @@ export const AuthProvider = ({ children }) => {
     const searchTarget = (emailOrNim || '').trim();
     const normalizedTarget = normalizeEmail(searchTarget);
     const updatedUsers = users.map(u => {
-      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && u.nim.trim() === searchTarget)) {
+      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && String(u.nim).trim() === searchTarget)) {
         return { ...u, status };
       }
       return u;
@@ -359,19 +444,25 @@ export const AuthProvider = ({ children }) => {
     setUsers(updatedUsers);
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
-    // If active user is updated, keep their local state synchronized
-    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && currentUser.nim.trim() === searchTarget))) {
+    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && String(currentUser.nim).trim() === searchTarget))) {
       const updatedSelf = { ...currentUser, status };
       setCurrentUser(updatedSelf);
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
+
+    // Cloud sync
+    fetch('/api/users', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: searchTarget, status })
+    }).catch(e => console.warn('Cloud update status error:', e.message));
   };
 
   const updateUserRole = (emailOrNim, role) => {
     const searchTarget = (emailOrNim || '').trim();
     const normalizedTarget = normalizeEmail(searchTarget);
     const updatedUsers = users.map(u => {
-      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && u.nim.trim() === searchTarget)) {
+      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && String(u.nim).trim() === searchTarget)) {
         return { ...u, role };
       }
       return u;
@@ -379,12 +470,18 @@ export const AuthProvider = ({ children }) => {
     setUsers(updatedUsers);
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
-    // Synchronize if current logged in user role was changed
-    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && currentUser.nim.trim() === searchTarget))) {
+    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && String(currentUser.nim).trim() === searchTarget))) {
       const updatedSelf = { ...currentUser, role };
       setCurrentUser(updatedSelf);
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
+
+    // Cloud sync
+    fetch('/api/users', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: searchTarget, role })
+    }).catch(e => console.warn('Cloud update role error:', e.message));
   };
 
   const sendOTP = async (phone, code) => {
@@ -468,20 +565,27 @@ export const AuthProvider = ({ children }) => {
     const searchTarget = (emailOrNim || '').trim();
     const normalizedTarget = normalizeEmail(searchTarget);
     const updatedUsers = users.map(u => {
-      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && u.nim.trim() === searchTarget)) {
+      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && String(u.nim).trim() === searchTarget)) {
         return { ...u, password: newPassword };
       }
       return u;
     });
     setUsers(updatedUsers);
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
+
+    // Cloud sync
+    fetch('/api/users', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: searchTarget, password: newPassword })
+    }).catch(e => console.warn('Cloud update password error:', e.message));
   };
 
   const updateUserProfile = (emailOrNim, updates) => {
     const searchTarget = (emailOrNim || '').trim();
     const normalizedTarget = normalizeEmail(searchTarget);
     const updatedUsers = users.map(u => {
-      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && u.nim.trim() === searchTarget)) {
+      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && String(u.nim).trim() === searchTarget)) {
         return { ...u, ...updates };
       }
       return u;
@@ -489,18 +593,25 @@ export const AuthProvider = ({ children }) => {
     setUsers(updatedUsers);
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
-    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && currentUser.nim.trim() === searchTarget))) {
+    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && String(currentUser.nim).trim() === searchTarget))) {
       const updatedSelf = { ...currentUser, ...updates };
       setCurrentUser(updatedSelf);
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
+
+    // Cloud sync
+    fetch('/api/users', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: searchTarget, updates })
+    }).catch(e => console.warn('Cloud update profile error:', e.message));
   };
 
   const updateUserPhone = (emailOrNim, phone) => {
     const searchTarget = (emailOrNim || '').trim();
     const normalizedTarget = normalizeEmail(searchTarget);
     const updatedUsers = users.map(u => {
-      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && u.nim.trim() === searchTarget)) {
+      if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && String(u.nim).trim() === searchTarget)) {
         return { ...u, phone };
       }
       return u;
@@ -508,12 +619,18 @@ export const AuthProvider = ({ children }) => {
     setUsers(updatedUsers);
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
-    // Update current user if it matches
-    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && currentUser.nim.trim() === searchTarget))) {
+    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && String(currentUser.nim).trim() === searchTarget))) {
       const updatedSelf = { ...currentUser, phone };
       setCurrentUser(updatedSelf);
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
+
+    // Cloud sync
+    fetch('/api/users', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: searchTarget, phone })
+    }).catch(e => console.warn('Cloud update phone error:', e.message));
   };
 
   const deleteAccount = (emailOrNim) => {
@@ -521,20 +638,30 @@ export const AuthProvider = ({ children }) => {
     const normalizedTarget = normalizeEmail(searchTarget);
     const updatedUsers = users.filter(u => 
       (u.email && normalizeEmail(u.email) !== normalizedTarget) && 
-      (u.nim ? u.nim.trim() !== searchTarget : true)
+      (u.nim ? String(u.nim).trim() !== searchTarget : true)
     );
     setUsers(updatedUsers);
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
-    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && currentUser.nim.trim() === searchTarget))) {
+    if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && String(currentUser.nim).trim() === searchTarget))) {
       logout();
     }
+
+    // Cloud sync
+    fetch('/api/users', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: searchTarget })
+    }).catch(e => console.warn('Cloud delete error:', e.message));
   };
 
   return (
     <AuthContext.Provider value={{
       users,
       currentUser,
+      isSyncing,
+      lastSyncedAt,
+      syncUsersWithCloud,
       register,
       login,
       logout,
