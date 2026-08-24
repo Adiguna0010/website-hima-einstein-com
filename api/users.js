@@ -149,8 +149,8 @@ let inMemoryUsersCache = null;
 let lastCacheTime = 0;
 const CACHE_TTL_MS = 3000; // 3s in-memory cache
 
-// Fetch users from Cloud Store
-async function fetchCloudUsers() {
+// Fetch data from Cloud Store
+async function fetchCloudData() {
   const now = Date.now();
   if (inMemoryUsersCache && (now - lastCacheTime < CACHE_TTL_MS)) {
     return inMemoryUsersCache;
@@ -164,8 +164,10 @@ async function fetchCloudUsers() {
 
     if (res.ok) {
       const data = await res.json();
-      if (data && data.data && Array.isArray(data.data.users)) {
-        inMemoryUsersCache = data.data.users;
+      if (data && data.data) {
+        const users = Array.isArray(data.data.users) ? data.data.users : [];
+        const login_logs = Array.isArray(data.data.login_logs) ? data.data.login_logs : [];
+        inMemoryUsersCache = { users, login_logs };
         lastCacheTime = now;
         return inMemoryUsersCache;
       }
@@ -179,16 +181,16 @@ async function fetchCloudUsers() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: 'hima_einsten_users_db',
-          data: { users: [] }
+          data: { users: [], login_logs: [] }
         })
       });
       if (createRes.ok) {
         const createData = await createRes.json();
         if (createData.id) {
           CLOUD_OBJECT_ID = createData.id;
-          inMemoryUsersCache = [];
+          inMemoryUsersCache = { users: [], login_logs: [] };
           lastCacheTime = now;
-          return [];
+          return inMemoryUsersCache;
         }
       }
     }
@@ -196,12 +198,12 @@ async function fetchCloudUsers() {
     console.error('Failed to fetch from cloud store:', err.message);
   }
 
-  return inMemoryUsersCache || [];
+  return inMemoryUsersCache || { users: [], login_logs: [] };
 }
 
-// Save users array to Cloud Store
-async function saveCloudUsers(usersList) {
-  inMemoryUsersCache = usersList;
+// Save data object to Cloud Store
+async function saveCloudData(dataObj) {
+  inMemoryUsersCache = dataObj;
   lastCacheTime = Date.now();
 
   try {
@@ -210,7 +212,7 @@ async function saveCloudUsers(usersList) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: 'hima_einsten_users_db',
-        data: { users: usersList }
+        data: dataObj
       }),
       signal: AbortSignal.timeout(6000)
     });
@@ -222,7 +224,7 @@ async function saveCloudUsers(usersList) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: 'hima_einsten_users_db',
-          data: { users: usersList }
+          data: dataObj
         })
       });
       if (createRes.ok) {
@@ -276,30 +278,94 @@ export default async function handler(req, res) {
   }
 
   try {
-    // ── 1. GET: Fetch all users (Merged Defaults + Cloud Registrations) ──
+    const cloudData = await fetchCloudData();
+    const cloudUsers = cloudData.users || [];
+    const cloudLogs = cloudData.login_logs || [];
+
+    // ── 1. GET: Fetch all users & login logs ──
     if (req.method === 'GET') {
-      const cloudUsers = await fetchCloudUsers();
       const allUsers = mergeUsers(cloudUsers);
       return res.status(200).json({
         success: true,
         users: allUsers,
         total: allUsers.length,
+        login_logs: cloudLogs,
         timestamp: new Date().toISOString()
       });
     }
 
-    // ── 2. POST: Register new user / Add user ──
+    // ── 2. POST: Register new user OR Record login log ──
     if (req.method === 'POST') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-      const { name, nim, phone, password, role, status } = body;
 
+      // Sub-action: Record Login Log
+      if (body.action === 'login_log' || body.log) {
+        const logItem = body.log || body;
+        const newLog = {
+          id: logItem.id || `log_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          name: logItem.name || 'Anggota',
+          nim: logItem.nim || '-',
+          email: logItem.email || '-',
+          role: logItem.role || 'Anggota Biasa',
+          timestamp: logItem.timestamp || Date.now(),
+          timeString: logItem.timeString || new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
+          device: logItem.device || 'Web Browser',
+          status: logItem.status || 'Success'
+        };
+
+        // Keep last 100 logs
+        const updatedLogs = [newLog, ...cloudLogs.filter(l => l.id !== newLog.id)].slice(0, 100);
+
+        // Also update lastLogin on the user
+        const targetKey = getUserKey({ nim: newLog.nim, email: newLog.email, name: newLog.name });
+        let userUpdated = false;
+        const updatedCloudUsers = cloudUsers.map(u => {
+          if (getUserKey(u) === targetKey) {
+            userUpdated = true;
+            return { ...u, lastLogin: newLog.timeString };
+          }
+          return u;
+        });
+
+        if (!userUpdated && newLog.email) {
+          updatedCloudUsers.push({
+            name: newLog.name,
+            nim: newLog.nim,
+            email: newLog.email,
+            role: newLog.role,
+            lastLogin: newLog.timeString
+          });
+        }
+
+        await saveCloudData({ users: updatedCloudUsers, login_logs: updatedLogs });
+        const finalAllUsers = mergeUsers(updatedCloudUsers);
+
+        return res.status(201).json({
+          success: true,
+          message: 'Log login berhasil dicatat ke cloud database!',
+          log: newLog,
+          login_logs: updatedLogs,
+          users: finalAllUsers
+        });
+      }
+
+      // Action: Register new user / Bulk users save
+      if (body.users && Array.isArray(body.users)) {
+        await saveCloudData({ users: body.users, login_logs: cloudLogs });
+        const finalAllUsers = mergeUsers(body.users);
+        return res.status(200).json({
+          success: true,
+          users: finalAllUsers,
+          login_logs: cloudLogs
+        });
+      }
+
+      const { name, nim, phone, password, role, status } = body;
       if (!name || !nim) {
         return res.status(400).json({ success: false, message: 'Nama dan NIM wajib diisi.' });
       }
 
-      const cloudUsers = await fetchCloudUsers();
       const allUsers = mergeUsers(cloudUsers);
-
       const generatedEmail = `${name.trim()}@einsten.com`;
       const emailExists = allUsers.some(u => normalizeEmail(u.email) === normalizeEmail(generatedEmail));
       const nimExists = allUsers.some(u => String(u.nim).trim() === String(nim).trim());
@@ -326,9 +392,8 @@ export default async function handler(req, res) {
         createdAt: new Date().toISOString()
       };
 
-      // Add to cloud users list
       const updatedCloudUsers = [...cloudUsers, newUser];
-      await saveCloudUsers(updatedCloudUsers);
+      await saveCloudData({ users: updatedCloudUsers, login_logs: cloudLogs });
 
       const finalAllUsers = mergeUsers(updatedCloudUsers);
 
@@ -336,7 +401,8 @@ export default async function handler(req, res) {
         success: true,
         message: 'Registrasi berhasil dan tersimpan di database cloud!',
         user: newUser,
-        users: finalAllUsers
+        users: finalAllUsers,
+        login_logs: cloudLogs
       });
     }
 
@@ -350,11 +416,9 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, message: 'Target identifier (email atau NIM) wajib diisi.' });
       }
 
-      const cloudUsers = await fetchCloudUsers();
       const allUsers = mergeUsers(cloudUsers);
       const normalizedTarget = normalizeEmail(identifier);
 
-      // Find user in allUsers
       const existingUser = allUsers.find(u => 
         (u.email && normalizeEmail(u.email) === normalizedTarget) ||
         (u.nim && String(u.nim).trim() === identifier)
@@ -364,7 +428,6 @@ export default async function handler(req, res) {
         return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan.' });
       }
 
-      // Build updated data
       const mergedUpdates = {
         ...existingUser,
         ...(updates || {}),
@@ -375,7 +438,6 @@ export default async function handler(req, res) {
       if (password !== undefined) mergedUpdates.password = password;
       if (phone !== undefined) mergedUpdates.phone = phone;
 
-      // Update in cloudUsers (or append if it was only in DEFAULT_USERS)
       const targetKey = getUserKey(existingUser);
       let foundInCloud = false;
       const newCloudUsers = cloudUsers.map(u => {
@@ -390,41 +452,51 @@ export default async function handler(req, res) {
         newCloudUsers.push(mergedUpdates);
       }
 
-      await saveCloudUsers(newCloudUsers);
+      await saveCloudData({ users: newCloudUsers, login_logs: cloudLogs });
       const finalAllUsers = mergeUsers(newCloudUsers);
 
       return res.status(200).json({
         success: true,
         message: 'Data pengguna berhasil diperbarui di cloud database!',
         user: mergedUpdates,
-        users: finalAllUsers
+        users: finalAllUsers,
+        login_logs: cloudLogs
       });
     }
 
-    // ── 4. DELETE: Delete user ──
+    // ── 4. DELETE: Delete user OR Clear login logs ──
     if (req.method === 'DELETE') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-      const identifier = (body.target || body.email || body.nim || req.query.target || req.query.email || req.query.nim || '').trim();
+      const action = body.action || req.query.action;
 
+      if (action === 'clear_logs') {
+        await saveCloudData({ users: cloudUsers, login_logs: [] });
+        return res.status(200).json({
+          success: true,
+          message: 'Seluruh riwayat login berhasil dibersihkan.',
+          login_logs: []
+        });
+      }
+
+      const identifier = (body.target || body.email || body.nim || req.query.target || req.query.email || req.query.nim || '').trim();
       if (!identifier) {
         return res.status(400).json({ success: false, message: 'Target identifier (email atau NIM) wajib diisi.' });
       }
 
-      const cloudUsers = await fetchCloudUsers();
       const normalizedTarget = normalizeEmail(identifier);
-
       const updatedCloudUsers = cloudUsers.filter(u => 
         (u.email && normalizeEmail(u.email) !== normalizedTarget) &&
         (u.nim ? String(u.nim).trim() !== identifier : true)
       );
 
-      await saveCloudUsers(updatedCloudUsers);
+      await saveCloudData({ users: updatedCloudUsers, login_logs: cloudLogs });
       const finalAllUsers = mergeUsers(updatedCloudUsers);
 
       return res.status(200).json({
         success: true,
         message: 'Pengguna berhasil dihapus dari cloud database.',
-        users: finalAllUsers
+        users: finalAllUsers,
+        login_logs: cloudLogs
       });
     }
 

@@ -129,6 +129,7 @@ const DEFAULT_USERS = [
 
 export const AuthProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
+  const [loginLogs, setLoginLogs] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState(null);
@@ -181,8 +182,11 @@ export const AuthProvider = ({ children }) => {
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
-        if (data && data.success && Array.isArray(data.users)) {
-          return data.users;
+        if (data && data.success) {
+          return {
+            users: Array.isArray(data.users) ? data.users : [],
+            login_logs: Array.isArray(data.login_logs) ? data.login_logs : []
+          };
         }
       }
     } catch (e) {}
@@ -194,8 +198,13 @@ export const AuthProvider = ({ children }) => {
       });
       if (res.ok) {
         const data = await res.json();
-        if (data && data.data && Array.isArray(data.data.users)) {
-          return mergeUserLists(DEFAULT_USERS, data.data.users);
+        if (data && data.data) {
+          const cloudUsers = Array.isArray(data.data.users) ? data.data.users : [];
+          const cloudLogs = Array.isArray(data.data.login_logs) ? data.data.login_logs : [];
+          return {
+            users: mergeUserLists(DEFAULT_USERS, cloudUsers),
+            login_logs: cloudLogs
+          };
         }
       }
     } catch (e) {}
@@ -204,13 +213,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Resilient cloud saver
-  const saveToAnyCloud = async (allUsersList) => {
+  const saveToAnyCloud = async (allUsersList, allLogsList) => {
+    const currentLogs = allLogsList !== undefined ? allLogsList : JSON.parse(localStorage.getItem('hima_login_logs') || '[]');
+    
     // 1. Send to Vercel API
     try {
       fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ users: allUsersList })
+        body: JSON.stringify({ users: allUsersList, login_logs: currentLogs })
       }).catch(() => {});
     } catch (e) {}
 
@@ -221,7 +232,7 @@ export const AuthProvider = ({ children }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: 'hima_einsten_users_db',
-          data: { users: allUsersList }
+          data: { users: allUsersList, login_logs: currentLogs }
         })
       });
     } catch (e) {
@@ -233,13 +244,24 @@ export const AuthProvider = ({ children }) => {
   const syncUsersWithCloud = async () => {
     setIsSyncing(true);
     try {
-      const cloudUsers = await fetchFromAnyCloud();
-      if (cloudUsers && Array.isArray(cloudUsers)) {
+      const cloudData = await fetchFromAnyCloud();
+      if (cloudData) {
         const currentLocal = JSON.parse(localStorage.getItem('hima_users') || '[]');
-        const merged = mergeUserLists(DEFAULT_USERS, mergeUserLists(currentLocal, cloudUsers));
+        const merged = mergeUserLists(DEFAULT_USERS, mergeUserLists(currentLocal, cloudData.users));
         
         setUsers(merged);
         localStorage.setItem('hima_users', JSON.stringify(merged));
+
+        if (Array.isArray(cloudData.login_logs)) {
+          const localLogs = JSON.parse(localStorage.getItem('hima_login_logs') || '[]');
+          const combinedLogs = [...cloudData.login_logs, ...localLogs];
+          const uniqueLogs = Array.from(new Map(combinedLogs.map(item => [item.id, item])).values())
+            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+            .slice(0, 100);
+          setLoginLogs(uniqueLogs);
+          localStorage.setItem('hima_login_logs', JSON.stringify(uniqueLogs));
+        }
+
         setLastSyncedAt(new Date());
 
         // Refresh current user session if updated
@@ -461,14 +483,99 @@ export const AuthProvider = ({ children }) => {
       throw new Error('Login gagal. Akun Anda telah ditolak oleh Admin BPH.');
     }
 
-    setCurrentUser(user);
-    sessionStorage.setItem('hima_current_user', JSON.stringify(user));
-    return user;
+    // ── Log this login activity ──
+    const now = Date.now();
+    const timeStr = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+    const isMobile = typeof navigator !== 'undefined' && /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent);
+    const deviceStr = isMobile ? 'Smartphone (Mobile)' : 'Komputer / Laptop';
+
+    const newLogEntry = {
+      id: `log_${now}_${Math.random().toString(36).slice(2, 6)}`,
+      name: user.name,
+      nim: user.nim || '-',
+      email: user.email,
+      role: user.role || 'Anggota Biasa',
+      timestamp: now,
+      timeString: timeStr,
+      device: deviceStr,
+      status: 'Success'
+    };
+
+    const updatedLogs = [newLogEntry, ...(loginLogs || []).filter(l => l.id !== newLogEntry.id)].slice(0, 100);
+    setLoginLogs(updatedLogs);
+    localStorage.setItem('hima_login_logs', JSON.stringify(updatedLogs));
+
+    // Update lastLogin on the user
+    const targetKey = getUserKey(user);
+    const updatedUsersWithLastLogin = users.map(u => {
+      if (getUserKey(u) === targetKey) {
+        return { ...u, lastLogin: timeStr };
+      }
+      return u;
+    });
+    setUsers(updatedUsersWithLastLogin);
+    localStorage.setItem('hima_users', JSON.stringify(updatedUsersWithLastLogin));
+
+    // Save logs and updated users to cloud
+    saveToAnyCloud(updatedUsersWithLastLogin, updatedLogs);
+
+    // Notify Master Admins (Kahim & Wakahim) via Navbar Notification Bell
+    try {
+      const savedNotifs = JSON.parse(localStorage.getItem('hima_notifications') || '[]');
+      const adminEmails = [
+        'Muhammad Iqbal Nur Huda@einsten.com',
+        'M. Iqbal Nur Huda@einsten.com',
+        'Rafie Asfa Raditya Aryanto@einsten.com'
+      ];
+      
+      const newNotifs = adminEmails.map((adminEmail, idx) => ({
+        id: `notif_login_${now}_${idx}`,
+        recipientEmail: adminEmail,
+        message: `🔔 NOTIFIKASI LOGIN: ${user.name} (${user.role} - NIM: ${user.nim}) baru saja masuk ke sistem pada ${timeStr} via ${deviceStr}.`,
+        read: false,
+        timestamp: now
+      }));
+
+      const allNotifs = [...newNotifs, ...savedNotifs].slice(0, 100);
+      localStorage.setItem('hima_notifications', JSON.stringify(allNotifs));
+    } catch (e) {}
+
+    const updatedUserObj = { ...user, lastLogin: timeStr };
+    setCurrentUser(updatedUserObj);
+    sessionStorage.setItem('hima_current_user', JSON.stringify(updatedUserObj));
+    return updatedUserObj;
   };
 
   const logout = () => {
     setCurrentUser(null);
     sessionStorage.removeItem('hima_current_user');
+  };
+
+  // Admin directly adds or registers a user
+  const adminAddUser = async (newUserData) => {
+    const generatedEmail = newUserData.email || `${newUserData.name.trim()}@einsten.com`;
+    const userToSave = {
+      name: newUserData.name.trim(),
+      nim: String(newUserData.nim).trim(),
+      phone: newUserData.phone ? String(newUserData.phone).trim() : '',
+      email: generatedEmail,
+      password: newUserData.password || String(newUserData.nim).trim(),
+      role: newUserData.role || 'Anggota Biasa',
+      status: newUserData.status || 'Active',
+      createdAt: new Date().toISOString()
+    };
+
+    const updated = mergeUserLists(users, [userToSave]);
+    setUsers(updated);
+    localStorage.setItem('hima_users', JSON.stringify(updated));
+    saveToAnyCloud(updated);
+    return userToSave;
+  };
+
+  const clearLoginLogs = () => {
+    setLoginLogs([]);
+    localStorage.removeItem('hima_login_logs');
+    saveToAnyCloud(users, []);
   };
 
   // Admin and management actions
@@ -668,11 +775,14 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{
       users,
+      loginLogs,
       currentUser,
       isSyncing,
       lastSyncedAt,
       syncUsersWithCloud,
       register,
+      adminAddUser,
+      clearLoginLogs,
       login,
       logout,
       deleteAccount,
