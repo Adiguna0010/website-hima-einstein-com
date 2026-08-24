@@ -1,17 +1,4 @@
 {
-  "redirects": [
-    {
-      "source": "/(.*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "website-hima-einstein-com.vercel.app"
-        }
-      ],
-      "destination": "https://website-hima-einsten-com.vercel.app/$1",
-      "permanent": true
-    }
-  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
