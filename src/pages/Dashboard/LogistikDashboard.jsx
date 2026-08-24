@@ -14,8 +14,8 @@ export default function LogistikDashboard({ showToast }) {
   const [instruments, setInstruments] = useState([]);
   const [borrowRequests, setBorrowRequests] = useState([]);
 
-  // Active Main Sub-Page Tab: 'inventaris' | 'tambah' | 'peminjaman' | 'batch-qr'
-  const [activeTab, setActiveTab] = useState('inventaris');
+  // Active Tab Panel: 'overview' | 'database' | 'input' | 'qr' | 'acc'
+  const [activeTab, setActiveTab] = useState('database');
 
   // Filter States
   const [selectedCategory, setSelectedCategory] = useState('Semua');
@@ -45,7 +45,7 @@ export default function LogistikDashboard({ showToast }) {
   const [editImage, setEditImage] = useState('');
   const [editDesc, setEditDesc] = useState('');
 
-  // Registration Mode ('manual' | 'batch')
+  // Registration Sub-Mode ('manual' | 'batch')
   const [regMode, setRegMode] = useState('manual');
   const [excelFile, setExcelFile] = useState(null);
   const [excelPreviewData, setExcelPreviewData] = useState([]);
@@ -69,12 +69,9 @@ export default function LogistikDashboard({ showToast }) {
   const [zipProgress, setZipProgress] = useState(0);
   const [borrowReqFilter, setBorrowReqFilter] = useState('Semua');
 
-  // Real-Time Broadcast & Event Dispatcher Helper
+  // Real-Time Broadcast Helper
   const broadcastSync = (type, data) => {
-    // 1. Dispatch window storage event for local listeners
     window.dispatchEvent(new Event('storage'));
-    
-    // 2. Dispatch custom DOM events for instant same-window component updates
     if (type === 'inventory') {
       window.dispatchEvent(new CustomEvent('hima_sync_inventory', { detail: data }));
     } else if (type === 'requests') {
@@ -83,7 +80,6 @@ export default function LogistikDashboard({ showToast }) {
       window.dispatchEvent(new CustomEvent('hima_sync_all', { detail: data }));
     }
 
-    // 3. Broadcast across tabs/windows with zero latency via BroadcastChannel
     if (typeof BroadcastChannel !== 'undefined') {
       try {
         const bc = new BroadcastChannel('hima_live_sync_channel');
@@ -96,7 +92,6 @@ export default function LogistikDashboard({ showToast }) {
   // Load Initial Data & Multi-Tab Real-Time Sync
   useEffect(() => {
     const loadData = () => {
-      // Load instruments
       const savedInst = localStorage.getItem('hima_instruments');
       if (savedInst) {
         try {
@@ -116,7 +111,6 @@ export default function LogistikDashboard({ showToast }) {
         setInstruments(DEFAULT_INVENTORY_ITEMS);
       }
 
-      // Load borrow requests
       const savedReqs = localStorage.getItem('hima_borrow_requests');
       if (savedReqs) {
         try {
@@ -131,7 +125,6 @@ export default function LogistikDashboard({ showToast }) {
 
     loadData();
 
-    // Event listeners for cross-tab & same-tab live updates
     const handleSync = () => loadData();
     window.addEventListener('storage', handleSync);
     window.addEventListener('hima_sync_inventory', handleSync);
@@ -148,7 +141,6 @@ export default function LogistikDashboard({ showToast }) {
       bc.onmessage = () => loadData();
     } catch (e) {}
 
-    // Live Polling Interval (Every 1.5s for seamless background live sync)
     const liveInterval = setInterval(loadData, 1500);
 
     return () => {
@@ -254,7 +246,6 @@ export default function LogistikDashboard({ showToast }) {
       return;
     }
 
-    // Check if new ID collides with another instrument
     const idExists = instruments.some(
       inst => inst.id.toLowerCase() === editId.trim().toLowerCase() && inst.id.toLowerCase() !== editingInstrument.id.toLowerCase()
     );
@@ -319,7 +310,6 @@ export default function LogistikDashboard({ showToast }) {
     localStorage.setItem('hima_instruments', JSON.stringify(updated));
     broadcastSync('inventory', updated);
 
-    // Reset Form
     setNewName('');
     setNewId('');
     setNewCategory('Elektronik');
@@ -330,7 +320,7 @@ export default function LogistikDashboard({ showToast }) {
     setNewDesc('');
     setFormKey(Date.now());
     showToast(`Barang ${newName} berhasil didaftarkan ke kategori ${newCategory}!`, 'success');
-    setActiveTab('inventaris'); // Switch back to view the list
+    setActiveTab('database');
   };
 
   // Delete Instrument
@@ -444,15 +434,13 @@ export default function LogistikDashboard({ showToast }) {
     broadcastSync('inventory', updatedList);
     showToast(`Sukses! ${excelPreviewData.length} barang berhasil didaftarkan sekaligus ke inventaris!`, 'success');
     
-    // Reset preview & switch to inventory tab
     setExcelFile(null);
     setExcelPreviewData([]);
     if (batchFileInputRef.current) batchFileInputRef.current.value = '';
     if (csvInputRef.current) csvInputRef.current.value = '';
-    setActiveTab('inventaris');
+    setActiveTab('database');
   };
 
-  // Download Sample Excel & CSV Template
   const handleDownloadTemplate = (format = 'xlsx') => {
     const templateData = [
       {
@@ -474,28 +462,6 @@ export default function LogistikDashboard({ showToast }) {
         Jumlah: 1,
         Kondisi: 'Baik',
         Deskripsi: 'Mesin gerinda listrik pemotong',
-        Status: 'Tersedia',
-        Foto: ''
-      },
-      {
-        Kode_ID: 'ASL-FRN-01-2025',
-        Nama_Barang: 'Kursi Lipat',
-        Kategori: 'Furniture',
-        Ukuran: 'Besar',
-        Jumlah: 10,
-        Kondisi: 'Baik',
-        Deskripsi: 'Kursi lipat sekretariat',
-        Status: 'Tersedia',
-        Foto: ''
-      },
-      {
-        Kode_ID: 'ASL-ATK-01-2025',
-        Nama_Barang: 'Gunting Kertas',
-        Kategori: 'ATK',
-        Ukuran: 'Kecil',
-        Jumlah: 6,
-        Kondisi: 'Baik',
-        Deskripsi: 'Gunting serbaguna',
         Status: 'Tersedia',
         Foto: ''
       }
@@ -520,7 +486,6 @@ export default function LogistikDashboard({ showToast }) {
     }
   };
 
-  // Export current live database to Excel
   const handleExportLiveInventory = () => {
     const exportData = instruments.map((inst, index) => ({
       No: index + 1,
@@ -541,7 +506,7 @@ export default function LogistikDashboard({ showToast }) {
     showToast('Data inventaris berhasil diekspor ke file Excel!', 'success');
   };
 
-  // Borrow Approval Handlers with instant Live Dispatch
+  // Borrow Approval Handlers with Notification & Instant Sync
   const handleApproveRequest = (reqId) => {
     const req = borrowRequests.find(r => r.id === reqId);
     if (!req) return;
@@ -558,14 +523,14 @@ export default function LogistikDashboard({ showToast }) {
     setInstruments(updatedInsts);
     localStorage.setItem('hima_instruments', JSON.stringify(updatedInsts));
 
-    // Live Sync Broadcast
     broadcastSync('requests', updatedReqs);
     broadcastSync('inventory', updatedInsts);
 
+    // Instant Notification to Student Account
     const newNotification = {
       id: Date.now(),
       recipientEmail: req.userEmail || 'guest@einsten.com',
-      message: `Peminjaman alat "${req.instrumentName}" Anda telah DISETUJUI (ACC) oleh Operator Logistik! Silakan ambil alat di Laboratorium.`,
+      message: `✅ Permohonan peminjaman alat "${req.instrumentName}" Anda telah DISETUJUI (ACC) oleh Operator Logistik! Silakan ambil alat di Laboratorium.`,
       read: false,
       timestamp: Date.now()
     };
@@ -574,7 +539,7 @@ export default function LogistikDashboard({ showToast }) {
     notifsList.push(newNotification);
     localStorage.setItem('hima_notifications', JSON.stringify(notifsList));
 
-    showToast(`Permohonan peminjaman oleh ${req.borrowerName} disetujui (ACC)!`, 'success');
+    showToast(`Permohonan peminjaman oleh ${req.borrowerName} disetujui (ACC) & notifikasi terkirim!`, 'success');
   };
 
   const handleRejectRequest = (reqId) => {
@@ -599,7 +564,7 @@ export default function LogistikDashboard({ showToast }) {
     showToast('Riwayat permohonan berhasil dihapus.', 'success');
   };
 
-  // Batch QR Code Download as ZIP Handler
+  // Batch QR Code Download as ZIP
   const handleDownloadAllQrZip = async (targetItems, zipTitle = 'QR_Inventaris_Semua') => {
     if (!targetItems || targetItems.length === 0) {
       showToast('Tidak ada barang untuk di-download QR!', 'warning');
@@ -609,12 +574,11 @@ export default function LogistikDashboard({ showToast }) {
     try {
       setIsGeneratingZip(true);
       setZipProgress(5);
-      showToast(`Sedang men-generate ${targetItems.length} QR Code ke dalam file ZIP...`, 'info');
+      showToast(`Sedang men-generate ${targetItems.length} QR Code ke file ZIP...`, 'info');
 
       const zip = new JSZip();
       const folder = zip.folder('QR_Codes_HIMA_EINSTEN');
 
-      // Create an index summary text file inside the zip
       let indexText = `REKAPITULASI QR CODE INVENTARIS HIMA EINSTEN\n`;
       indexText += `Tanggal Ekspor: ${new Date().toLocaleString('id-ID')}\n`;
       indexText += `Total Barang: ${targetItems.length}\n`;
@@ -625,39 +589,30 @@ export default function LogistikDashboard({ showToast }) {
       for (let i = 0; i < total; i++) {
         const item = targetItems[i];
         
-        // Generate high-resolution QR Data URL (600x600 px)
         const qrDataUrl = await QRCode.toDataURL(item.id, {
           width: 600,
           margin: 3,
           color: { dark: '#0b132b', light: '#ffffff' }
         });
 
-        // Convert base64 data URL to raw binary base64
         const base64Data = qrDataUrl.replace(/^data:image\/png;base64,/, '');
-        
-        // Sanitize item name for file safety
         const safeName = (item.name || 'Barang').replace(/[/\\?%*:|"<>]/g, '_').substring(0, 40);
         const fileName = `[${item.id}]_${safeName}.png`;
 
         folder.file(fileName, base64Data, { base64: true });
         indexText += `${i + 1}. [${item.id}] ${item.name} | Kategori: ${item.category || '-'} | Stok: ${item.quantity || 1} | File: ${fileName}\n`;
 
-        // Update progress
         const currentProgress = Math.round(((i + 1) / total) * 80) + 5;
         setZipProgress(currentProgress);
       }
 
-      // Add index summary file
       folder.file('DAFTAR_BARANG_DAN_KODE_QR.txt', indexText);
-
       setZipProgress(90);
 
-      // Generate the zip blob
       const content = await zip.generateAsync({ type: 'blob' }, (metadata) => {
         setZipProgress(90 + Math.round(metadata.percent * 0.1));
       });
 
-      // Trigger download
       const downloadUrl = URL.createObjectURL(content);
       const link = document.createElement('a');
       link.href = downloadUrl;
@@ -678,7 +633,7 @@ export default function LogistikDashboard({ showToast }) {
     }
   };
 
-  // Stats calculation
+  // Metrics
   const totalPhysicalStock = instruments.reduce((sum, inst) => sum + (Number(inst.quantity) || 1), 0);
   const availableCount = instruments.filter(i => i.status === 'Available').length;
   const borrowedCount = instruments.filter(i => i.status !== 'Available').length;
@@ -686,41 +641,27 @@ export default function LogistikDashboard({ showToast }) {
 
   const getCategoryBadgeClass = (category) => {
     switch (category) {
-      case 'Elektronik':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'Furniture':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'Properti Kegiatan':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'ATK':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'P3K':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
-      case 'DANUS':
-        return 'bg-orange-50 text-orange-700 border-orange-200';
-      case 'Olahraga':
-        return 'bg-teal-50 text-teal-700 border-teal-200';
-      case 'Pemakaian Bersama':
-        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
-      default:
-        return 'bg-slate-100 text-slate-700 border-slate-200';
+      case 'Elektronik': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'Furniture': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'Properti Kegiatan': return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'ATK': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'P3K': return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'DANUS': return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'Olahraga': return 'bg-teal-50 text-teal-700 border-teal-200';
+      default: return 'bg-slate-100 text-slate-700 border-slate-200';
     }
   };
 
   const getSizeBadgeClass = (size) => {
     switch (size) {
-      case 'Besar':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
-      case 'Medium':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'Kecil':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      default:
-        return 'bg-slate-100 text-slate-600 border-slate-200';
+      case 'Besar': return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'Medium': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'Kecil': return 'bg-amber-50 text-amber-700 border-amber-200';
+      default: return 'bg-slate-100 text-slate-600 border-slate-200';
     }
   };
 
-  // Filtered inventory calculation
+  // Filtered Inventory
   const filteredInstruments = instruments.filter(inst => {
     const matchesCat = selectedCategory === 'Semua' || inst.category === selectedCategory;
     const matchesSize = selectedSize === 'Semua Ukuran' || inst.size === selectedSize;
@@ -743,7 +684,7 @@ export default function LogistikDashboard({ showToast }) {
     return matchesCat && matchesSize && matchesCondition && matchesStatus && matchesSearch;
   });
 
-  // Pagination calculation
+  // Pagination
   const totalItems = filteredInstruments.length;
   const effectivePageSize = pageSize === 999999 ? (totalItems || 1) : pageSize;
   const totalPages = Math.max(1, Math.ceil(totalItems / effectivePageSize));
@@ -759,20 +700,17 @@ export default function LogistikDashboard({ showToast }) {
   return (
     <div className="pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 text-left text-slate-800">
       
-      {/* Top Header */}
+      {/* Dashboard Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-5 gap-4">
         <div className="space-y-1">
           <div className="inline-flex items-center gap-1.5 text-xs text-gold-dark font-bold tracking-widest uppercase">
-            <Box className="w-4 h-4 text-gold" /> LOGISTIK & ASET OPERATOR CONSOLE
-            <span className="inline-flex items-center gap-1 ml-2 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Live Real-Time
-            </span>
+            <Box className="w-3.5 h-3.5 text-gold" /> LOGISTIK BACKOFFICE PANEL
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 uppercase tracking-wider">
-            Logistics Inventory & Asset Control
+            Dashboard Logistik & Inventaris
           </h1>
           <p className="text-xs text-slate-500 font-light">
-            Sistem manajemen inventaris terpadu HIMA EINSTEN (Elektronik, Furniture, ATK, P3K, Danus, Properti, Olahraga), QR Code generator, & permohonan peminjaman.
+            Pengelolaan database inventaris, registrasi barang baru (manual & spreadsheet), batch download QR code, dan persetujuan (ACC) peminjaman alat.
           </p>
         </div>
 
@@ -781,72 +719,71 @@ export default function LogistikDashboard({ showToast }) {
             type="button"
             onClick={handleExportLiveInventory}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
-            title="Ekspor seluruh data inventaris ke file Excel (.xlsx)"
           >
             <Download className="w-3.5 h-3.5" /> Ekspor ke Excel
           </button>
-          
-          <button
-            type="button"
-            onClick={() => handleDownloadAllQrZip(instruments, 'Semua_QR_Inventaris_HIMA')}
-            disabled={isGeneratingZip}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-            title="Download seluruh QR code 150+ barang dalam file ZIP"
-          >
-            <QrCode className="w-3.5 h-3.5 text-gold-light" />
-            <span>{isGeneratingZip ? `Membuat ZIP (${zipProgress}%)...` : 'Download Semua QR (.ZIP)'}</span>
-          </button>
         </div>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 bg-white border border-gold-border rounded-2xl flex items-center gap-3.5 shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center text-gold shrink-0">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Jenis Inventaris</span>
-            <span className="text-lg font-extrabold text-slate-900 font-heading">{instruments.length} Jenis</span>
-          </div>
-        </div>
+      {/* RISTEK-STYLE TOP TAB MENU (UNDERLINE STYLE) */}
+      <div className="flex overflow-x-auto border-b border-slate-200 gap-1 pb-1">
+        <button
+          type="button"
+          onClick={() => setActiveTab('overview')}
+          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 shrink-0 cursor-pointer ${
+            activeTab === 'overview' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
+          }`}
+        >
+          Dashboard Utama Logistik
+        </button>
 
-        <div className="p-4 bg-white border border-gold-border rounded-2xl flex items-center gap-3.5 shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0">
-            <Layers className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total Stok Fisik</span>
-            <span className="text-lg font-extrabold text-slate-900 font-heading">{totalPhysicalStock} Unit</span>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={() => setActiveTab('database')}
+          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 shrink-0 cursor-pointer ${
+            activeTab === 'database' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
+          }`}
+        >
+          1. Panel Database Inventaris ({instruments.length})
+        </button>
 
-        <div className="p-4 bg-white border border-gold-border rounded-2xl flex items-center gap-3.5 shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
-            <CheckCircle2 className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tersedia</span>
-            <span className="text-lg font-extrabold text-emerald-700 font-heading">
-              {availableCount} Jenis
+        <button
+          type="button"
+          onClick={() => setActiveTab('input')}
+          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 shrink-0 cursor-pointer ${
+            activeTab === 'input' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
+          }`}
+        >
+          2. Input Barang (Manual & Spreadsheet)
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('qr')}
+          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 shrink-0 cursor-pointer ${
+            activeTab === 'qr' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
+          }`}
+        >
+          3. Batch & Print QR Code
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('acc')}
+          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 shrink-0 cursor-pointer ${
+            activeTab === 'acc' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
+          }`}
+        >
+          4. ACC Peminjaman Alat
+          {pendingRequestsCount > 0 && (
+            <span className="bg-rose-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse">
+              {pendingRequestsCount} Bth ACC
             </span>
-          </div>
-        </div>
-
-        <div className="p-4 bg-white border border-gold-border rounded-2xl flex items-center gap-3.5 shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 shrink-0">
-            <Radio className="w-5 h-5 animate-pulse" />
-          </div>
-          <div>
-            <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sedang Dipinjam</span>
-            <span className="text-lg font-extrabold text-rose-600 font-heading">
-              {borrowedCount} Unit
-            </span>
-          </div>
-        </div>
+          )}
+        </button>
       </div>
 
-      {/* Progress Bar when Generating ZIP */}
+      {/* Progress Bar for ZIP Generation */}
       {isGeneratingZip && (
         <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-xl flex flex-col gap-2 animate-fade-in border border-gold/30">
           <div className="flex items-center justify-between text-xs font-bold">
@@ -865,125 +802,136 @@ export default function LogistikDashboard({ showToast }) {
         </div>
       )}
 
-      {/* Sub-Page / Tab Navigation */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-1 overflow-x-auto scrollbar-none">
-        <button
-          type="button"
-          onClick={() => setActiveTab('inventaris')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shrink-0 cursor-pointer ${
-            activeTab === 'inventaris'
-              ? 'bg-gold text-white shadow-md shadow-gold/20'
-              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          <Box className="w-4 h-4" />
-          <span>Daftar Rekapitulasi Inventaris</span>
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-            activeTab === 'inventaris' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
-          }`}>
-            {instruments.length}
-          </span>
-        </button>
+      {/* ========================================================================= */}
+      {/* PANEL OVERVIEW: DASHBOARD UTAMA LOGISTIK & RINGKASAN METRICS */}
+      {/* ========================================================================= */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Metrics Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div 
+              onClick={() => setActiveTab('database')}
+              className="p-4 bg-white border border-gold-border rounded-2xl flex items-center gap-3.5 shadow-sm hover:border-gold cursor-pointer transition-all"
+            >
+              <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center text-gold shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Jenis Inventaris</span>
+                <span className="text-lg font-extrabold text-slate-900 font-heading">{instruments.length} Jenis</span>
+              </div>
+            </div>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('tambah')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shrink-0 cursor-pointer ${
-            activeTab === 'tambah'
-              ? 'bg-gold text-white shadow-md shadow-gold/20'
-              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          <Plus className="w-4 h-4" />
-          <span>Tambah & Import Barang</span>
-        </button>
+            <div 
+              onClick={() => setActiveTab('database')}
+              className="p-4 bg-white border border-gold-border rounded-2xl flex items-center gap-3.5 shadow-sm hover:border-gold cursor-pointer transition-all"
+            >
+              <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0">
+                <Layers className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total Stok Fisik</span>
+                <span className="text-lg font-extrabold text-slate-900 font-heading">{totalPhysicalStock} Unit</span>
+              </div>
+            </div>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('peminjaman')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shrink-0 cursor-pointer ${
-            activeTab === 'peminjaman'
-              ? 'bg-gold text-white shadow-md shadow-gold/20'
-              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          <span>Permohonan Peminjaman</span>
-          {pendingRequestsCount > 0 ? (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-500 text-white animate-pulse">
-              {pendingRequestsCount} ACC
-            </span>
-          ) : (
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-              activeTab === 'peminjaman' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
-            }`}>
-              {borrowRequests.length}
-            </span>
-          )}
-        </button>
+            <div 
+              onClick={() => setActiveTab('database')}
+              className="p-4 bg-white border border-gold-border rounded-2xl flex items-center gap-3.5 shadow-sm hover:border-gold cursor-pointer transition-all"
+            >
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tersedia</span>
+                <span className="text-lg font-extrabold text-emerald-700 font-heading">{availableCount} Jenis</span>
+              </div>
+            </div>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('batch-qr')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shrink-0 cursor-pointer ${
-            activeTab === 'batch-qr'
-              ? 'bg-gold text-white shadow-md shadow-gold/20'
-              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          <QrCode className="w-4 h-4" />
-          <span>Batch Download & Cetak QR</span>
-        </button>
-      </div>
+            <div 
+              onClick={() => setActiveTab('acc')}
+              className="p-4 bg-white border border-gold-border rounded-2xl flex items-center gap-3.5 shadow-sm hover:border-gold cursor-pointer transition-all"
+            >
+              <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 shrink-0">
+                <Radio className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sedang Dipinjam</span>
+                <span className="text-lg font-extrabold text-rose-600 font-heading">{borrowedCount} Unit</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Access Card */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div 
+              onClick={() => setActiveTab('database')}
+              className="p-6 bg-white border border-slate-200 rounded-3xl space-y-2 hover:border-gold transition-all cursor-pointer shadow-xs"
+            >
+              <Box className="w-6 h-6 text-gold" />
+              <h3 className="font-bold text-slate-900 text-sm">1. Panel Database Inventaris</h3>
+              <p className="text-xs text-slate-500">Cari barang, edit stok, ganti foto, ubah kondisi (Baik/Cukup/Rusak), dan ubah status.</p>
+              <span className="text-xs font-bold text-gold-dark block pt-2">Buka Panel Database &rarr;</span>
+            </div>
+
+            <div 
+              onClick={() => setActiveTab('input')}
+              className="p-6 bg-white border border-slate-200 rounded-3xl space-y-2 hover:border-gold transition-all cursor-pointer shadow-xs"
+            >
+              <Plus className="w-6 h-6 text-gold" />
+              <h3 className="font-bold text-slate-900 text-sm">2. Input Barang Manual & Batch</h3>
+              <p className="text-xs text-slate-500">Formulir pendaftaran barang satu per satu atau import file Excel/CSV secara otomatis.</p>
+              <span className="text-xs font-bold text-gold-dark block pt-2">Buka Panel Input &rarr;</span>
+            </div>
+
+            <div 
+              onClick={() => setActiveTab('acc')}
+              className="p-6 bg-white border border-slate-200 rounded-3xl space-y-2 hover:border-gold transition-all cursor-pointer shadow-xs"
+            >
+              <FileText className="w-6 h-6 text-gold" />
+              <h3 className="font-bold text-slate-900 text-sm">4. ACC Peminjaman Alat ({pendingRequestsCount} Pending)</h3>
+              <p className="text-xs text-slate-500">Persetujuan permohonan peminjaman alat laboratorium dari mahasiswa.</p>
+              <span className="text-xs font-bold text-gold-dark block pt-2">Buka Panel ACC &rarr;</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================================= */}
-      {/* TAB 1: DAFTAR REKAPITULASI INVENTARIS (FULL WIDTH WITH PAGINATION & EDIT) */}
+      {/* PANEL 1: DATABASE INVENTARIS (SEARCH, EDIT STOK, KONDISI, GAMBAR, PAGINATION) */}
       {/* ========================================================================= */}
-      {activeTab === 'inventaris' && (
+      {activeTab === 'database' && (
         <div className="space-y-5 animate-fade-in">
           
-          {/* Classification & Quick Toolbar */}
+          {/* Classification Mode Switcher */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            {/* Classification Switcher */}
             <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 w-fit">
               <button
                 type="button"
-                onClick={() => {
-                  setClassificationMode('fungsi');
-                  setSelectedSize('Semua Ukuran');
-                }}
+                onClick={() => { setClassificationMode('fungsi'); setSelectedSize('Semua Ukuran'); }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  classificationMode === 'fungsi'
-                    ? 'bg-white text-gold-dark shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
+                  classificationMode === 'fungsi' ? 'bg-white text-gold-dark shadow-xs' : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
                 🏷️ Klasifikasi Fungsi ({INVENTORY_CATEGORIES.length - 1})
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setClassificationMode('ukuran');
-                  setSelectedCategory('Semua');
-                }}
+                onClick={() => { setClassificationMode('ukuran'); setSelectedCategory('Semua'); }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  classificationMode === 'ukuran'
-                    ? 'bg-white text-gold-dark shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
+                  classificationMode === 'ukuran' ? 'bg-white text-gold-dark shadow-xs' : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
                 📐 Klasifikasi Ukuran (3)
               </button>
             </div>
 
-            {/* Quick Action Shortcuts */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => handleDownloadAllQrZip(filteredInstruments, `QR_Inventaris_${selectedCategory !== 'Semua' ? selectedCategory : 'Terfilter'}`)}
                 disabled={isGeneratingZip || filteredInstruments.length === 0}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-                title="Download QR code dari daftar yang sedang tampil/terfilter saat ini"
               >
                 <Download className="w-3.5 h-3.5 text-slate-600" />
                 <span>Unduh QR Terfilter ({filteredInstruments.length})</span>
@@ -991,7 +939,7 @@ export default function LogistikDashboard({ showToast }) {
 
               <button
                 type="button"
-                onClick={() => setActiveTab('tambah')}
+                onClick={() => setActiveTab('input')}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark text-xs font-bold border border-gold/30 transition-all active:scale-95 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 text-gold-dark" /> Tambah Barang
@@ -1010,9 +958,7 @@ export default function LogistikDashboard({ showToast }) {
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
                     className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-gold text-white shadow-sm'
-                        : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
+                      isSelected ? 'bg-gold text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
                     }`}
                   >
                     <span>{cat}</span>
@@ -1035,9 +981,7 @@ export default function LogistikDashboard({ showToast }) {
                     key={sz}
                     onClick={() => setSelectedSize(sz)}
                     className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-gold text-white shadow-sm'
-                        : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
+                      isSelected ? 'bg-gold text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
                     }`}
                   >
                     <span>{sz}</span>
@@ -1054,12 +998,11 @@ export default function LogistikDashboard({ showToast }) {
 
           {/* Search & Multi-Filter Bar */}
           <div className="bg-white border border-slate-200 rounded-2xl p-3.5 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xs">
-            {/* Live Search Input */}
             <div className="relative w-full md:flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Cari nama barang, kode ID (ASL-...), kondisi, atau deskripsi..."
+                placeholder="Cari nama barang (misal: pompa portabel), kode ID, kondisi, deskripsi..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-9 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold focus:bg-white transition-all"
@@ -1068,25 +1011,20 @@ export default function LogistikDashboard({ showToast }) {
                 <button 
                   onClick={() => setSearchQuery('')} 
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
-                  title="Hapus pencarian"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
 
-            {/* Dropdown Filters */}
             <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
-              {/* Secondary category / size filter */}
               {classificationMode === 'fungsi' ? (
                 <select
                   value={selectedSize}
                   onChange={(e) => setSelectedSize(e.target.value)}
                   className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
                 >
-                  {INVENTORY_SIZES.map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
+                  {INVENTORY_SIZES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               ) : (
                 <select
@@ -1094,13 +1032,10 @@ export default function LogistikDashboard({ showToast }) {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
                 >
-                  {INVENTORY_CATEGORIES.map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
+                  {INVENTORY_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               )}
 
-              {/* Condition Filter */}
               <select
                 value={selectedCondition}
                 onChange={(e) => setSelectedCondition(e.target.value)}
@@ -1112,7 +1047,6 @@ export default function LogistikDashboard({ showToast }) {
                 <option value="Rusak">Kondisi: Rusak</option>
               </select>
 
-              {/* Status Filter */}
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
@@ -1123,12 +1057,10 @@ export default function LogistikDashboard({ showToast }) {
                 <option value="Dipinjam">Sedang Dipinjam</option>
               </select>
 
-              {/* Page size dropdown */}
               <select
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
                 className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
-                title="Tampilkan per halaman"
               >
                 <option value={10}>10 per hal</option>
                 <option value={15}>15 per hal</option>
@@ -1140,7 +1072,7 @@ export default function LogistikDashboard({ showToast }) {
             </div>
           </div>
 
-          {/* Full-Width Inventory Table */}
+          {/* Table */}
           <div className="bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -1153,36 +1085,21 @@ export default function LogistikDashboard({ showToast }) {
                     <th className="px-5 py-4">Kondisi</th>
                     <th className="px-5 py-4">Status</th>
                     <th className="px-5 py-4 text-center">QR Code</th>
-                    <th className="px-5 py-4 text-center">Aksi / Edit</th>
+                    <th className="px-5 py-4 text-center">Edit / Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 text-xs text-slate-700">
                   {paginatedInstruments.length === 0 ? (
                     <tr>
                       <td colSpan="8" className="px-6 py-16 text-center text-slate-400">
-                        <div className="max-w-sm mx-auto space-y-2">
-                          <Box className="w-10 h-10 text-slate-300 mx-auto" />
-                          <p className="font-bold text-slate-600">Tidak ada barang yang cocok</p>
-                          <p className="text-xs text-slate-400">Coba ubah kata kunci pencarian atau sesuaikan filter klasifikasi di atas.</p>
-                          <button
-                            onClick={() => {
-                              setSelectedCategory('Semua');
-                              setSelectedSize('Semua Ukuran');
-                              setSelectedCondition('Semua');
-                              setSelectedStatus('Semua');
-                              setSearchQuery('');
-                            }}
-                            className="text-xs font-bold text-gold-dark hover:underline cursor-pointer pt-2 inline-block"
-                          >
-                            Reset Semua Filter
-                          </button>
-                        </div>
+                        <Box className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                        <p className="font-bold text-slate-600">Tidak ada barang yang cocok</p>
+                        <p className="text-xs text-slate-400">Coba ubah kata kunci pencarian atau reset filter.</p>
                       </td>
                     </tr>
                   ) : (
                     paginatedInstruments.map((inst) => (
                       <tr key={inst.id} className="hover:bg-slate-50/60 transition-colors">
-                        {/* Foto & Nama */}
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-3">
                             {inst.image && (inst.image.startsWith('/') || inst.image.startsWith('http') || inst.image.startsWith('data:')) ? (
@@ -1211,14 +1128,12 @@ export default function LogistikDashboard({ showToast }) {
                           </div>
                         </td>
 
-                        {/* Kode ID */}
                         <td className="px-5 py-3.5">
                           <span className="font-mono text-slate-800 font-bold text-xs bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
                             {inst.id}
                           </span>
                         </td>
 
-                        {/* Klasifikasi (Kategori & Ukuran) */}
                         <td className="px-5 py-3.5">
                           <div className="flex flex-col gap-1 items-start">
                             {inst.category && (
@@ -1234,15 +1149,10 @@ export default function LogistikDashboard({ showToast }) {
                           </div>
                         </td>
 
-                        {/* Stok Fisik */}
                         <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-extrabold text-slate-900 text-sm font-heading">{inst.quantity || 1}</span>
-                            <span className="text-[11px] text-slate-500">Unit</span>
-                          </div>
+                          <span className="font-extrabold text-slate-900 text-sm font-heading">{inst.quantity || 1}</span> Unit
                         </td>
 
-                        {/* Kondisi */}
                         <td className="px-5 py-3.5">
                           <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
                             (inst.condition || 'Baik') === 'Baik' 
@@ -1253,72 +1163,50 @@ export default function LogistikDashboard({ showToast }) {
                           </span>
                         </td>
 
-                        {/* Status */}
                         <td className="px-5 py-3.5">
                           <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${
-                            inst.status === 'Available' 
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-500/30' 
-                              : 'bg-rose-50 text-rose-700 border-rose-500/30'
+                            inst.status === 'Available' ? 'bg-emerald-50 text-emerald-700 border-emerald-500/30' : 'bg-rose-50 text-rose-700 border-rose-500/30'
                           }`}>
                             {inst.status === 'Available' ? 'Tersedia' : 'Dipinjam'}
                           </span>
                         </td>
 
-                        {/* QR Code Action */}
                         <td className="px-5 py-3.5 text-center">
                           <button
                             type="button"
                             onClick={() => setSelectedQrInstrument(inst)}
                             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-gold/10 hover:text-gold-dark hover:border-gold/30 text-slate-700 text-xs font-bold border border-slate-200 transition-all active:scale-95 cursor-pointer shadow-2xs"
-                            title="Lihat, Cetak, atau Download QR Code"
                           >
                             <QrCode className="w-3.5 h-3.5 text-gold-dark" />
                             <span>QR</span>
                           </button>
                         </td>
 
-                        {/* Tindakan (Edit, Toggle Status, Delete) */}
                         <td className="px-5 py-3.5 text-center">
                           <div className="flex items-center justify-center gap-1.5">
-                            {/* Edit Button */}
                             <button
                               type="button"
                               onClick={() => handleOpenEdit(inst)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-[11px] font-bold transition-all active:scale-95 cursor-pointer"
-                              title="Edit Detail Barang (Stok, Kondisi, Foto, Deskripsi, dll)"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-[11px] font-bold transition-all active:scale-95 cursor-pointer shadow-2xs"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
-                              <span>Edit</span>
+                              <span>Edit Barang</span>
                             </button>
 
-                            {/* Toggle Status */}
                             <button
                               type="button"
                               onClick={() => handleToggleStatus(inst.id)}
                               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border transition-all active:scale-95 cursor-pointer ${
-                                inst.status === 'Available'
-                                  ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100'
-                                  : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
+                                inst.status === 'Available' ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
                               }`}
-                              title={inst.status === 'Available' ? 'Ubah status menjadi Dipinjam' : 'Ubah status menjadi Tersedia'}
                             >
-                              {inst.status === 'Available' ? (
-                                <>
-                                  <ToggleLeft className="w-3.5 h-3.5" /> Pinjam
-                                </>
-                              ) : (
-                                <>
-                                  <ToggleRight className="w-3.5 h-3.5" /> Ready
-                                </>
-                              )}
+                              {inst.status === 'Available' ? <><ToggleLeft className="w-3.5 h-3.5" /> Pinjam</> : <><ToggleRight className="w-3.5 h-3.5" /> Ready</>}
                             </button>
 
-                            {/* Delete */}
                             <button
                               type="button"
                               onClick={() => handleDeleteInstrument(inst.id)}
                               className="p-1.5 text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl transition-all active:scale-95 cursor-pointer"
-                              title="Hapus Barang dari Inventaris"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -1331,41 +1219,33 @@ export default function LogistikDashboard({ showToast }) {
               </table>
             </div>
 
-            {/* Pagination Controls */}
+            {/* Pagination */}
             {filteredInstruments.length > 0 && (
               <div className="px-5 py-4 border-t border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
                 <div className="font-medium">
                   Menampilkan <strong className="text-slate-900">{startIdx + 1}</strong> – <strong className="text-slate-900">{Math.min(startIdx + effectivePageSize, totalItems)}</strong> dari <strong className="text-slate-900">{totalItems}</strong> barang
-                  {filteredInstruments.length !== instruments.length && (
-                    <span className="text-slate-400"> (difilter dari {instruments.length} total)</span>
-                  )}
                 </div>
 
                 {totalPages > 1 && (
                   <div className="flex items-center gap-1.5">
-                    {/* First Page */}
                     <button
                       type="button"
                       onClick={() => setCurrentPage(1)}
                       disabled={validCurrentPage === 1}
-                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                      title="Halaman Pertama"
+                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
                     >
                       <ChevronsLeft className="w-4 h-4" />
                     </button>
 
-                    {/* Prev Page */}
                     <button
                       type="button"
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                       disabled={validCurrentPage === 1}
-                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                      title="Halaman Sebelumnya"
+                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
 
-                    {/* Page Numbers */}
                     <div className="flex items-center gap-1">
                       {Array.from({ length: totalPages }, (_, i) => i + 1)
                         .filter(p => p === 1 || p === totalPages || (p >= validCurrentPage - 2 && p <= validCurrentPage + 2))
@@ -1379,9 +1259,7 @@ export default function LogistikDashboard({ showToast }) {
                                 type="button"
                                 onClick={() => setCurrentPage(page)}
                                 className={`w-8 h-8 rounded-lg font-bold text-xs transition-all cursor-pointer ${
-                                  validCurrentPage === page
-                                    ? 'bg-gold text-white shadow-xs'
-                                    : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                                  validCurrentPage === page ? 'bg-gold text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
                                 }`}
                               >
                                 {page}
@@ -1391,24 +1269,20 @@ export default function LogistikDashboard({ showToast }) {
                         })}
                     </div>
 
-                    {/* Next Page */}
                     <button
                       type="button"
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                       disabled={validCurrentPage === totalPages}
-                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                      title="Halaman Selanjutnya"
+                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
 
-                    {/* Last Page */}
                     <button
                       type="button"
                       onClick={() => setCurrentPage(totalPages)}
                       disabled={validCurrentPage === totalPages}
-                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                      title="Halaman Terakhir"
+                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
                     >
                       <ChevronsRight className="w-4 h-4" />
                     </button>
@@ -1422,19 +1296,16 @@ export default function LogistikDashboard({ showToast }) {
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 2: TAMBAH & IMPORT BARANG (DEDICATED FULL-FEATURED PANEL) */}
+      {/* PANEL 2: INPUT BARANG MANUAL & BATCH SPREADSHEET */}
       {/* ========================================================================= */}
-      {activeTab === 'tambah' && (
+      {activeTab === 'input' && (
         <div className="space-y-6 animate-fade-in">
-          {/* Sub-Mode Switcher */}
           <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 max-w-md">
             <button
               type="button"
               onClick={() => setRegMode('manual')}
               className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                regMode === 'manual'
-                  ? 'bg-white text-gold-dark shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
+                regMode === 'manual' ? 'bg-white text-gold-dark shadow-sm' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               <Plus className="w-4 h-4" /> Input Manual (Satu per Satu)
@@ -1443,9 +1314,7 @@ export default function LogistikDashboard({ showToast }) {
               type="button"
               onClick={() => setRegMode('batch')}
               className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                regMode === 'batch'
-                  ? 'bg-white text-gold-dark shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
+                regMode === 'batch' ? 'bg-white text-gold-dark shadow-sm' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               <FileSpreadsheet className="w-4 h-4" /> Upload Spreadsheet (Excel / CSV)
@@ -1453,7 +1322,6 @@ export default function LogistikDashboard({ showToast }) {
           </div>
 
           {regMode === 'manual' ? (
-            /* MANUAL SINGLE REGISTRATION FORM */
             <div className="bg-white border border-gold-border rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden text-left max-w-3xl">
               <div className="mb-6 space-y-1">
                 <div className="inline-flex items-center gap-1.5 text-xs text-gold-dark font-bold tracking-widest uppercase">
@@ -1465,7 +1333,6 @@ export default function LogistikDashboard({ showToast }) {
 
               <form onSubmit={handleRegisterInstrument} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Nama Barang */}
                   <div className="space-y-1 sm:col-span-2">
                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
                       Nama Barang / Aset <span className="text-rose-500">*</span>
@@ -1473,14 +1340,13 @@ export default function LogistikDashboard({ showToast }) {
                     <input 
                       type="text"
                       required
-                      placeholder="Contoh: Solder Uap, Mesin Bor, Kursi Lipat"
+                      placeholder="Contoh: Solder Uap, Mesin Bor, Pompa Portabel"
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 text-xs text-slate-800 focus:outline-none focus:border-gold focus:bg-white transition-all"
                     />
                   </div>
 
-                  {/* Kode ID */}
                   <div className="space-y-1 sm:col-span-2">
                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
                       Kode ID Inventaris <span className="text-rose-500">*</span>
@@ -1502,14 +1368,12 @@ export default function LogistikDashboard({ showToast }) {
                           setNewId(`ASL-${catCode}-${randomNum}-2026`);
                         }}
                         className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs border border-slate-200 transition-all cursor-pointer"
-                        title="Buat kode ID otomatis"
                       >
                         Auto ID
                       </button>
                     </div>
                   </div>
 
-                  {/* Kategori */}
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">Kategori</label>
                     <select
@@ -1523,7 +1387,6 @@ export default function LogistikDashboard({ showToast }) {
                     </select>
                   </div>
 
-                  {/* Ukuran */}
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">Ukuran</label>
                     <select
@@ -1537,7 +1400,6 @@ export default function LogistikDashboard({ showToast }) {
                     </select>
                   </div>
 
-                  {/* Jumlah / Stok */}
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">Jumlah / Stok Fisik</label>
                     <input 
@@ -1550,7 +1412,6 @@ export default function LogistikDashboard({ showToast }) {
                     />
                   </div>
 
-                  {/* Kondisi */}
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">Kondisi Fisik</label>
                     <select
@@ -1564,7 +1425,6 @@ export default function LogistikDashboard({ showToast }) {
                     </select>
                   </div>
 
-                  {/* Upload Foto */}
                   <div className="space-y-1 sm:col-span-2">
                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
                       Foto Barang <span className="text-slate-400 font-normal lowercase">(opsional, maks 1MB)</span>
@@ -1592,7 +1452,6 @@ export default function LogistikDashboard({ showToast }) {
                     </div>
                   </div>
 
-                  {/* Deskripsi */}
                   <div className="space-y-1 sm:col-span-2">
                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">Deskripsi / Spesifikasi / Lokasi Simpan</label>
                     <textarea 
@@ -1616,7 +1475,6 @@ export default function LogistikDashboard({ showToast }) {
               </form>
             </div>
           ) : (
-            /* BATCH SPREADSHEET UPLOADER */
             <div className="bg-white border border-gold-border rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden text-left max-w-3xl space-y-6">
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-1.5 text-xs text-gold-dark font-bold tracking-widest uppercase">
@@ -1624,11 +1482,10 @@ export default function LogistikDashboard({ showToast }) {
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">Upload File Spreadsheet (Excel & CSV)</h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Impor puluhan hingga ratusan inventaris sekaligus secara instan ke sistem. Sistem secara otomatis mendeteksi kolom ID, Nama, Kategori, Ukuran, Jumlah, dan Kondisi.
+                  Impor puluhan hingga ratusan inventaris sekaligus secara instan ke sistem.
                 </p>
               </div>
 
-              {/* Download template buttons */}
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
                 <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block">Unduh Contoh Template Format Tabel:</span>
                 <div className="flex gap-2 flex-wrap sm:flex-nowrap">
@@ -1649,7 +1506,6 @@ export default function LogistikDashboard({ showToast }) {
                 </div>
               </div>
 
-              {/* Drag & Drop Upload Zone */}
               <input 
                 type="file"
                 ref={batchFileInputRef}
@@ -1670,9 +1526,7 @@ export default function LogistikDashboard({ showToast }) {
                   }
                 }}
                 className={`p-8 border-2 border-dashed rounded-3xl text-center cursor-pointer transition-all ${
-                  isDragging 
-                    ? 'border-gold bg-gold/10 scale-98' 
-                    : 'border-slate-300 hover:border-gold hover:bg-slate-50'
+                  isDragging ? 'border-gold bg-gold/10 scale-98' : 'border-slate-300 hover:border-gold hover:bg-slate-50'
                 }`}
               >
                 <Upload className="w-10 h-10 text-gold mx-auto mb-2 animate-bounce" />
@@ -1684,7 +1538,6 @@ export default function LogistikDashboard({ showToast }) {
                 </p>
               </div>
 
-              {/* Preview of Parsed Rows */}
               {excelPreviewData.length > 0 && (
                 <div className="space-y-4 pt-2">
                   <div className="flex items-center justify-between">
@@ -1701,7 +1554,6 @@ export default function LogistikDashboard({ showToast }) {
                     </button>
                   </div>
 
-                  {/* Mini Preview Table */}
                   <div className="max-h-60 overflow-y-auto border border-slate-200 rounded-2xl bg-slate-50 text-xs divide-y divide-slate-200 shadow-inner">
                     {excelPreviewData.map((item, idx) => (
                       <div key={idx} className="p-3 flex items-center justify-between gap-3 hover:bg-white transition-colors">
@@ -1718,7 +1570,6 @@ export default function LogistikDashboard({ showToast }) {
                     ))}
                   </div>
 
-                  {/* Primary Bulk Register Button */}
                   <button
                     type="button"
                     onClick={handleBulkRegister}
@@ -1734,22 +1585,107 @@ export default function LogistikDashboard({ showToast }) {
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 3: PERMOHONAN PEMINJAMAN (APPROVAL CONSOLE FOR BORROW REQUESTS) */}
+      {/* PANEL 3: BATCH & PRINT QR CODE */}
       {/* ========================================================================= */}
-      {activeTab === 'peminjaman' && (
-        <div className="space-y-5 animate-fade-in">
-          
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="space-y-1">
-              <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <FileText className="w-4 h-4 text-gold" /> Permohonan Peminjaman Alat (ACC Otoritas)
-              </h3>
-              <p className="text-xs text-slate-500">
-                Verifikasi dan setujui permohonan peminjaman inventaris yang diajukan mahasiswa melalui portal Einsten Space.
+      {activeTab === 'qr' && (
+        <div className="space-y-6 animate-fade-in">
+          <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-gold/30 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/20 text-gold-light border border-gold/30 text-[11px] font-bold">
+                <Sparkles className="w-3.5 h-3.5" /> Direct Bulk QR Code Exporter
+              </div>
+              <h2 className="text-2xl font-black font-heading text-white">
+                Download & Cetak QR Code Inventaris Sekaligus
+              </h2>
+              <p className="text-xs text-slate-300 leading-relaxed font-light">
+                Unduh seluruh QR Code untuk <strong>{instruments.length} barang inventaris</strong> dalam satu file arsip <strong>.ZIP</strong> secara langsung dengan resolusi tinggi, atau cetak lembar stiker A4.
               </p>
             </div>
 
-            {/* Filter Status Permohonan */}
+            <div className="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => handleDownloadAllQrZip(instruments, 'Semua_QR_Inventaris_HIMA')}
+                disabled={isGeneratingZip}
+                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-gold to-gold-light hover:brightness-110 text-slate-950 font-black text-xs transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-gold/20 cursor-pointer disabled:opacity-50"
+              >
+                <Download className="w-4 h-4 text-slate-950" />
+                <span>{isGeneratingZip ? `Sedang Membuat ZIP (${zipProgress}%)...` : `Download Semua QR (${instruments.length} Barang) .ZIP`}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Printer className="w-4 h-4 text-gold-light" />
+                <span>Cetak Lembar Stiker QR (Print Sheet)</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <QrCode className="w-4 h-4 text-gold" /> Preview Lembar Stiker QR ({instruments.length} Barang)
+              </h3>
+              <span className="text-xs text-slate-500">Format stiker ukuran standar A4</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 print:grid-cols-3">
+              {instruments.map((inst) => (
+                <div 
+                  key={inst.id}
+                  className="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center shadow-xs hover:border-gold/50 transition-all group"
+                >
+                  <div className="w-full text-left border-b border-slate-100 pb-1.5 mb-2">
+                    <p className="font-bold text-slate-900 text-xs truncate" title={inst.name}>{inst.name}</p>
+                    <p className="font-mono text-[10px] text-slate-500 font-bold">{inst.id}</p>
+                  </div>
+
+                  <div className="p-2 bg-white border border-slate-100 rounded-xl mb-2 group-hover:scale-105 transition-transform">
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(inst.id)}`}
+                      alt={inst.name}
+                      className="w-24 h-24 object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between w-full mt-auto pt-1 text-[10px] text-slate-500">
+                    <span className="font-bold text-gold-dark truncate">{inst.category}</span>
+                    <span>Stok: {inst.quantity || 1}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedQrInstrument(inst)}
+                    className="w-full mt-2 py-1 bg-slate-50 hover:bg-gold/10 hover:text-gold-dark text-slate-600 rounded-lg text-[10px] font-bold border border-slate-200 transition-colors cursor-pointer"
+                  >
+                    Buka QR Card
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* PANEL 4: ACC PEMINJAMAN ALAT (OTOMATIS NOTIFIKASI MAHASISWA SAAT DI-ACC) */}
+      {/* ========================================================================= */}
+      {activeTab === 'acc' && (
+        <div className="space-y-5 animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <FileText className="w-4 h-4 text-gold" /> ACC Permohonan Peminjaman Alat
+              </h3>
+              <p className="text-xs text-slate-500">
+                Persetujuan permohonan peminjaman dari mahasiswa. Ketika di-ACC, sistem secara otomatis mengirimkan notifikasi ke akun peminjam.
+              </p>
+            </div>
+
             <div className="flex items-center gap-2">
               <select
                 value={borrowReqFilter}
@@ -1839,7 +1775,6 @@ export default function LogistikDashboard({ showToast }) {
                                 type="button"
                                 onClick={() => handleDeleteRequest(req.id)}
                                 className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all text-slate-600 font-semibold rounded-xl text-xs active:scale-95 cursor-pointer"
-                                title="Hapus riwayat"
                               >
                                 <Trash2 className="w-3.5 h-3.5" /> Hapus
                               </button>
@@ -1853,100 +1788,6 @@ export default function LogistikDashboard({ showToast }) {
               </table>
             </div>
           </div>
-
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* TAB 4: BATCH DOWNLOAD & CETAK QR CODE (ZIP EXPORT & PRINTABLE SHEET) */}
-      {/* ========================================================================= */}
-      {activeTab === 'batch-qr' && (
-        <div className="space-y-6 animate-fade-in">
-          
-          {/* Header & Quick Action Card */}
-          <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-gold/30 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2 max-w-xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/20 text-gold-light border border-gold/30 text-[11px] font-bold">
-                <Sparkles className="w-3.5 h-3.5" /> Direct Bulk QR Code Exporter
-              </div>
-              <h2 className="text-2xl font-black font-heading text-white">
-                Download & Cetak QR Code Inventaris Sekaligus
-              </h2>
-              <p className="text-xs text-slate-300 leading-relaxed font-light">
-                Unduh seluruh QR Code untuk <strong>{instruments.length} barang inventaris</strong> dalam satu file arsip <strong>.ZIP</strong> secara langsung dengan resolusi tinggi, atau cetak lembar stiker untuk ditempelkan pada fisik barang.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={() => handleDownloadAllQrZip(instruments, 'Semua_QR_Inventaris_HIMA')}
-                disabled={isGeneratingZip}
-                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-gold to-gold-light hover:brightness-110 text-slate-950 font-black text-xs transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-gold/20 cursor-pointer disabled:opacity-50"
-              >
-                <Download className="w-4 h-4 text-slate-950" />
-                <span>{isGeneratingZip ? `Sedang Membuat ZIP (${zipProgress}%)...` : `Download Semua QR (${instruments.length} Barang) .ZIP`}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Printer className="w-4 h-4 text-gold-light" />
-                <span>Cetak Lembar Stiker QR (Print Sheet)</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Grid Preview of QR Codes */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <QrCode className="w-4 h-4 text-gold" /> Preview Lembar Stiker QR ({instruments.length} Barang)
-              </h3>
-              <span className="text-xs text-slate-500">Format stiker ukuran standar A4</span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 print:grid-cols-3">
-              {instruments.map((inst) => (
-                <div 
-                  key={inst.id}
-                  className="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center shadow-xs hover:border-gold/50 transition-all group"
-                >
-                  <div className="w-full text-left border-b border-slate-100 pb-1.5 mb-2">
-                    <p className="font-bold text-slate-900 text-xs truncate" title={inst.name}>{inst.name}</p>
-                    <p className="font-mono text-[10px] text-slate-500 font-bold">{inst.id}</p>
-                  </div>
-
-                  {/* QR Image */}
-                  <div className="p-2 bg-white border border-slate-100 rounded-xl mb-2 group-hover:scale-105 transition-transform">
-                    <img 
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(inst.id)}`}
-                      alt={inst.name}
-                      className="w-24 h-24 object-contain"
-                      loading="lazy"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between w-full mt-auto pt-1 text-[10px] text-slate-500">
-                    <span className="font-bold text-gold-dark truncate">{inst.category}</span>
-                    <span>Stok: {inst.quantity || 1}</span>
-                  </div>
-
-                  {/* Quick Individual Download button */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedQrInstrument(inst)}
-                    className="w-full mt-2 py-1 bg-slate-50 hover:bg-gold/10 hover:text-gold-dark text-slate-600 rounded-lg text-[10px] font-bold border border-slate-200 transition-colors cursor-pointer"
-                  >
-                    Buka QR Card
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
         </div>
       )}
 
@@ -1957,7 +1798,6 @@ export default function LogistikDashboard({ showToast }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
           <div className="bg-white border border-gold-border rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl relative text-left space-y-5 animate-slide-in max-h-[90vh] overflow-y-auto">
             
-            {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-200 pb-3.5">
               <div className="space-y-0.5">
                 <div className="inline-flex items-center gap-1.5 text-[10px] text-gold-dark font-bold tracking-widest uppercase">
@@ -1976,10 +1816,7 @@ export default function LogistikDashboard({ showToast }) {
               </button>
             </div>
 
-            {/* Edit Form */}
             <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
-              
-              {/* Nama Barang */}
               <div className="space-y-1">
                 <label className="font-bold text-slate-700 uppercase tracking-wider block">
                   Nama Barang / Aset <span className="text-rose-500">*</span>
@@ -1993,7 +1830,6 @@ export default function LogistikDashboard({ showToast }) {
                 />
               </div>
 
-              {/* Kode ID */}
               <div className="space-y-1">
                 <label className="font-bold text-slate-700 uppercase tracking-wider block">
                   Kode ID Inventaris <span className="text-rose-500">*</span>
@@ -2007,7 +1843,6 @@ export default function LogistikDashboard({ showToast }) {
                 />
               </div>
 
-              {/* Grid 2 Kolom: Kategori & Ukuran */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="font-bold text-slate-700 uppercase tracking-wider block">Kategori</label>
@@ -2036,7 +1871,6 @@ export default function LogistikDashboard({ showToast }) {
                 </div>
               </div>
 
-              {/* Grid 3 Kolom: Stok Fisik, Kondisi, Status */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
                   <label className="font-bold text-slate-700 uppercase tracking-wider block">Jumlah / Stok</label>
@@ -2076,7 +1910,6 @@ export default function LogistikDashboard({ showToast }) {
                 </div>
               </div>
 
-              {/* Edit Foto Barang */}
               <div className="space-y-1">
                 <label className="font-bold text-slate-700 uppercase tracking-wider block">
                   Foto Barang <span className="text-slate-400 font-normal lowercase">(upload foto baru)</span>
@@ -2099,7 +1932,6 @@ export default function LogistikDashboard({ showToast }) {
                         type="button"
                         onClick={() => setEditImage('📦')}
                         className="absolute top-0.5 right-0.5 p-0.5 bg-black/60 text-white rounded-full hover:bg-rose-500 transition-colors"
-                        title="Reset ke icon kotak"
                       >
                         <X className="w-2.5 h-2.5" />
                       </button>
@@ -2108,7 +1940,6 @@ export default function LogistikDashboard({ showToast }) {
                 </div>
               </div>
 
-              {/* Deskripsi */}
               <div className="space-y-1">
                 <label className="font-bold text-slate-700 uppercase tracking-wider block">Deskripsi / Spesifikasi / Lokasi</label>
                 <textarea 
@@ -2119,7 +1950,6 @@ export default function LogistikDashboard({ showToast }) {
                 />
               </div>
 
-              {/* Submit / Cancel Buttons */}
               <div className="flex gap-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
@@ -2142,7 +1972,7 @@ export default function LogistikDashboard({ showToast }) {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 2: SINGLE QR CODE MODAL (HIGH-RES QR VIEW, DIRECT DOWNLOAD, PRINT) */}
+      {/* MODAL 2: SINGLE QR CODE MODAL */}
       {/* ========================================================================= */}
       {selectedQrInstrument && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
@@ -2170,13 +2000,9 @@ export default function LogistikDashboard({ showToast }) {
                     {selectedQrInstrument.category}
                   </span>
                 )}
-                <span className="text-[10px] font-bold text-slate-600 bg-slate-100 py-0.5 px-2.5 rounded-lg border border-slate-200">
-                  Stok: {selectedQrInstrument.quantity || 1}
-                </span>
               </div>
             </div>
 
-            {/* QR Image High Resolution Canvas Render */}
             <div className="p-4 bg-white border-2 border-dashed border-gold-border rounded-2xl inline-block shadow-inner mx-auto">
               {singleQrDataUrl ? (
                 <img 
@@ -2190,10 +2016,6 @@ export default function LogistikDashboard({ showToast }) {
                 </div>
               )}
             </div>
-
-            <p className="text-[11px] text-slate-500 font-light leading-relaxed">
-              Cetak QR Code ini dan tempelkan pada fisik barang. Mahasiswa dapat memindainya langsung di portal <strong className="text-slate-800">Einsten Space</strong>.
-            </p>
 
             <div className="flex gap-2 pt-2">
               <a
