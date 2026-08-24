@@ -270,6 +270,70 @@ export default function Navbar() {
     }
   };
 
+  const handleNotificationClick = (n) => {
+    // Mark as read in localStorage
+    if (n.id !== 'complete_phone_notification') {
+      const saved = localStorage.getItem('hima_notifications');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const updated = parsed.map(item => item.id === n.id ? { ...item, read: true } : item);
+        localStorage.setItem('hima_notifications', JSON.stringify(updated));
+        loadNotifications();
+      }
+    }
+
+    const msg = (n.message || '').toLowerCase();
+    const isPhoneRelated = n.id === 'complete_phone_notification' || 
+      msg.includes('whatsapp') || 
+      msg.includes('telepon') || 
+      msg.includes('nomor') || 
+      msg.includes('hp');
+
+    if (isPhoneRelated) {
+      setCompletePhoneStep(1);
+      setCompletePhoneInput(currentUser?.phone || '');
+      setCompleteOtpInput('');
+      setCompleteGeneratedOtp('');
+      setShowCompletePhoneModal(true);
+      setIsNotifOpen(false);
+      return;
+    }
+
+    if (msg.includes('peminjaman') || msg.includes('alat') || msg.includes('lab') || msg.includes('space')) {
+      setIsNotifOpen(false);
+      if (currentUser?.role === 'Operator Logistik' || currentUser?.role === 'Master Admin') {
+        navigate('/dashboard/logistik');
+      } else {
+        navigate('/space');
+      }
+      return;
+    }
+
+    if (msg.includes('pesanan') || msg.includes('merchandise') || msg.includes('market') || msg.includes('danus')) {
+      setIsNotifOpen(false);
+      if (currentUser?.role === 'Operator Danus' || currentUser?.role === 'Master Admin') {
+        navigate('/dashboard/danus');
+      } else {
+        navigate('/market');
+      }
+      return;
+    }
+
+    if (msg.includes('kas') || msg.includes('iuran') || msg.includes('keuangan')) {
+      setIsNotifOpen(false);
+      navigate('/profile');
+      return;
+    }
+
+    if (msg.includes('surat') || msg.includes('proposal') || msg.includes('sekretariat')) {
+      setIsNotifOpen(false);
+      navigate('/secretariat');
+      return;
+    }
+
+    setIsNotifOpen(false);
+  };
+
   const handleSendChatMessage = (e) => {
     e.preventDefault();
     if (!chatInput.trim() || !activeChat || !currentUser) return;
@@ -686,31 +750,39 @@ export default function Navbar() {
                         )}
                       </div>
                     </div>
-                    <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 mt-2 px-1">
+                    <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 mt-2 px-1">
                       {notifications.length === 0 ? (
                         <p className="text-center py-6 text-[10px] text-slate-400">Belum ada notifikasi.</p>
                       ) : (
                         notifications.map((n) => {
-                          const isCompletePhone = n.id === 'complete_phone_notification';
+                          const isCompletePhone = n.id === 'complete_phone_notification' || (n.message || '').toLowerCase().includes('whatsapp') || (n.message || '').toLowerCase().includes('telepon');
                           return (
                             <div 
                               key={n.id} 
-                              onClick={() => {
-                                if (isCompletePhone) {
-                                  setCompletePhoneStep(1);
-                                  setCompletePhoneInput('');
-                                  setCompleteOtpInput('');
-                                  setCompleteGeneratedOtp('');
-                                  setShowCompletePhoneModal(true);
-                                  setIsNotifOpen(false);
-                                }
-                              }}
-                              className={`p-2 rounded-xl text-[10px] leading-relaxed transition-colors mb-1 ${isCompletePhone ? 'cursor-pointer hover:bg-gold/10' : ''} ${!n.read ? 'bg-gold/5 font-bold text-slate-900 border-l-2 border-gold' : 'text-slate-500'}`}
+                              onClick={() => handleNotificationClick(n)}
+                              className={`p-2.5 rounded-xl text-[10px] leading-relaxed transition-all mb-1 cursor-pointer hover:bg-slate-50 border ${
+                                isCompletePhone 
+                                  ? 'bg-amber-50/50 border-amber-200/80 hover:bg-amber-50' 
+                                  : (!n.read ? 'bg-gold/5 font-bold text-slate-900 border-gold/30' : 'text-slate-600 border-transparent')
+                              }`}
                             >
-                              <p>{n.message}</p>
-                              <span className="text-[8px] text-slate-400 font-mono mt-1 block">
-                                {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </span>
+                              <p className={!n.read ? 'font-bold text-slate-900' : 'text-slate-700'}>{n.message}</p>
+                              
+                              {isCompletePhone ? (
+                                <div className="mt-1.5 flex items-center justify-between">
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500 hover:bg-amber-600 text-white font-bold text-[9px] shadow-2xs">
+                                    <Phone className="w-2.5 h-2.5" /> Isi No. WhatsApp Sekarang &rarr;
+                                  </span>
+                                  <span className="text-[8px] text-slate-400 font-mono">
+                                    {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="mt-1 flex items-center justify-between text-[8px] text-slate-400 font-mono">
+                                  <span className="text-gold-dark font-bold hover:underline">Klik untuk buka &rarr;</span>
+                                  <span>{new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                              )}
                             </div>
                           );
                         })

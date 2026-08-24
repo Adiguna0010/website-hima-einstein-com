@@ -15,52 +15,48 @@ export default function Space({ showToast }) {
 
   useEffect(() => {
     const loadData = () => {
-      const INVENTORY_VERSION = 'v5_spreadsheet_rekapitulasi_live_2026';
-      const storedVersion = localStorage.getItem('hima_inventory_version');
-
-      if (storedVersion !== INVENTORY_VERSION) {
-        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
-        localStorage.setItem('hima_inventory_version', INVENTORY_VERSION);
-        setInstruments(DEFAULT_INVENTORY_ITEMS);
-        return;
-      }
-
       const saved = localStorage.getItem('hima_instruments');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          if (!Array.isArray(parsed) || parsed.length < 100) {
-            localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
-            localStorage.setItem('hima_inventory_version', INVENTORY_VERSION);
-            setInstruments(DEFAULT_INVENTORY_ITEMS);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setInstruments(parsed);
             return;
           }
-          setInstruments(parsed);
-        } catch (e) {
-          localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
-          localStorage.setItem('hima_inventory_version', INVENTORY_VERSION);
-          setInstruments(DEFAULT_INVENTORY_ITEMS);
-        }
-      } else {
-        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
-        localStorage.setItem('hima_inventory_version', INVENTORY_VERSION);
-        setInstruments(DEFAULT_INVENTORY_ITEMS);
+        } catch (e) {}
       }
+      localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
+      setInstruments(DEFAULT_INVENTORY_ITEMS);
     };
 
     loadData();
 
-    // Storage event listener for multi-tab real-time sync
-    const handleStorageChange = (e) => {
-      if (e.key === 'hima_instruments') {
-        loadData();
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('focus', loadData);
+    // Storage and custom live events listener
+    const handleLiveSync = () => loadData();
+    window.addEventListener('storage', handleLiveSync);
+    window.addEventListener('hima_sync_inventory', handleLiveSync);
+    window.addEventListener('hima_sync_all', handleLiveSync);
+    window.addEventListener('focus', handleLiveSync);
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') loadData();
+    });
+
+    let bc;
+    try {
+      bc = new BroadcastChannel('hima_live_sync_channel');
+      bc.onmessage = () => loadData();
+    } catch (e) {}
+
+    // Live Polling every 1.5s
+    const interval = setInterval(loadData, 1500);
+
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('focus', loadData);
+      window.removeEventListener('storage', handleLiveSync);
+      window.removeEventListener('hima_sync_inventory', handleLiveSync);
+      window.removeEventListener('hima_sync_all', handleLiveSync);
+      window.removeEventListener('focus', handleLiveSync);
+      clearInterval(interval);
+      if (bc) bc.close();
     };
   }, []);
 
@@ -166,6 +162,17 @@ export default function Space({ showToast }) {
     const requests = savedRequests ? JSON.parse(savedRequests) : [];
     const updatedRequests = [newRequest, ...requests];
     localStorage.setItem('hima_borrow_requests', JSON.stringify(updatedRequests));
+
+    // Instant real-time live sync broadcast
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('hima_sync_borrow_requests', { detail: updatedRequests }));
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const bc = new BroadcastChannel('hima_live_sync_channel');
+        bc.postMessage({ type: 'requests', data: updatedRequests, timestamp: Date.now() });
+        bc.close();
+      } catch (e) {}
+    }
 
     // Save notifications
     const newNotifications = [];

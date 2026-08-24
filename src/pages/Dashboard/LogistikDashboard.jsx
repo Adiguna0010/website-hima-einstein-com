@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as XLSX from 'xlsx';
+import QRCode from 'qrcode';
+import JSZip from 'jszip';
 import { 
-  Box, ToggleLeft, ToggleRight, Radio, ShieldCheck, Plus, Trash2, UserCheck, UserX, Users, FileText,
-  QrCode, Upload, Download, FileSpreadsheet, Eye, X, Printer, CheckCircle2, Layers, AlertCircle, Search, Filter, Tag
+  Box, ToggleLeft, ToggleRight, Radio, ShieldCheck, Plus, Trash2, Edit3, UserCheck, UserX, 
+  Users, FileText, QrCode, Upload, Download, FileSpreadsheet, Eye, X, Printer, CheckCircle2, 
+  Layers, AlertCircle, Search, Filter, Tag, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, 
+  RefreshCw, Sparkles, Check, Image as ImageIcon, ExternalLink, SlidersHorizontal, Activity
 } from 'lucide-react';
 import { DEFAULT_INVENTORY_ITEMS, INVENTORY_CATEGORIES, INVENTORY_SIZES } from '../../data/inventoryData';
 
@@ -10,24 +14,46 @@ export default function LogistikDashboard({ showToast }) {
   const [instruments, setInstruments] = useState([]);
   const [borrowRequests, setBorrowRequests] = useState([]);
 
+  // Active Main Sub-Page Tab: 'inventaris' | 'tambah' | 'peminjaman' | 'batch-qr'
+  const [activeTab, setActiveTab] = useState('inventaris');
+
   // Filter States
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [selectedSize, setSelectedSize] = useState('Semua Ukuran');
+  const [selectedCondition, setSelectedCondition] = useState('Semua');
   const [selectedStatus, setSelectedStatus] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
+  const [classificationMode, setClassificationMode] = useState('fungsi'); // 'fungsi' | 'ukuran'
 
-  // QR Modal State
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
+
+  // Single QR Modal State
   const [selectedQrInstrument, setSelectedQrInstrument] = useState(null);
-  const csvInputRef = useRef(null);
-  const batchFileInputRef = useRef(null);
+  const [singleQrDataUrl, setSingleQrDataUrl] = useState('');
 
-  // Form Mode: 'manual' (one-by-one) | 'batch' (spreadsheet table upload)
+  // Edit Item Modal State
+  const [editingInstrument, setEditingInstrument] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editId, setEditId] = useState('');
+  const [editCategory, setEditCategory] = useState('Elektronik');
+  const [editSize, setEditSize] = useState('Medium');
+  const [editQuantity, setEditQuantity] = useState(1);
+  const [editCondition, setEditCondition] = useState('Baik');
+  const [editStatus, setEditStatus] = useState('Available');
+  const [editImage, setEditImage] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+
+  // Registration Mode ('manual' | 'batch')
   const [regMode, setRegMode] = useState('manual');
   const [excelFile, setExcelFile] = useState(null);
   const [excelPreviewData, setExcelPreviewData] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
+  const csvInputRef = useRef(null);
+  const batchFileInputRef = useRef(null);
 
-  // Form states for single instrument
+  // Form states for single instrument registration
   const [newName, setNewName] = useState('');
   const [newId, setNewId] = useState('');
   const [newCategory, setNewCategory] = useState('Elektronik');
@@ -38,35 +64,56 @@ export default function LogistikDashboard({ showToast }) {
   const [newDesc, setNewDesc] = useState('');
   const [formKey, setFormKey] = useState(Date.now());
 
-  // Classification View Mode: 'fungsi' | 'ukuran'
-  const [classificationMode, setClassificationMode] = useState('fungsi');
+  // Batch QR Download & ZIP State
+  const [isGeneratingZip, setIsGeneratingZip] = useState(false);
+  const [zipProgress, setZipProgress] = useState(0);
+  const [borrowReqFilter, setBorrowReqFilter] = useState('Semua');
 
+  // Real-Time Broadcast & Event Dispatcher Helper
+  const broadcastSync = (type, data) => {
+    // 1. Dispatch window storage event for local listeners
+    window.dispatchEvent(new Event('storage'));
+    
+    // 2. Dispatch custom DOM events for instant same-window component updates
+    if (type === 'inventory') {
+      window.dispatchEvent(new CustomEvent('hima_sync_inventory', { detail: data }));
+    } else if (type === 'requests') {
+      window.dispatchEvent(new CustomEvent('hima_sync_borrow_requests', { detail: data }));
+    } else {
+      window.dispatchEvent(new CustomEvent('hima_sync_all', { detail: data }));
+    }
+
+    // 3. Broadcast across tabs/windows with zero latency via BroadcastChannel
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const bc = new BroadcastChannel('hima_live_sync_channel');
+        bc.postMessage({ type, data, timestamp: Date.now() });
+        bc.close();
+      } catch (e) {}
+    }
+  };
+
+  // Load Initial Data & Multi-Tab Real-Time Sync
   useEffect(() => {
     const loadData = () => {
-      const INVENTORY_VERSION = 'v5_spreadsheet_rekapitulasi_live_2026';
-      const storedVersion = localStorage.getItem('hima_inventory_version');
-
       // Load instruments
       const savedInst = localStorage.getItem('hima_instruments');
-      if (storedVersion !== INVENTORY_VERSION || !savedInst) {
-        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
-        localStorage.setItem('hima_inventory_version', INVENTORY_VERSION);
-        setInstruments(DEFAULT_INVENTORY_ITEMS);
-      } else {
+      if (savedInst) {
         try {
           const parsed = JSON.parse(savedInst);
-          if (!Array.isArray(parsed) || parsed.length < 100) {
-            localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
-            localStorage.setItem('hima_inventory_version', INVENTORY_VERSION);
-            setInstruments(DEFAULT_INVENTORY_ITEMS);
-          } else {
+          if (Array.isArray(parsed) && parsed.length > 0) {
             setInstruments(parsed);
+          } else {
+            localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
+            setInstruments(DEFAULT_INVENTORY_ITEMS);
           }
         } catch (e) {
           localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
-          localStorage.setItem('hima_inventory_version', INVENTORY_VERSION);
           setInstruments(DEFAULT_INVENTORY_ITEMS);
         }
+      } else {
+        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
+        setInstruments(DEFAULT_INVENTORY_ITEMS);
       }
 
       // Load borrow requests
@@ -84,20 +131,58 @@ export default function LogistikDashboard({ showToast }) {
 
     loadData();
 
-    // Storage event listener for multi-tab real-time sync
-    const handleStorageChange = (e) => {
-      if (e.key === 'hima_instruments' || e.key === 'hima_borrow_requests') {
-        loadData();
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('focus', loadData);
+    // Event listeners for cross-tab & same-tab live updates
+    const handleSync = () => loadData();
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('hima_sync_inventory', handleSync);
+    window.addEventListener('hima_sync_borrow_requests', handleSync);
+    window.addEventListener('hima_sync_all', handleSync);
+    window.addEventListener('focus', handleSync);
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') loadData();
+    });
+
+    let bc;
+    try {
+      bc = new BroadcastChannel('hima_live_sync_channel');
+      bc.onmessage = () => loadData();
+    } catch (e) {}
+
+    // Live Polling Interval (Every 1.5s for seamless background live sync)
+    const liveInterval = setInterval(loadData, 1500);
+
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('focus', loadData);
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('hima_sync_inventory', handleSync);
+      window.removeEventListener('hima_sync_borrow_requests', handleSync);
+      window.removeEventListener('hima_sync_all', handleSync);
+      window.removeEventListener('focus', handleSync);
+      clearInterval(liveInterval);
+      if (bc) bc.close();
     };
   }, []);
 
+  // Generate Single QR Code Data URL when selected
+  useEffect(() => {
+    if (selectedQrInstrument) {
+      QRCode.toDataURL(selectedQrInstrument.id, {
+        width: 450,
+        margin: 2,
+        color: { dark: '#0b132b', light: '#ffffff' }
+      })
+        .then(url => setSingleQrDataUrl(url))
+        .catch(err => console.error('Error generating single QR:', err));
+    } else {
+      setSingleQrDataUrl('');
+    }
+  }, [selectedQrInstrument]);
+
+  // Reset pagination to page 1 whenever filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, selectedSize, selectedCondition, selectedStatus, searchQuery, pageSize]);
+
+  // Status toggle handler
   const handleToggleStatus = (id) => {
     const updated = instruments.map(inst => {
       if (inst.id === id) {
@@ -108,9 +193,11 @@ export default function LogistikDashboard({ showToast }) {
     });
     setInstruments(updated);
     localStorage.setItem('hima_instruments', JSON.stringify(updated));
+    broadcastSync('inventory', updated);
     showToast(`Status alat ${id} berhasil diubah!`, 'success');
   };
 
+  // Image Upload handler for new instrument
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -122,12 +209,86 @@ export default function LogistikDashboard({ showToast }) {
       }
       const reader = new FileReader();
       reader.onloadend = () => {
-        setNewImage(reader.result); // Base64 string
+        setNewImage(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  // Image Upload handler for edit instrument
+  const handleEditImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 1024 * 1024) {
+        showToast('Ukuran foto terlalu besar! Maksimal 1MB.', 'error');
+        e.target.value = null;
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Open Edit Modal
+  const handleOpenEdit = (inst) => {
+    setEditingInstrument(inst);
+    setEditName(inst.name || '');
+    setEditId(inst.id || '');
+    setEditCategory(inst.category || 'Elektronik');
+    setEditSize(inst.size || 'Medium');
+    setEditQuantity(Number(inst.quantity) || 1);
+    setEditCondition(inst.condition || 'Baik');
+    setEditStatus(inst.status || 'Available');
+    setEditImage(inst.image || '');
+    setEditDesc(inst.desc || '');
+  };
+
+  // Save Edit Instrument
+  const handleSaveEdit = (e) => {
+    e.preventDefault();
+    if (!editName.trim() || !editId.trim()) {
+      showToast('Nama Barang dan Kode ID wajib diisi!', 'error');
+      return;
+    }
+
+    // Check if new ID collides with another instrument
+    const idExists = instruments.some(
+      inst => inst.id.toLowerCase() === editId.trim().toLowerCase() && inst.id.toLowerCase() !== editingInstrument.id.toLowerCase()
+    );
+    if (idExists) {
+      showToast(`Kode ID ${editId.trim().toUpperCase()} sudah digunakan oleh barang lain!`, 'error');
+      return;
+    }
+
+    const updated = instruments.map(inst => {
+      if (inst.id === editingInstrument.id) {
+        return {
+          ...inst,
+          id: editId.trim().toUpperCase(),
+          name: editName.trim(),
+          category: editCategory,
+          size: editSize,
+          quantity: Math.max(0, Number(editQuantity) || 0),
+          condition: editCondition,
+          status: editStatus,
+          image: editImage || inst.image || '📦',
+          desc: editDesc.trim() || `Barang inventaris HIMA EINSTEN (${editCategory}).`
+        };
+      }
+      return inst;
+    });
+
+    setInstruments(updated);
+    localStorage.setItem('hima_instruments', JSON.stringify(updated));
+    broadcastSync('inventory', updated);
+    setEditingInstrument(null);
+    showToast(`Data barang ${editName} berhasil diperbarui!`, 'success');
+  };
+
+  // Register New Instrument
   const handleRegisterInstrument = (e) => {
     e.preventDefault();
     if (!newName.trim() || !newId.trim()) {
@@ -153,9 +314,10 @@ export default function LogistikDashboard({ showToast }) {
       desc: newDesc.trim() || `Barang inventaris HIMA EINSTEN (${newCategory}).`
     };
 
-    const updated = [...instruments, newInstrument];
+    const updated = [newInstrument, ...instruments];
     setInstruments(updated);
     localStorage.setItem('hima_instruments', JSON.stringify(updated));
+    broadcastSync('inventory', updated);
 
     // Reset Form
     setNewName('');
@@ -168,18 +330,21 @@ export default function LogistikDashboard({ showToast }) {
     setNewDesc('');
     setFormKey(Date.now());
     showToast(`Barang ${newName} berhasil didaftarkan ke kategori ${newCategory}!`, 'success');
+    setActiveTab('inventaris'); // Switch back to view the list
   };
 
+  // Delete Instrument
   const handleDeleteInstrument = (id) => {
     if (window.confirm(`Apakah Anda yakin ingin menghapus barang ${id} dari inventaris?`)) {
       const updated = instruments.filter(inst => inst.id !== id);
       setInstruments(updated);
       localStorage.setItem('hima_instruments', JSON.stringify(updated));
+      broadcastSync('inventory', updated);
       showToast(`Barang ${id} berhasil dihapus!`, 'success');
     }
   };
 
-  // Spreadsheet (Excel / CSV) Parser & Bulk Import Handlers
+  // Spreadsheet Parser & Bulk Import Handlers
   const handleSpreadsheetFile = (file) => {
     if (!file) return;
     setExcelFile(file);
@@ -193,7 +358,6 @@ export default function LogistikDashboard({ showToast }) {
         let allParsedItems = [];
         const existingIds = new Set(instruments.map(i => i.id.toUpperCase()));
 
-        // Process all sheets if multi-sheet Excel, or the first sheet
         workbook.SheetNames.forEach(sheetName => {
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
@@ -277,13 +441,15 @@ export default function LogistikDashboard({ showToast }) {
     const updatedList = [...instruments, ...excelPreviewData];
     setInstruments(updatedList);
     localStorage.setItem('hima_instruments', JSON.stringify(updatedList));
+    broadcastSync('inventory', updatedList);
     showToast(`Sukses! ${excelPreviewData.length} barang berhasil didaftarkan sekaligus ke inventaris!`, 'success');
     
-    // Reset preview
+    // Reset preview & switch to inventory tab
     setExcelFile(null);
     setExcelPreviewData([]);
     if (batchFileInputRef.current) batchFileInputRef.current.value = '';
     if (csvInputRef.current) csvInputRef.current.value = '';
+    setActiveTab('inventaris');
   };
 
   // Download Sample Excel & CSV Template
@@ -375,25 +541,27 @@ export default function LogistikDashboard({ showToast }) {
     showToast('Data inventaris berhasil diekspor ke file Excel!', 'success');
   };
 
+  // Borrow Approval Handlers with instant Live Dispatch
   const handleApproveRequest = (reqId) => {
     const req = borrowRequests.find(r => r.id === reqId);
     if (!req) return;
 
-    // Update Request Status to Approved
     const updatedReqs = borrowRequests.map(r => 
       r.id === reqId ? { ...r, status: 'Approved' } : r
     );
     setBorrowRequests(updatedReqs);
     localStorage.setItem('hima_borrow_requests', JSON.stringify(updatedReqs));
 
-    // Update Instrument Status to Borrowed
     const updatedInsts = instruments.map(inst => 
       inst.id === req.instrumentId ? { ...inst, status: 'Borrowed' } : inst
     );
     setInstruments(updatedInsts);
     localStorage.setItem('hima_instruments', JSON.stringify(updatedInsts));
 
-    // Send notification bell alert to borrower
+    // Live Sync Broadcast
+    broadcastSync('requests', updatedReqs);
+    broadcastSync('inventory', updatedInsts);
+
     const newNotification = {
       id: Date.now(),
       recipientEmail: req.userEmail || 'guest@einsten.com',
@@ -413,12 +581,12 @@ export default function LogistikDashboard({ showToast }) {
     const req = borrowRequests.find(r => r.id === reqId);
     if (!req) return;
 
-    // Update Request Status to Rejected
     const updatedReqs = borrowRequests.map(r => 
       r.id === reqId ? { ...r, status: 'Rejected' } : r
     );
     setBorrowRequests(updatedReqs);
     localStorage.setItem('hima_borrow_requests', JSON.stringify(updatedReqs));
+    broadcastSync('requests', updatedReqs);
 
     showToast(`Permohonan peminjaman oleh ${req.borrowerName} ditolak.`, 'info');
   };
@@ -427,18 +595,94 @@ export default function LogistikDashboard({ showToast }) {
     const updatedReqs = borrowRequests.filter(r => r.id !== reqId);
     setBorrowRequests(updatedReqs);
     localStorage.setItem('hima_borrow_requests', JSON.stringify(updatedReqs));
+    broadcastSync('requests', updatedReqs);
     showToast('Riwayat permohonan berhasil dihapus.', 'success');
+  };
+
+  // Batch QR Code Download as ZIP Handler
+  const handleDownloadAllQrZip = async (targetItems, zipTitle = 'QR_Inventaris_Semua') => {
+    if (!targetItems || targetItems.length === 0) {
+      showToast('Tidak ada barang untuk di-download QR!', 'warning');
+      return;
+    }
+
+    try {
+      setIsGeneratingZip(true);
+      setZipProgress(5);
+      showToast(`Sedang men-generate ${targetItems.length} QR Code ke dalam file ZIP...`, 'info');
+
+      const zip = new JSZip();
+      const folder = zip.folder('QR_Codes_HIMA_EINSTEN');
+
+      // Create an index summary text file inside the zip
+      let indexText = `REKAPITULASI QR CODE INVENTARIS HIMA EINSTEN\n`;
+      indexText += `Tanggal Ekspor: ${new Date().toLocaleString('id-ID')}\n`;
+      indexText += `Total Barang: ${targetItems.length}\n`;
+      indexText += `--------------------------------------------------------\n`;
+
+      const total = targetItems.length;
+
+      for (let i = 0; i < total; i++) {
+        const item = targetItems[i];
+        
+        // Generate high-resolution QR Data URL (600x600 px)
+        const qrDataUrl = await QRCode.toDataURL(item.id, {
+          width: 600,
+          margin: 3,
+          color: { dark: '#0b132b', light: '#ffffff' }
+        });
+
+        // Convert base64 data URL to raw binary base64
+        const base64Data = qrDataUrl.replace(/^data:image\/png;base64,/, '');
+        
+        // Sanitize item name for file safety
+        const safeName = (item.name || 'Barang').replace(/[/\\?%*:|"<>]/g, '_').substring(0, 40);
+        const fileName = `[${item.id}]_${safeName}.png`;
+
+        folder.file(fileName, base64Data, { base64: true });
+        indexText += `${i + 1}. [${item.id}] ${item.name} | Kategori: ${item.category || '-'} | Stok: ${item.quantity || 1} | File: ${fileName}\n`;
+
+        // Update progress
+        const currentProgress = Math.round(((i + 1) / total) * 80) + 5;
+        setZipProgress(currentProgress);
+      }
+
+      // Add index summary file
+      folder.file('DAFTAR_BARANG_DAN_KODE_QR.txt', indexText);
+
+      setZipProgress(90);
+
+      // Generate the zip blob
+      const content = await zip.generateAsync({ type: 'blob' }, (metadata) => {
+        setZipProgress(90 + Math.round(metadata.percent * 0.1));
+      });
+
+      // Trigger download
+      const downloadUrl = URL.createObjectURL(content);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `${zipTitle}_${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+
+      setIsGeneratingZip(false);
+      setZipProgress(0);
+      showToast(`Sukses! File ZIP berisi ${targetItems.length} QR Code berhasil didownload.`, 'success');
+    } catch (err) {
+      console.error(err);
+      setIsGeneratingZip(false);
+      setZipProgress(0);
+      showToast('Gagal men-generate file ZIP: ' + err.message, 'error');
+    }
   };
 
   // Stats calculation
   const totalPhysicalStock = instruments.reduce((sum, inst) => sum + (Number(inst.quantity) || 1), 0);
   const availableCount = instruments.filter(i => i.status === 'Available').length;
   const borrowedCount = instruments.filter(i => i.status !== 'Available').length;
-  const activeBorrowersCount = new Set(
-    borrowRequests
-      .filter(r => r.status === 'Approved')
-      .map(r => r.borrowerNim)
-  ).size;
+  const pendingRequestsCount = borrowRequests.filter(r => r.status === 'Pending').length;
 
   const getCategoryBadgeClass = (category) => {
     switch (category) {
@@ -480,36 +724,59 @@ export default function LogistikDashboard({ showToast }) {
   const filteredInstruments = instruments.filter(inst => {
     const matchesCat = selectedCategory === 'Semua' || inst.category === selectedCategory;
     const matchesSize = selectedSize === 'Semua Ukuran' || inst.size === selectedSize;
+    const matchesCondition = selectedCondition === 'Semua' || (inst.condition || 'Baik') === selectedCondition;
     const matchesStatus = selectedStatus === 'Semua' 
       ? true 
       : selectedStatus === 'Tersedia' 
         ? inst.status === 'Available' 
         : inst.status !== 'Available';
+    
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch = !q || 
-      inst.name.toLowerCase().includes(q) || 
+      (inst.name && inst.name.toLowerCase().includes(q)) || 
       (inst.id && inst.id.toLowerCase().includes(q)) || 
       (inst.category && inst.category.toLowerCase().includes(q)) ||
+      (inst.size && inst.size.toLowerCase().includes(q)) ||
+      (inst.condition && inst.condition.toLowerCase().includes(q)) ||
       (inst.desc && inst.desc.toLowerCase().includes(q));
-    return matchesCat && matchesSize && matchesStatus && matchesSearch;
+    
+    return matchesCat && matchesSize && matchesCondition && matchesStatus && matchesSearch;
+  });
+
+  // Pagination calculation
+  const totalItems = filteredInstruments.length;
+  const effectivePageSize = pageSize === 999999 ? (totalItems || 1) : pageSize;
+  const totalPages = Math.max(1, Math.ceil(totalItems / effectivePageSize));
+  const validCurrentPage = Math.min(currentPage, totalPages);
+  const startIdx = (validCurrentPage - 1) * effectivePageSize;
+  const paginatedInstruments = filteredInstruments.slice(startIdx, startIdx + effectivePageSize);
+
+  // Filtered Borrow Requests
+  const filteredBorrowRequests = borrowRequests.filter(req => {
+    return borrowReqFilter === 'Semua' || req.status === borrowReqFilter;
   });
 
   return (
     <div className="pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 text-left text-slate-800">
+      
+      {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-5 gap-4">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1 text-xs text-gold-dark font-bold tracking-widest uppercase">
-            <Box className="w-3.5 h-3.5 text-gold" /> LOGISTIK & ASET OPERATOR CONSOLE
+          <div className="inline-flex items-center gap-1.5 text-xs text-gold-dark font-bold tracking-widest uppercase">
+            <Box className="w-4 h-4 text-gold" /> LOGISTIK & ASET OPERATOR CONSOLE
+            <span className="inline-flex items-center gap-1 ml-2 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Live Real-Time
+            </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 uppercase tracking-wider">
             Logistics Inventory & Asset Control
           </h1>
           <p className="text-xs text-slate-500 font-light">
-            Rekapitulasi inventaris terpadu HIMA EINSTEN (Elektronik, Furniture, ATK, P3K, Danus, Properti, Olahraga) & approval peminjaman.
+            Sistem manajemen inventaris terpadu HIMA EINSTEN (Elektronik, Furniture, ATK, P3K, Danus, Properti, Olahraga), QR Code generator, & permohonan peminjaman.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
             onClick={handleExportLiveInventory}
@@ -517,6 +784,17 @@ export default function LogistikDashboard({ showToast }) {
             title="Ekspor seluruh data inventaris ke file Excel (.xlsx)"
           >
             <Download className="w-3.5 h-3.5" /> Ekspor ke Excel
+          </button>
+          
+          <button
+            type="button"
+            onClick={() => handleDownloadAllQrZip(instruments, 'Semua_QR_Inventaris_HIMA')}
+            disabled={isGeneratingZip}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+            title="Download seluruh QR code 150+ barang dalam file ZIP"
+          >
+            <QrCode className="w-3.5 h-3.5 text-gold-light" />
+            <span>{isGeneratingZip ? `Membuat ZIP (${zipProgress}%)...` : 'Download Semua QR (.ZIP)'}</span>
           </button>
         </div>
       </div>
@@ -568,43 +846,105 @@ export default function LogistikDashboard({ showToast }) {
         </div>
       </div>
 
-      {/* Main Grid split: Left lists, Right forms */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        {/* Left column: Inventory & Borrow requests */}
-        <div className="lg:col-span-8 space-y-8">
-          
-          {/* Inventory list */}
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                <Box className="w-4 h-4 text-gold" /> Daftar Rekapitulasi Inventaris ({filteredInstruments.length})
-              </h3>
-              
-              <div className="flex items-center gap-2 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRegMode('batch');
-                    if (batchFileInputRef.current) batchFileInputRef.current.click();
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark text-xs font-bold border border-gold/30 transition-all active:scale-95 cursor-pointer"
-                  title="Upload daftar inventaris dari file Excel (.xlsx) / CSV"
-                >
-                  <FileSpreadsheet className="w-3.5 h-3.5 text-gold-dark" /> Upload Spreadsheet
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDownloadTemplate('xlsx')}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-all active:scale-95 cursor-pointer"
-                  title="Unduh contoh template format Excel (.xlsx)"
-                >
-                  <Download className="w-3.5 h-3.5 text-slate-600" /> Template Excel
-                </button>
-              </div>
-            </div>
+      {/* Progress Bar when Generating ZIP */}
+      {isGeneratingZip && (
+        <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-xl flex flex-col gap-2 animate-fade-in border border-gold/30">
+          <div className="flex items-center justify-between text-xs font-bold">
+            <span className="flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 text-gold animate-spin" />
+              Men-generate file ZIP QR Code...
+            </span>
+            <span className="text-gold font-mono">{zipProgress}%</span>
+          </div>
+          <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div 
+              className="bg-gradient-to-r from-gold to-emerald-400 h-full transition-all duration-300 rounded-full"
+              style={{ width: `${zipProgress}%` }}
+            />
+          </div>
+        </div>
+      )}
 
-            {/* Classification Switcher in Dashboard */}
+      {/* Sub-Page / Tab Navigation */}
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-1 overflow-x-auto scrollbar-none">
+        <button
+          type="button"
+          onClick={() => setActiveTab('inventaris')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shrink-0 cursor-pointer ${
+            activeTab === 'inventaris'
+              ? 'bg-gold text-white shadow-md shadow-gold/20'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <Box className="w-4 h-4" />
+          <span>Daftar Rekapitulasi Inventaris</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+            activeTab === 'inventaris' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
+          }`}>
+            {instruments.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('tambah')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shrink-0 cursor-pointer ${
+            activeTab === 'tambah'
+              ? 'bg-gold text-white shadow-md shadow-gold/20'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <Plus className="w-4 h-4" />
+          <span>Tambah & Import Barang</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('peminjaman')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shrink-0 cursor-pointer ${
+            activeTab === 'peminjaman'
+              ? 'bg-gold text-white shadow-md shadow-gold/20'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          <span>Permohonan Peminjaman</span>
+          {pendingRequestsCount > 0 ? (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-500 text-white animate-pulse">
+              {pendingRequestsCount} ACC
+            </span>
+          ) : (
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+              activeTab === 'peminjaman' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
+            }`}>
+              {borrowRequests.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('batch-qr')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shrink-0 cursor-pointer ${
+            activeTab === 'batch-qr'
+              ? 'bg-gold text-white shadow-md shadow-gold/20'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <QrCode className="w-4 h-4" />
+          <span>Batch Download & Cetak QR</span>
+        </button>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* TAB 1: DAFTAR REKAPITULASI INVENTARIS (FULL WIDTH WITH PAGINATION & EDIT) */}
+      {/* ========================================================================= */}
+      {activeTab === 'inventaris' && (
+        <div className="space-y-5 animate-fade-in">
+          
+          {/* Classification & Quick Toolbar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            {/* Classification Switcher */}
             <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 w-fit">
               <button
                 type="button"
@@ -636,388 +976,546 @@ export default function LogistikDashboard({ showToast }) {
               </button>
             </div>
 
-            {/* Filter Chips */}
-            {classificationMode === 'fungsi' ? (
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                {INVENTORY_CATEGORIES.map(cat => {
-                  const count = cat === 'Semua' ? instruments.length : instruments.filter(i => i.category === cat).length;
-                  const isSelected = selectedCategory === cat;
-                  return (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-gold text-white shadow-sm'
-                          : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span>{cat}</span>
-                      <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                        isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-                      }`}>
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                {INVENTORY_SIZES.map(sz => {
-                  const count = sz === 'Semua Ukuran' ? instruments.length : instruments.filter(i => i.size === sz).length;
-                  const isSelected = selectedSize === sz;
-                  return (
-                    <button
-                      key={sz}
-                      onClick={() => setSelectedSize(sz)}
-                      className={`shrink-0 px-3.5 py-1.5 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-gold text-white shadow-sm'
-                          : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span>{sz}</span>
-                      <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                        isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-                      }`}>
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            {/* Quick Action Shortcuts */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => handleDownloadAllQrZip(filteredInstruments, `QR_Inventaris_${selectedCategory !== 'Semua' ? selectedCategory : 'Terfilter'}`)}
+                disabled={isGeneratingZip || filteredInstruments.length === 0}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                title="Download QR code dari daftar yang sedang tampil/terfilter saat ini"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-600" />
+                <span>Unduh QR Terfilter ({filteredInstruments.length})</span>
+              </button>
 
-            {/* Search & Sub-filter bar */}
-            <div className="bg-white border border-slate-200 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
-              <div className="relative w-full sm:flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Cari nama barang, kode ID, deskripsi..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 pl-9 pr-8 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold"
-                />
-                {searchQuery && (
-                  <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                {classificationMode === 'fungsi' ? (
-                  <select
-                    value={selectedSize}
-                    onChange={(e) => setSelectedSize(e.target.value)}
-                    className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2.5 text-xs text-slate-700 focus:outline-none focus:border-gold"
-                  >
-                    {INVENTORY_SIZES.map(s => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2.5 text-xs text-slate-700 focus:outline-none focus:border-gold"
-                  >
-                    {INVENTORY_CATEGORIES.map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                )}
-
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2.5 text-xs text-slate-700 focus:outline-none focus:border-gold"
-                >
-                  <option value="Semua">Semua Status</option>
-                  <option value="Tersedia">Tersedia</option>
-                  <option value="Dipinjam">Dipinjam</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                      <th className="px-4 py-3.5">Barang & Foto</th>
-                      <th className="px-4 py-3.5">Kode ID</th>
-                      <th className="px-4 py-3.5">Klasifikasi</th>
-                      <th className="px-4 py-3.5">Stok</th>
-                      <th className="px-4 py-3.5">Kondisi</th>
-                      <th className="px-4 py-3.5">Status</th>
-                      <th className="px-4 py-3.5">QR</th>
-                      <th className="px-4 py-3.5 text-center">Tindakan</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 text-xs text-slate-750">
-                    {filteredInstruments.length === 0 ? (
-                      <tr>
-                        <td colSpan="8" className="px-6 py-10 text-center text-slate-400">
-                          Tidak ada barang yang cocok dengan filter / pencarian.
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredInstruments.map((inst) => (
-                        <tr key={inst.id} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="px-4 py-3 flex items-center gap-3">
-                            {inst.image && (inst.image.startsWith('/') || inst.image.startsWith('http') || inst.image.startsWith('data:')) ? (
-                              <img src={inst.image} alt={inst.name} className="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0" />
-                            ) : (
-                              <span className="text-2xl shrink-0">{inst.image || '📦'}</span>
-                            )}
-                            <div className="min-w-0">
-                              <p className="font-bold text-slate-800">{inst.name}</p>
-                              {inst.desc && (
-                                <p className="text-[10px] text-slate-400 font-light truncate max-w-[180px]">{inst.desc}</p>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 font-mono text-slate-700 font-bold text-[11px]">{inst.id}</td>
-                          <td className="px-4 py-3">
-                            <div className="flex flex-col gap-1 items-start">
-                              {inst.category && (
-                                <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold border ${getCategoryBadgeClass(inst.category)}`}>
-                                  {inst.category}
-                                </span>
-                              )}
-                              {inst.size && (
-                                <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold border ${getSizeBadgeClass(inst.size)}`}>
-                                  Ukuran: {inst.size}
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className="font-bold text-slate-900 text-xs">{inst.quantity || 1}</span> <span className="text-[10px] text-slate-500">Unit</span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
-                              (inst.condition || 'Baik') === 'Baik' 
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                                : 'bg-rose-50 text-rose-700 border-rose-200'
-                            }`}>
-                              {inst.condition || 'Baik'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
-                              inst.status === 'Available' 
-                                ? 'bg-emerald-50 text-emerald-600 border-emerald-500/20' 
-                                : 'bg-rose-50 text-rose-600 border-rose-500/20'
-                            }`}>
-                              {inst.status === 'Available' ? 'Tersedia' : 'Dipinjam'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <button
-                              type="button"
-                              onClick={() => setSelectedQrInstrument(inst)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-gold/10 hover:text-gold-dark text-slate-700 text-[10px] font-bold border border-slate-200 transition-all active:scale-95 cursor-pointer"
-                              title="Lihat & Cetak QR Code Barang"
-                            >
-                              <QrCode className="w-3.5 h-3.5 text-gold-dark" />
-                              <span>QR</span>
-                            </button>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                onClick={() => handleToggleStatus(inst.id)}
-                                className={`flex items-center gap-1 px-2 py-1 rounded-xl text-[10px] font-bold border transition-all active:scale-95 cursor-pointer ${
-                                  inst.status === 'Available'
-                                    ? 'bg-rose-50 text-rose-600 border-rose-500/20 hover:bg-rose-100'
-                                    : 'bg-emerald-50 text-emerald-600 border-emerald-500/20 hover:bg-emerald-100'
-                                }`}
-                                title={inst.status === 'Available' ? 'Set Dipinjam' : 'Set Tersedia'}
-                              >
-                                {inst.status === 'Available' ? (
-                                  <>
-                                    <ToggleLeft className="w-3 h-3 text-rose-600" /> Pinjam
-                                  </>
-                                ) : (
-                                  <>
-                                    <ToggleRight className="w-3 h-3 text-emerald-600" /> Ready
-                                  </>
-                                )}
-                              </button>
-                              
-                              <button
-                                onClick={() => handleDeleteInstrument(inst.id)}
-                                className="p-1 text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-lg transition-all active:scale-95 cursor-pointer"
-                                title="Hapus Barang"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('tambah')}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark text-xs font-bold border border-gold/30 transition-all active:scale-95 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 text-gold-dark" /> Tambah Barang
+              </button>
             </div>
           </div>
 
-          {/* Borrow requests approval list */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-              <FileText className="w-4 h-4 text-gold" /> Permohonan Peminjaman (ACC Otoritas)
-            </h3>
-            <div className="bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                      <th className="px-6 py-4">Peminjam</th>
-                      <th className="px-6 py-4">Alat Lab</th>
-                      <th className="px-6 py-4">Tanggal</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4 text-center">Tindakan</th>
+          {/* Filter Chips */}
+          {classificationMode === 'fungsi' ? (
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {INVENTORY_CATEGORIES.map(cat => {
+                const count = cat === 'Semua' ? instruments.length : instruments.filter(i => i.category === cat).length;
+                const isSelected = selectedCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-gold text-white shadow-sm'
+                        : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>{cat}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {INVENTORY_SIZES.map(sz => {
+                const count = sz === 'Semua Ukuran' ? instruments.length : instruments.filter(i => i.size === sz).length;
+                const isSelected = selectedSize === sz;
+                return (
+                  <button
+                    key={sz}
+                    onClick={() => setSelectedSize(sz)}
+                    className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-gold text-white shadow-sm'
+                        : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>{sz}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Search & Multi-Filter Bar */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-3.5 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xs">
+            {/* Live Search Input */}
+            <div className="relative w-full md:flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari nama barang, kode ID (ASL-...), kondisi, atau deskripsi..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-9 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold focus:bg-white transition-all"
+              />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery('')} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                  title="Hapus pencarian"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Dropdown Filters */}
+            <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
+              {/* Secondary category / size filter */}
+              {classificationMode === 'fungsi' ? (
+                <select
+                  value={selectedSize}
+                  onChange={(e) => setSelectedSize(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
+                >
+                  {INVENTORY_SIZES.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              ) : (
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
+                >
+                  {INVENTORY_CATEGORIES.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              )}
+
+              {/* Condition Filter */}
+              <select
+                value={selectedCondition}
+                onChange={(e) => setSelectedCondition(e.target.value)}
+                className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
+              >
+                <option value="Semua">Semua Kondisi</option>
+                <option value="Baik">Kondisi: Baik</option>
+                <option value="Cukup">Kondisi: Cukup</option>
+                <option value="Rusak">Kondisi: Rusak</option>
+              </select>
+
+              {/* Status Filter */}
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
+              >
+                <option value="Semua">Semua Status</option>
+                <option value="Tersedia">Tersedia (Ready)</option>
+                <option value="Dipinjam">Sedang Dipinjam</option>
+              </select>
+
+              {/* Page size dropdown */}
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
+                title="Tampilkan per halaman"
+              >
+                <option value={10}>10 per hal</option>
+                <option value={15}>15 per hal</option>
+                <option value={25}>25 per hal</option>
+                <option value={50}>50 per hal</option>
+                <option value={100}>100 per hal</option>
+                <option value={999999}>Tampilkan Semua</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Full-Width Inventory Table */}
+          <div className="bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                    <th className="px-5 py-4">Barang & Foto</th>
+                    <th className="px-5 py-4">Kode ID</th>
+                    <th className="px-5 py-4">Klasifikasi</th>
+                    <th className="px-5 py-4">Stok Fisik</th>
+                    <th className="px-5 py-4">Kondisi</th>
+                    <th className="px-5 py-4">Status</th>
+                    <th className="px-5 py-4 text-center">QR Code</th>
+                    <th className="px-5 py-4 text-center">Aksi / Edit</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 text-xs text-slate-700">
+                  {paginatedInstruments.length === 0 ? (
+                    <tr>
+                      <td colSpan="8" className="px-6 py-16 text-center text-slate-400">
+                        <div className="max-w-sm mx-auto space-y-2">
+                          <Box className="w-10 h-10 text-slate-300 mx-auto" />
+                          <p className="font-bold text-slate-600">Tidak ada barang yang cocok</p>
+                          <p className="text-xs text-slate-400">Coba ubah kata kunci pencarian atau sesuaikan filter klasifikasi di atas.</p>
+                          <button
+                            onClick={() => {
+                              setSelectedCategory('Semua');
+                              setSelectedSize('Semua Ukuran');
+                              setSelectedCondition('Semua');
+                              setSelectedStatus('Semua');
+                              setSearchQuery('');
+                            }}
+                            className="text-xs font-bold text-gold-dark hover:underline cursor-pointer pt-2 inline-block"
+                          >
+                            Reset Semua Filter
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 text-xs text-slate-750">
-                    {borrowRequests.length === 0 ? (
-                      <tr>
-                        <td colSpan="5" className="px-6 py-10 text-center text-slate-400">Belum ada permohonan peminjaman masuk.</td>
-                      </tr>
-                    ) : (
-                      borrowRequests.map((req) => (
-                        <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="px-6 py-4">
-                            <p className="font-bold text-slate-800">{req.borrowerName}</p>
-                            {req.prodi && req.angkatan ? (
-                              <p className="text-[10px] text-slate-500 font-mono">{req.prodi} ({req.angkatan})</p>
+                  ) : (
+                    paginatedInstruments.map((inst) => (
+                      <tr key={inst.id} className="hover:bg-slate-50/60 transition-colors">
+                        {/* Foto & Nama */}
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-3">
+                            {inst.image && (inst.image.startsWith('/') || inst.image.startsWith('http') || inst.image.startsWith('data:')) ? (
+                              <img 
+                                src={inst.image} 
+                                alt={inst.name} 
+                                className="w-11 h-11 rounded-xl object-cover border border-slate-200 shrink-0 shadow-xs cursor-pointer hover:opacity-80 transition-opacity"
+                                onClick={() => handleOpenEdit(inst)}
+                                title="Klik untuk edit barang & ganti foto"
+                              />
                             ) : (
-                              <p className="text-[10px] text-slate-500 font-mono">NIM: {req.borrowerNim}</p>
+                              <div 
+                                className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-2xl shrink-0 cursor-pointer hover:bg-gold/10 transition-colors"
+                                onClick={() => handleOpenEdit(inst)}
+                                title="Klik untuk edit barang"
+                              >
+                                {inst.image || '📦'}
+                              </div>
                             )}
-                            {req.phone && (
-                              <p className="text-[10px] text-gold-dark font-mono">WA: {req.phone}</p>
-                            )}
-                          </td>
-                          <td className="px-6 py-4">
-                            <p className="font-bold text-slate-800">{req.instrumentName}</p>
-                            <p className="text-[10px] text-slate-500 font-mono">ID: {req.instrumentId}</p>
-                          </td>
-                          <td className="px-6 py-4 text-slate-500 font-light">{req.date}</td>
-                          <td className="px-6 py-4">
-                            <span className={`px-2.5 py-0.5 rounded text-[9px] font-bold border uppercase tracking-wider ${
-                              req.status === 'Pending'
-                                ? 'bg-amber-50 text-amber-600 border-amber-500/20'
-                                : req.status === 'Approved'
-                                ? 'bg-emerald-50 text-emerald-600 border-emerald-500/20'
-                                : 'bg-rose-50 text-rose-600 border-rose-500/20'
-                            }`}>
-                              {req.status === 'Pending' ? 'Menunggu ACC' : req.status === 'Approved' ? 'Disetujui' : 'Ditolak'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              {req.status === 'Pending' ? (
-                                <>
-                                  <button
-                                    onClick={() => handleApproveRequest(req.id)}
-                                    className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 border border-emerald-500/25 hover:bg-emerald-500 hover:text-white transition-all text-emerald-600 font-bold rounded-xl text-[10px] active:scale-95"
-                                  >
-                                    <UserCheck className="w-3.5 h-3.5" /> ACC
-                                  </button>
-                                  <button
-                                    onClick={() => handleRejectRequest(req.id)}
-                                    className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 border border-rose-500/25 hover:bg-rose-500 hover:text-white transition-all text-rose-600 font-bold rounded-xl text-[10px] active:scale-95"
-                                  >
-                                    <UserX className="w-3.5 h-3.5" /> Tolak
-                                  </button>
-                                </>
-                              ) : (
-                                <button
-                                  onClick={() => handleDeleteRequest(req.id)}
-                                  className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:text-slate-800 transition-all text-slate-500 font-semibold rounded-xl text-[10px] active:scale-95"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" /> Hapus
-                                </button>
+                            <div className="min-w-0">
+                              <p className="font-bold text-slate-900 text-sm">{inst.name}</p>
+                              {inst.desc && (
+                                <p className="text-[11px] text-slate-400 font-light truncate max-w-xs">{inst.desc}</p>
                               )}
                             </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                          </div>
+                        </td>
+
+                        {/* Kode ID */}
+                        <td className="px-5 py-3.5">
+                          <span className="font-mono text-slate-800 font-bold text-xs bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                            {inst.id}
+                          </span>
+                        </td>
+
+                        {/* Klasifikasi (Kategori & Ukuran) */}
+                        <td className="px-5 py-3.5">
+                          <div className="flex flex-col gap-1 items-start">
+                            {inst.category && (
+                              <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${getCategoryBadgeClass(inst.category)}`}>
+                                {inst.category}
+                              </span>
+                            )}
+                            {inst.size && (
+                              <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${getSizeBadgeClass(inst.size)}`}>
+                                Ukuran: {inst.size}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Stok Fisik */}
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-extrabold text-slate-900 text-sm font-heading">{inst.quantity || 1}</span>
+                            <span className="text-[11px] text-slate-500">Unit</span>
+                          </div>
+                        </td>
+
+                        {/* Kondisi */}
+                        <td className="px-5 py-3.5">
+                          <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
+                            (inst.condition || 'Baik') === 'Baik' 
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                              : (inst.condition === 'Rusak' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-amber-50 text-amber-700 border-amber-200')
+                          }`}>
+                            {inst.condition || 'Baik'}
+                          </span>
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-5 py-3.5">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${
+                            inst.status === 'Available' 
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-500/30' 
+                              : 'bg-rose-50 text-rose-700 border-rose-500/30'
+                          }`}>
+                            {inst.status === 'Available' ? 'Tersedia' : 'Dipinjam'}
+                          </span>
+                        </td>
+
+                        {/* QR Code Action */}
+                        <td className="px-5 py-3.5 text-center">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedQrInstrument(inst)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-gold/10 hover:text-gold-dark hover:border-gold/30 text-slate-700 text-xs font-bold border border-slate-200 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                            title="Lihat, Cetak, atau Download QR Code"
+                          >
+                            <QrCode className="w-3.5 h-3.5 text-gold-dark" />
+                            <span>QR</span>
+                          </button>
+                        </td>
+
+                        {/* Tindakan (Edit, Toggle Status, Delete) */}
+                        <td className="px-5 py-3.5 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            {/* Edit Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEdit(inst)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-[11px] font-bold transition-all active:scale-95 cursor-pointer"
+                              title="Edit Detail Barang (Stok, Kondisi, Foto, Deskripsi, dll)"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>Edit</span>
+                            </button>
+
+                            {/* Toggle Status */}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleStatus(inst.id)}
+                              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border transition-all active:scale-95 cursor-pointer ${
+                                inst.status === 'Available'
+                                  ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100'
+                                  : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
+                              }`}
+                              title={inst.status === 'Available' ? 'Ubah status menjadi Dipinjam' : 'Ubah status menjadi Tersedia'}
+                            >
+                              {inst.status === 'Available' ? (
+                                <>
+                                  <ToggleLeft className="w-3.5 h-3.5" /> Pinjam
+                                </>
+                              ) : (
+                                <>
+                                  <ToggleRight className="w-3.5 h-3.5" /> Ready
+                                </>
+                              )}
+                            </button>
+
+                            {/* Delete */}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteInstrument(inst.id)}
+                              className="p-1.5 text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl transition-all active:scale-95 cursor-pointer"
+                              title="Hapus Barang dari Inventaris"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
+
+            {/* Pagination Controls */}
+            {filteredInstruments.length > 0 && (
+              <div className="px-5 py-4 border-t border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+                <div className="font-medium">
+                  Menampilkan <strong className="text-slate-900">{startIdx + 1}</strong> – <strong className="text-slate-900">{Math.min(startIdx + effectivePageSize, totalItems)}</strong> dari <strong className="text-slate-900">{totalItems}</strong> barang
+                  {filteredInstruments.length !== instruments.length && (
+                    <span className="text-slate-400"> (difilter dari {instruments.length} total)</span>
+                  )}
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1.5">
+                    {/* First Page */}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(1)}
+                      disabled={validCurrentPage === 1}
+                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      title="Halaman Pertama"
+                    >
+                      <ChevronsLeft className="w-4 h-4" />
+                    </button>
+
+                    {/* Prev Page */}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={validCurrentPage === 1}
+                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      title="Halaman Sebelumnya"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(p => p === 1 || p === totalPages || (p >= validCurrentPage - 2 && p <= validCurrentPage + 2))
+                        .map((page, idx, arr) => {
+                          const prevPage = arr[idx - 1];
+                          const hasGap = prevPage && page - prevPage > 1;
+                          return (
+                            <React.Fragment key={page}>
+                              {hasGap && <span className="px-1 text-slate-400">...</span>}
+                              <button
+                                type="button"
+                                onClick={() => setCurrentPage(page)}
+                                className={`w-8 h-8 rounded-lg font-bold text-xs transition-all cursor-pointer ${
+                                  validCurrentPage === page
+                                    ? 'bg-gold text-white shadow-xs'
+                                    : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            </React.Fragment>
+                          );
+                        })}
+                    </div>
+
+                    {/* Next Page */}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={validCurrentPage === totalPages}
+                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      title="Halaman Selanjutnya"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+
+                    {/* Last Page */}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={validCurrentPage === totalPages}
+                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      title="Halaman Terakhir"
+                    >
+                      <ChevronsRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
         </div>
+      )}
 
-        {/* Right column: Register form & Batch Spreadsheet Uploader */}
-        <div className="lg:col-span-4 space-y-4">
-          
-          {/* Tab Switcher */}
-          <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-inner">
+      {/* ========================================================================= */}
+      {/* TAB 2: TAMBAH & IMPORT BARANG (DEDICATED FULL-FEATURED PANEL) */}
+      {/* ========================================================================= */}
+      {activeTab === 'tambah' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Sub-Mode Switcher */}
+          <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 max-w-md">
             <button
               type="button"
               onClick={() => setRegMode('manual')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 regMode === 'manual'
                   ? 'bg-white text-gold-dark shadow-sm'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              <Plus className="w-3.5 h-3.5" /> Input Manual
+              <Plus className="w-4 h-4" /> Input Manual (Satu per Satu)
             </button>
             <button
               type="button"
               onClick={() => setRegMode('batch')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 regMode === 'batch'
                   ? 'bg-white text-gold-dark shadow-sm'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              <FileSpreadsheet className="w-3.5 h-3.5" /> Upload Spreadsheet
+              <FileSpreadsheet className="w-4 h-4" /> Upload Spreadsheet (Excel / CSV)
             </button>
           </div>
 
           {regMode === 'manual' ? (
-            /* MANUAL SINGLE ITEM FORM */
-            <div className="bg-white border border-gold-border rounded-2xl p-6 shadow-md relative overflow-hidden text-left">
-              <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-gold/5 rounded-full blur-xl"></div>
-              
-              <div className="mb-4 space-y-1">
-                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <Plus className="w-4 h-4 text-gold" /> Daftarkan Barang Baru
-                </h3>
-                <p className="text-[11px] text-slate-500 font-light">Input satu per satu barang/aset inventaris HIMA ke dalam sistem.</p>
-              </div>
-              
-              <form onSubmit={handleRegisterInstrument} className="space-y-3.5 relative z-10">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Nama Barang / Aset</label>
-                  <input 
-                    type="text"
-                    required
-                    placeholder="Contoh: Mesin Bor / Kursi Lipat"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-none focus:border-gold"
-                  />
+            /* MANUAL SINGLE REGISTRATION FORM */
+            <div className="bg-white border border-gold-border rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden text-left max-w-3xl">
+              <div className="mb-6 space-y-1">
+                <div className="inline-flex items-center gap-1.5 text-xs text-gold-dark font-bold tracking-widest uppercase">
+                  <Plus className="w-4 h-4 text-gold" /> REGISTRASI SATUAN
                 </div>
+                <h3 className="text-xl font-bold text-slate-900">Daftarkan Barang Baru ke Inventaris</h3>
+                <p className="text-xs text-slate-500">Lengkapi formulir di bawah ini untuk menambahkan barang fisik ke sistem manajemen aset HIMA.</p>
+              </div>
 
-                <div className="grid grid-cols-2 gap-2">
+              <form onSubmit={handleRegisterInstrument} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Nama Barang */}
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                      Nama Barang / Aset <span className="text-rose-500">*</span>
+                    </label>
+                    <input 
+                      type="text"
+                      required
+                      placeholder="Contoh: Solder Uap, Mesin Bor, Kursi Lipat"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 text-xs text-slate-800 focus:outline-none focus:border-gold focus:bg-white transition-all"
+                    />
+                  </div>
+
+                  {/* Kode ID */}
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                      Kode ID Inventaris <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text"
+                        required
+                        placeholder="Contoh: ASL-ELK-10-2025"
+                        value={newId}
+                        onChange={(e) => setNewId(e.target.value)}
+                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 text-xs text-slate-900 focus:outline-none focus:border-gold font-mono uppercase focus:bg-white transition-all font-bold"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const catCode = newCategory.substring(0, 3).toUpperCase();
+                          const randomNum = Math.floor(100 + Math.random() * 900);
+                          setNewId(`ASL-${catCode}-${randomNum}-2026`);
+                        }}
+                        className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs border border-slate-200 transition-all cursor-pointer"
+                        title="Buat kode ID otomatis"
+                      >
+                        Auto ID
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Kategori */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Kategori</label>
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">Kategori</label>
                     <select
                       value={newCategory}
                       onChange={(e) => setNewCategory(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-800 focus:outline-none focus:border-gold cursor-pointer"
                     >
                       {INVENTORY_CATEGORIES.filter(c => c !== 'Semua').map(c => (
                         <option key={c} value={c}>{c}</option>
@@ -1025,127 +1523,128 @@ export default function LogistikDashboard({ showToast }) {
                     </select>
                   </div>
 
+                  {/* Ukuran */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Ukuran</label>
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">Ukuran</label>
                     <select
                       value={newSize}
                       onChange={(e) => setNewSize(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-800 focus:outline-none focus:border-gold cursor-pointer"
                     >
                       {INVENTORY_SIZES.filter(s => s !== 'Semua Ukuran').map(s => (
                         <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                  {/* Jumlah / Stok */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Jumlah / Stok</label>
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">Jumlah / Stok Fisik</label>
                     <input 
                       type="number"
                       min="1"
                       required
                       value={newQuantity}
                       onChange={(e) => setNewQuantity(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-none focus:border-gold font-mono"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 text-xs text-slate-800 focus:outline-none focus:border-gold font-mono font-bold"
                     />
                   </div>
 
+                  {/* Kondisi */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Kondisi</label>
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">Kondisi Fisik</label>
                     <select
                       value={newCondition}
                       onChange={(e) => setNewCondition(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-800 focus:outline-none focus:border-gold cursor-pointer"
                     >
-                      <option value="Baik">Baik</option>
-                      <option value="Cukup">Cukup / Perlu Rawat</option>
-                      <option value="Rusak">Rusak</option>
+                      <option value="Baik">Baik (Normal Operasional)</option>
+                      <option value="Cukup">Cukup / Perlu Perawatan</option>
+                      <option value="Rusak">Rusak / Tidak Layak Pakai</option>
                     </select>
                   </div>
-                </div>
 
-                <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Kode ID Inventaris</label>
-                  <input 
-                    type="text"
-                    required
-                    placeholder="Contoh: ASL-ELK-01-2025"
-                    value={newId}
-                    onChange={(e) => setNewId(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-850 focus:outline-none focus:border-gold font-mono uppercase"
-                  />
-                </div>
+                  {/* Upload Foto */}
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                      Foto Barang <span className="text-slate-400 font-normal lowercase">(opsional, maks 1MB)</span>
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <input 
+                        key={formKey}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="flex-1 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gold/10 file:text-gold-dark hover:file:bg-gold/20 cursor-pointer"
+                      />
+                      {newImage && (
+                        <div className="relative w-16 h-16 rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 shrink-0">
+                          <img src={newImage} alt="Preview" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setNewImage('')}
+                            className="absolute top-1 right-1 p-0.5 bg-black/60 text-white rounded-full hover:bg-rose-500 transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-                <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">
-                    Foto Barang <span className="text-slate-400 font-normal lowercase">(opsional)</span>
-                  </label>
-                  <div className="flex flex-col gap-2">
-                    <input 
-                      key={formKey}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gold/10 file:text-gold-dark hover:file:bg-gold/20 cursor-pointer"
+                  {/* Deskripsi */}
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">Deskripsi / Spesifikasi / Lokasi Simpan</label>
+                    <textarea 
+                      placeholder="Tulis keterangan spesifikasi, lokasi penyimpanan di lemari lab, atau fungsi alat..."
+                      rows="3"
+                      value={newDesc}
+                      onChange={(e) => setNewDesc(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-850 focus:outline-none focus:border-gold resize-none"
                     />
-                    {newImage && (
-                      <div className="relative w-14 h-14 rounded-xl border border-slate-200 overflow-hidden mt-1 bg-slate-50 flex items-center justify-center">
-                        <img src={newImage} alt="Preview" className="w-full h-full object-cover" />
-                      </div>
-                    )}
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block text-left">Deskripsi / Keterangan</label>
-                  <textarea 
-                    placeholder="Tulis keterangan spesifikasi, lokasi simpan, atau fungsi..."
-                    rows="2"
-                    value={newDesc}
-                    onChange={(e) => setNewDesc(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-850 focus:outline-none focus:border-gold resize-none"
-                  />
+                <div className="pt-4">
+                  <button 
+                    type="submit"
+                    className="w-full py-3 bg-gradient-to-r from-gold to-gold-light text-white font-extrabold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-gold/20 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 text-white" /> Daftarkan Barang Baru
+                  </button>
                 </div>
-
-                <button 
-                  type="submit"
-                  className="w-full py-2.5 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-gold/20 flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Plus className="w-4 h-4 text-white" /> Daftarkan Barang
-                </button>
               </form>
             </div>
           ) : (
-            /* BATCH SPREADSHEET UPLOAD BOX */
-            <div className="bg-white border border-gold-border rounded-2xl p-6 shadow-md relative overflow-hidden text-left space-y-4">
+            /* BATCH SPREADSHEET UPLOADER */
+            <div className="bg-white border border-gold-border rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden text-left max-w-3xl space-y-6">
               <div className="space-y-1">
-                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <FileSpreadsheet className="w-4 h-4 text-gold" /> Upload Tabel Spreadsheet
-                </h3>
-                <p className="text-[11px] text-slate-500 font-light leading-relaxed">
-                  Upload file <strong>Excel (.xlsx, .xls)</strong> atau <strong>CSV</strong> untuk mendaftarkan semua barang/aset sekaligus ke sistem.
+                <div className="inline-flex items-center gap-1.5 text-xs text-gold-dark font-bold tracking-widest uppercase">
+                  <FileSpreadsheet className="w-4 h-4 text-gold" /> BATCH IMPORT SPREADSHEET
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">Upload File Spreadsheet (Excel & CSV)</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Impor puluhan hingga ratusan inventaris sekaligus secara instan ke sistem. Sistem secara otomatis mendeteksi kolom ID, Nama, Kategori, Ukuran, Jumlah, dan Kondisi.
                 </p>
               </div>
 
               {/* Download template buttons */}
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Unduh Format Tabel:</span>
-                <div className="flex gap-2">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block">Unduh Contoh Template Format Tabel:</span>
+                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
                   <button
                     type="button"
                     onClick={() => handleDownloadTemplate('xlsx')}
-                    className="flex-1 py-1.5 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl text-[10px] border border-emerald-200 transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
+                    className="flex-1 py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl text-xs border border-emerald-200 transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                   >
-                    <Download className="w-3 h-3" /> Format Excel (.xlsx)
+                    <Download className="w-3.5 h-3.5" /> Unduh Format Excel (.xlsx)
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDownloadTemplate('csv')}
-                    className="flex-1 py-1.5 px-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-[10px] border border-slate-300 transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
+                    className="flex-1 py-2 px-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs border border-slate-300 transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                   >
-                    <Download className="w-3 h-3" /> Format CSV (.csv)
+                    <Download className="w-3.5 h-3.5" /> Unduh Format CSV (.csv)
                   </button>
                 </div>
               </div>
@@ -1170,48 +1669,50 @@ export default function LogistikDashboard({ showToast }) {
                     handleSpreadsheetFile(e.dataTransfer.files[0]);
                   }
                 }}
-                className={`p-6 border-2 border-dashed rounded-2xl text-center cursor-pointer transition-all ${
+                className={`p-8 border-2 border-dashed rounded-3xl text-center cursor-pointer transition-all ${
                   isDragging 
                     ? 'border-gold bg-gold/10 scale-98' 
                     : 'border-slate-300 hover:border-gold hover:bg-slate-50'
                 }`}
               >
-                <Upload className="w-8 h-8 text-gold mx-auto mb-2 animate-bounce" />
-                <p className="text-xs font-bold text-slate-700">
-                  {excelFile ? excelFile.name : 'Klik untuk Pilih File Spreadsheet'}
+                <Upload className="w-10 h-10 text-gold mx-auto mb-2 animate-bounce" />
+                <p className="text-sm font-bold text-slate-800">
+                  {excelFile ? excelFile.name : 'Klik atau Tarik File Spreadsheet ke Sini'}
                 </p>
-                <p className="text-[10px] text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-400 mt-1">
                   Mendukung file Excel (.xlsx, .xls) & CSV
                 </p>
               </div>
 
               {/* Preview of Parsed Rows */}
               {excelPreviewData.length > 0 && (
-                <div className="space-y-3">
+                <div className="space-y-4 pt-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      {excelPreviewData.length} Barang Terbaca dari File
+                    <span className="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      {excelPreviewData.length} Barang Terbaca & Siap Didaftarkan
                     </span>
                     <button
                       type="button"
                       onClick={() => { setExcelFile(null); setExcelPreviewData([]); }}
-                      className="text-[10px] text-rose-500 hover:underline cursor-pointer"
+                      className="text-xs text-rose-500 font-bold hover:underline cursor-pointer"
                     >
-                      Batal
+                      Batal / Reset
                     </button>
                   </div>
 
                   {/* Mini Preview Table */}
-                  <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-xl bg-slate-50 text-[11px] divide-y divide-slate-200 shadow-inner">
+                  <div className="max-h-60 overflow-y-auto border border-slate-200 rounded-2xl bg-slate-50 text-xs divide-y divide-slate-200 shadow-inner">
                     {excelPreviewData.map((item, idx) => (
-                      <div key={idx} className="p-2 flex items-center justify-between gap-2">
+                      <div key={idx} className="p-3 flex items-center justify-between gap-3 hover:bg-white transition-colors">
                         <div className="min-w-0">
                           <p className="font-bold text-slate-800 truncate">{item.name}</p>
-                          <p className="text-[9px] font-mono text-slate-500 truncate">{item.id} • {item.category || 'Properti'}</p>
+                          <p className="text-[10px] font-mono text-slate-500 truncate">
+                            {item.id} • {item.category || 'Properti'} • Ukuran: {item.size || 'Medium'}
+                          </p>
                         </div>
-                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold shrink-0">
-                          Siap ({item.quantity || 1} unit)
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-[10px] font-bold shrink-0">
+                          {item.quantity || 1} Unit ({item.condition || 'Baik'})
                         </span>
                       </div>
                     ))}
@@ -1221,39 +1722,447 @@ export default function LogistikDashboard({ showToast }) {
                   <button
                     type="button"
                     onClick={handleBulkRegister}
-                    className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold rounded-xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold rounded-2xl text-xs hover:brightness-110 active:scale-95 transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <Layers className="w-4 h-4" /> Daftarkan {excelPreviewData.length} Barang Sekaligus
+                    <Layers className="w-4 h-4" /> Daftarkan {excelPreviewData.length} Barang Sekaligus ke Inventaris
                   </button>
                 </div>
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 3: PERMOHONAN PEMINJAMAN (APPROVAL CONSOLE FOR BORROW REQUESTS) */}
+      {/* ========================================================================= */}
+      {activeTab === 'peminjaman' && (
+        <div className="space-y-5 animate-fade-in">
+          
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <FileText className="w-4 h-4 text-gold" /> Permohonan Peminjaman Alat (ACC Otoritas)
+              </h3>
+              <p className="text-xs text-slate-500">
+                Verifikasi dan setujui permohonan peminjaman inventaris yang diajukan mahasiswa melalui portal Einsten Space.
+              </p>
+            </div>
+
+            {/* Filter Status Permohonan */}
+            <div className="flex items-center gap-2">
+              <select
+                value={borrowReqFilter}
+                onChange={(e) => setBorrowReqFilter(e.target.value)}
+                className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
+              >
+                <option value="Semua">Semua Status Permohonan</option>
+                <option value="Pending">Menunggu ACC (Pending)</option>
+                <option value="Approved">Disetujui (Approved)</option>
+                <option value="Rejected">Ditolak (Rejected)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                    <th className="px-6 py-4">Peminjam</th>
+                    <th className="px-6 py-4">Alat Lab & Kode</th>
+                    <th className="px-6 py-4">Tanggal Pengajuan</th>
+                    <th className="px-6 py-4">Status Otoritas</th>
+                    <th className="px-6 py-4 text-center">Tindakan ACC</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 text-xs text-slate-700">
+                  {filteredBorrowRequests.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-16 text-center text-slate-400">
+                        <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                        <p className="font-bold text-slate-600">Belum ada data permohonan peminjaman</p>
+                        <p className="text-xs text-slate-400">Permohonan peminjaman dari mahasiswa akan muncul di sini.</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredBorrowRequests.map((req) => (
+                      <tr key={req.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="px-6 py-4">
+                          <p className="font-bold text-slate-900 text-sm">{req.borrowerName}</p>
+                          {req.prodi && req.angkatan ? (
+                            <p className="text-[11px] text-slate-500 font-mono">{req.prodi} ({req.angkatan})</p>
+                          ) : (
+                            <p className="text-[11px] text-slate-500 font-mono">NIM: {req.borrowerNim}</p>
+                          )}
+                          {req.phone && (
+                            <p className="text-[11px] text-gold-dark font-mono font-semibold">WA: {req.phone}</p>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="font-bold text-slate-900">{req.instrumentName}</p>
+                          <p className="text-[11px] text-slate-500 font-mono">ID: {req.instrumentId}</p>
+                        </td>
+                        <td className="px-6 py-4 text-slate-600 font-light">{req.date}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${
+                            req.status === 'Pending'
+                              ? 'bg-amber-50 text-amber-700 border-amber-500/30'
+                              : req.status === 'Approved'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-500/30'
+                              : 'bg-rose-50 text-rose-700 border-rose-500/30'
+                          }`}>
+                            {req.status === 'Pending' ? 'Menunggu ACC' : req.status === 'Approved' ? 'Disetujui (ACC)' : 'Ditolak'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            {req.status === 'Pending' ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => handleApproveRequest(req.id)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-300 hover:bg-emerald-600 hover:text-white transition-all text-emerald-700 font-bold rounded-xl text-xs active:scale-95 cursor-pointer shadow-2xs"
+                                >
+                                  <UserCheck className="w-4 h-4" /> ACC / Setujui
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRejectRequest(req.id)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-300 hover:bg-rose-600 hover:text-white transition-all text-rose-700 font-bold rounded-xl text-xs active:scale-95 cursor-pointer shadow-2xs"
+                                >
+                                  <UserX className="w-4 h-4" /> Tolak
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteRequest(req.id)}
+                                className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all text-slate-600 font-semibold rounded-xl text-xs active:scale-95 cursor-pointer"
+                                title="Hapus riwayat"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" /> Hapus
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
         </div>
+      )}
 
-      </div>
+      {/* ========================================================================= */}
+      {/* TAB 4: BATCH DOWNLOAD & CETAK QR CODE (ZIP EXPORT & PRINTABLE SHEET) */}
+      {/* ========================================================================= */}
+      {activeTab === 'batch-qr' && (
+        <div className="space-y-6 animate-fade-in">
+          
+          {/* Header & Quick Action Card */}
+          <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-gold/30 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/20 text-gold-light border border-gold/30 text-[11px] font-bold">
+                <Sparkles className="w-3.5 h-3.5" /> Direct Bulk QR Code Exporter
+              </div>
+              <h2 className="text-2xl font-black font-heading text-white">
+                Download & Cetak QR Code Inventaris Sekaligus
+              </h2>
+              <p className="text-xs text-slate-300 leading-relaxed font-light">
+                Unduh seluruh QR Code untuk <strong>{instruments.length} barang inventaris</strong> dalam satu file arsip <strong>.ZIP</strong> secara langsung dengan resolusi tinggi, atau cetak lembar stiker untuk ditempelkan pada fisik barang.
+              </p>
+            </div>
 
-      {/* QR Code Modal for Inventory Tools */}
+            <div className="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => handleDownloadAllQrZip(instruments, 'Semua_QR_Inventaris_HIMA')}
+                disabled={isGeneratingZip}
+                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-gold to-gold-light hover:brightness-110 text-slate-950 font-black text-xs transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-gold/20 cursor-pointer disabled:opacity-50"
+              >
+                <Download className="w-4 h-4 text-slate-950" />
+                <span>{isGeneratingZip ? `Sedang Membuat ZIP (${zipProgress}%)...` : `Download Semua QR (${instruments.length} Barang) .ZIP`}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Printer className="w-4 h-4 text-gold-light" />
+                <span>Cetak Lembar Stiker QR (Print Sheet)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Grid Preview of QR Codes */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <QrCode className="w-4 h-4 text-gold" /> Preview Lembar Stiker QR ({instruments.length} Barang)
+              </h3>
+              <span className="text-xs text-slate-500">Format stiker ukuran standar A4</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 print:grid-cols-3">
+              {instruments.map((inst) => (
+                <div 
+                  key={inst.id}
+                  className="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center shadow-xs hover:border-gold/50 transition-all group"
+                >
+                  <div className="w-full text-left border-b border-slate-100 pb-1.5 mb-2">
+                    <p className="font-bold text-slate-900 text-xs truncate" title={inst.name}>{inst.name}</p>
+                    <p className="font-mono text-[10px] text-slate-500 font-bold">{inst.id}</p>
+                  </div>
+
+                  {/* QR Image */}
+                  <div className="p-2 bg-white border border-slate-100 rounded-xl mb-2 group-hover:scale-105 transition-transform">
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(inst.id)}`}
+                      alt={inst.name}
+                      className="w-24 h-24 object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between w-full mt-auto pt-1 text-[10px] text-slate-500">
+                    <span className="font-bold text-gold-dark truncate">{inst.category}</span>
+                    <span>Stok: {inst.quantity || 1}</span>
+                  </div>
+
+                  {/* Quick Individual Download button */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedQrInstrument(inst)}
+                    className="w-full mt-2 py-1 bg-slate-50 hover:bg-gold/10 hover:text-gold-dark text-slate-600 rounded-lg text-[10px] font-bold border border-slate-200 transition-colors cursor-pointer"
+                  >
+                    Buka QR Card
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 1: EDIT INVENTARIS ITEM (EDIT STOK, FOTO, KONDISI, STATUS, DLL) */}
+      {/* ========================================================================= */}
+      {editingInstrument && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white border border-gold-border rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl relative text-left space-y-5 animate-slide-in max-h-[90vh] overflow-y-auto">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3.5">
+              <div className="space-y-0.5">
+                <div className="inline-flex items-center gap-1.5 text-[10px] text-gold-dark font-bold tracking-widest uppercase">
+                  <Edit3 className="w-3.5 h-3.5 text-gold" /> EDIT DATA INVENTARIS
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 truncate">
+                  Edit: {editingInstrument.name}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingInstrument(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Edit Form */}
+            <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
+              
+              {/* Nama Barang */}
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 uppercase tracking-wider block">
+                  Nama Barang / Aset <span className="text-rose-500">*</span>
+                </label>
+                <input 
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-800 focus:outline-none focus:border-gold focus:bg-white"
+                />
+              </div>
+
+              {/* Kode ID */}
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 uppercase tracking-wider block">
+                  Kode ID Inventaris <span className="text-rose-500">*</span>
+                </label>
+                <input 
+                  type="text"
+                  required
+                  value={editId}
+                  onChange={(e) => setEditId(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:outline-none focus:border-gold font-mono uppercase font-bold focus:bg-white"
+                />
+              </div>
+
+              {/* Grid 2 Kolom: Kategori & Ukuran */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 uppercase tracking-wider block">Kategori</label>
+                  <select
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-800 focus:outline-none focus:border-gold cursor-pointer"
+                  >
+                    {INVENTORY_CATEGORIES.filter(c => c !== 'Semua').map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 uppercase tracking-wider block">Ukuran</label>
+                  <select
+                    value={editSize}
+                    onChange={(e) => setEditSize(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-800 focus:outline-none focus:border-gold cursor-pointer"
+                  >
+                    {INVENTORY_SIZES.filter(s => s !== 'Semua Ukuran').map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Grid 3 Kolom: Stok Fisik, Kondisi, Status */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 uppercase tracking-wider block">Jumlah / Stok</label>
+                  <input 
+                    type="number"
+                    min="0"
+                    required
+                    value={editQuantity}
+                    onChange={(e) => setEditQuantity(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:outline-none focus:border-gold font-mono font-bold"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 uppercase tracking-wider block">Kondisi</label>
+                  <select
+                    value={editCondition}
+                    onChange={(e) => setEditCondition(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold cursor-pointer"
+                  >
+                    <option value="Baik">Baik</option>
+                    <option value="Cukup">Cukup / Rawat</option>
+                    <option value="Rusak">Rusak</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 uppercase tracking-wider block">Status</label>
+                  <select
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-2.5 text-xs text-slate-800 focus:outline-none focus:border-gold cursor-pointer font-bold"
+                  >
+                    <option value="Available">Tersedia (Ready)</option>
+                    <option value="Borrowed">Sedang Dipinjam</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Edit Foto Barang */}
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 uppercase tracking-wider block">
+                  Foto Barang <span className="text-slate-400 font-normal lowercase">(upload foto baru)</span>
+                </label>
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="file"
+                    accept="image/*"
+                    onChange={handleEditImageUpload}
+                    className="flex-1 text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gold/10 file:text-gold-dark hover:file:bg-gold/20 cursor-pointer"
+                  />
+                  {editImage && (
+                    <div className="relative w-12 h-12 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 shrink-0">
+                      {editImage.startsWith('/') || editImage.startsWith('http') || editImage.startsWith('data:') ? (
+                        <img src={editImage} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xl">{editImage}</div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setEditImage('📦')}
+                        className="absolute top-0.5 right-0.5 p-0.5 bg-black/60 text-white rounded-full hover:bg-rose-500 transition-colors"
+                        title="Reset ke icon kotak"
+                      >
+                        <X className="w-2.5 h-2.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Deskripsi */}
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 uppercase tracking-wider block">Deskripsi / Spesifikasi / Lokasi</label>
+                <textarea 
+                  rows="2"
+                  value={editDesc}
+                  onChange={(e) => setEditDesc(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-850 focus:outline-none focus:border-gold resize-none"
+                />
+              </div>
+
+              {/* Submit / Cancel Buttons */}
+              <div className="flex gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingInstrument(null)}
+                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-2 py-2.5 bg-gold hover:brightness-110 text-white font-extrabold rounded-xl text-xs transition-all shadow-md shadow-gold/20 flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Check className="w-4 h-4" /> Simpan Perubahan
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 2: SINGLE QR CODE MODAL (HIGH-RES QR VIEW, DIRECT DOWNLOAD, PRINT) */}
+      {/* ========================================================================= */}
       {selectedQrInstrument && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white border border-gold-border rounded-2xl max-w-sm w-full p-6 shadow-2xl relative text-center space-y-4 animate-slide-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white border border-gold-border rounded-3xl max-w-sm w-full p-6 shadow-2xl relative text-center space-y-4 animate-slide-in">
             <button
               onClick={() => setSelectedQrInstrument(null)}
-              className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-gold-dark uppercase tracking-widest block">
-                QR Code Aset / Logistik HIMA
+                QR Code Aset & Logistik HIMA
               </span>
-              <h3 className="text-base font-bold text-slate-900 truncate">
+              <h3 className="text-base font-extrabold text-slate-900 truncate">
                 {selectedQrInstrument.name}
               </h3>
               <div className="flex items-center justify-center gap-2 flex-wrap">
-                <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 py-0.5 px-2 rounded-lg border border-slate-200">
+                <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 py-0.5 px-2.5 rounded-lg border border-slate-200">
                   {selectedQrInstrument.id}
                 </span>
                 {selectedQrInstrument.category && (
@@ -1261,34 +2170,38 @@ export default function LogistikDashboard({ showToast }) {
                     {selectedQrInstrument.category}
                   </span>
                 )}
-                <span className="text-[10px] font-bold text-slate-600 bg-slate-100 py-0.5 px-2 rounded-lg border border-slate-200">
+                <span className="text-[10px] font-bold text-slate-600 bg-slate-100 py-0.5 px-2.5 rounded-lg border border-slate-200">
                   Stok: {selectedQrInstrument.quantity || 1}
                 </span>
               </div>
             </div>
 
-            {/* QR Image */}
-            <div className="p-4 bg-white border-2 border-dashed border-gold-border/80 rounded-2xl inline-block shadow-inner mx-auto">
-              <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(selectedQrInstrument.id)}`}
-                alt={`QR Code ${selectedQrInstrument.name}`}
-                className="w-48 h-48 object-contain mx-auto"
-              />
+            {/* QR Image High Resolution Canvas Render */}
+            <div className="p-4 bg-white border-2 border-dashed border-gold-border rounded-2xl inline-block shadow-inner mx-auto">
+              {singleQrDataUrl ? (
+                <img 
+                  src={singleQrDataUrl}
+                  alt={`QR Code ${selectedQrInstrument.name}`}
+                  className="w-48 h-48 object-contain mx-auto"
+                />
+              ) : (
+                <div className="w-48 h-48 flex items-center justify-center text-xs text-slate-400">
+                  <RefreshCw className="w-6 h-6 animate-spin text-gold" />
+                </div>
+              )}
             </div>
 
             <p className="text-[11px] text-slate-500 font-light leading-relaxed">
-              Cetak QR Code ini dan tempelkan pada barang fisik. Mahasiswa dapat memindainya langsung di portal <strong className="text-slate-800">Einsten Space</strong>.
+              Cetak QR Code ini dan tempelkan pada fisik barang. Mahasiswa dapat memindainya langsung di portal <strong className="text-slate-800">Einsten Space</strong>.
             </p>
 
             <div className="flex gap-2 pt-2">
               <a
-                href={`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(selectedQrInstrument.id)}`}
-                target="_blank"
-                rel="noreferrer"
-                download={`QR_${selectedQrInstrument.id}.png`}
+                href={singleQrDataUrl || `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(selectedQrInstrument.id)}`}
+                download={`QR_${selectedQrInstrument.id}_${(selectedQrInstrument.name || 'barang').replace(/\s+/g, '_')}.png`}
                 className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer"
               >
-                <Download className="w-3.5 h-3.5" /> Unduh QR
+                <Download className="w-3.5 h-3.5" /> Unduh PNG
               </a>
               <button
                 onClick={() => window.print()}
