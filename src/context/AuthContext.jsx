@@ -681,6 +681,20 @@ export const AuthProvider = ({ children }) => {
       } catch (e) {}
     }
 
+    // Sync role update to loginLogs as well
+    const targetEmailLower = targetUser?.email ? targetUser.email.toLowerCase().replace(/\s+/g, '') : '';
+    const targetNimStr = targetUser?.nim ? String(targetUser.nim).trim() : '';
+    const updatedLogs = (loginLogs || []).map(log => {
+      const logEmailLower = log.email ? log.email.toLowerCase().replace(/\s+/g, '') : '';
+      const logNimStr = log.nim ? String(log.nim).trim() : '';
+      if ((targetEmailLower && logEmailLower === targetEmailLower) || (targetNimStr && logNimStr === targetNimStr)) {
+        return { ...log, role };
+      }
+      return log;
+    });
+    setLoginLogs(updatedLogs);
+    localStorage.setItem('hima_login_logs', JSON.stringify(updatedLogs));
+
     saveToAnyCloud(updatedUsers);
   };
 
