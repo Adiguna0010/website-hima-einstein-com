@@ -3,33 +3,65 @@ import { ShoppingCart, ShoppingBag, Plus, Minus, Trash2, ArrowRight, Shirt, Key,
 import { useCart } from '../context/CartContext';
 import CheckoutModal from '../components/CheckoutModal';
 
+export const DEFAULT_MARKET_PRODUCTS = [
+  {
+    id: 'prod-pdh',
+    name: 'Baju PDH Elins',
+    price: 180000,
+    category: 'Pakaian',
+    image: '/Media/Media yg dijual/Baju PDH Elins 180.000/PDH Einsten.png',
+    desc: 'Pakaian Dinas Harian resmi mahasiswa Elektronika Instrumentasi dengan bahan Premium Drill dingin.'
+  },
+  {
+    id: 'prod-magiccom',
+    name: 'Magic Com',
+    price: 120000,
+    category: 'Elektronik',
+    image: '/Media/Media yg dijual/Magiccom 120.000/magiccom.png',
+    desc: 'Magic Com penanak nasi praktis, kondisi secondary terawat dan berfungsi normal.'
+  },
+  {
+    id: 'prod-mejabelajar',
+    name: 'Meja Belajar',
+    price: 150000,
+    category: 'Furniture',
+    image: '/Media/Media yg dijual/Meja Belajar 150.000/mejabelajar.png',
+    desc: 'Meja belajar minimalis kayu kokoh, nyaman digunakan untuk belajar dan bekerja.'
+  }
+];
+
 export default function Market({ showToast }) {
   const { cart, addToCart, removeFromCart, updateQuantity, totalPrice, totalQty } = useCart();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [products, setProducts] = useState(DEFAULT_MARKET_PRODUCTS);
 
-  const products = [
-    {
-      id: 'prod-pdh',
-      name: 'Baju PDH Elins',
-      price: 180000,
-      image: '/Media/Media yg dijual/Baju PDH Elins 180.000/PDH Einsten.png',
-      desc: 'Pakaian Dinas Harian resmi mahasiswa Elektronika Instrumentasi dengan bahan Premium Drill dingin.'
-    },
-    {
-      id: 'prod-magiccom',
-      name: 'Magic Com',
-      price: 120000,
-      image: '/Media/Media yg dijual/Magiccom 120.000/magiccom.png',
-      desc: 'Magic Com penanak nasi praktis, kondisi secondary terawat dan berfungsi normal.'
-    },
-    {
-      id: 'prod-mejabelajar',
-      name: 'Meja Belajar',
-      price: 150000,
-      image: '/Media/Media yg dijual/Meja Belajar 150.000/mejabelajar.png',
-      desc: 'Meja belajar minimalis kayu kokoh, nyaman digunakan untuk belajar dan bekerja.'
+  const loadProducts = () => {
+    const saved = localStorage.getItem('hima_products');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setProducts(parsed);
+          return;
+        }
+      } catch (e) {}
     }
-  ];
+    localStorage.setItem('hima_products', JSON.stringify(DEFAULT_MARKET_PRODUCTS));
+    setProducts(DEFAULT_MARKET_PRODUCTS);
+  };
+
+  React.useEffect(() => {
+    loadProducts();
+    const handleSync = () => loadProducts();
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('hima_sync_products', handleSync);
+    window.addEventListener('focus', handleSync);
+    return () => {
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('hima_sync_products', handleSync);
+      window.removeEventListener('focus', handleSync);
+    };
+  }, []);
 
   const handleAddToCart = (product) => {
     addToCart(product.name, product.price);
