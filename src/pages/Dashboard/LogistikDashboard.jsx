@@ -2299,9 +2299,6 @@ export default function LogistikDashboard({ showToast }) {
         <div className="space-y-6 animate-fade-in">
           <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-gold/30 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2 max-w-xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/20 text-gold-light border border-gold/30 text-[11px] font-bold">
-                <Sparkles className="w-3.5 h-3.5" /> Direct Bulk QR Code Exporter
-              </div>
               <h2 className="text-2xl font-black font-heading text-white">
                 Download & Cetak QR Code Inventaris Sekaligus
               </h2>
