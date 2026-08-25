@@ -85,7 +85,7 @@ export default function Space({ showToast }) {
     };
   }, []);
 
-  const [activeTab, setActiveTab] = useState('katalog'); // 'katalog' | 'booking' | 'status'
+  const [activeTab, setActiveTab] = useState('booking'); // 'booking' | 'katalog' | 'status'
   const [scannerOpen, setScannerOpen] = useState(false);
   const [activeToolId, setActiveToolId] = useState('');
   const [activeToolName, setActiveToolName] = useState('');
@@ -376,22 +376,6 @@ export default function Space({ showToast }) {
       <div className="flex items-center gap-1 sm:gap-2 p-1.5 bg-slate-100/90 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-xs max-w-xl mx-auto">
         <button
           type="button"
-          onClick={() => setActiveTab('katalog')}
-          className={`flex-1 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-            activeTab === 'katalog'
-              ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-extrabold'
-              : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
-          }`}
-        >
-          <Box className={`w-3.5 h-3.5 ${activeTab === 'katalog' ? 'text-gold' : 'text-slate-400'}`} />
-          <span>Katalog Barang</span>
-          <span className="hidden sm:inline-block px-1.5 py-0.5 rounded-full text-[9px] font-mono bg-slate-100 text-slate-600">
-            {instruments.length}
-          </span>
-        </button>
-
-        <button
-          type="button"
           onClick={() => setActiveTab('booking')}
           className={`flex-1 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer relative ${
             activeTab === 'booking'
@@ -404,6 +388,22 @@ export default function Space({ showToast }) {
           {selectedToolId && (
             <span className="w-2 h-2 rounded-full bg-gold animate-ping"></span>
           )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('katalog')}
+          className={`flex-1 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeTab === 'katalog'
+              ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-extrabold'
+              : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+          }`}
+        >
+          <Box className={`w-3.5 h-3.5 ${activeTab === 'katalog' ? 'text-gold' : 'text-slate-400'}`} />
+          <span>Katalog Barang</span>
+          <span className="hidden sm:inline-block px-1.5 py-0.5 rounded-full text-[9px] font-mono bg-slate-100 text-slate-600">
+            {instruments.length}
+          </span>
         </button>
 
         <button
