@@ -1128,7 +1128,7 @@ export default function LogistikDashboard({ showToast }) {
             activeTab === 'input' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
           }`}
         >
-          Input Barang (Manual & Spreadsheet)
+          Input Barang
         </button>
 
         <button
@@ -1387,7 +1387,7 @@ export default function LogistikDashboard({ showToast }) {
               className="p-5 bg-white border border-slate-200 rounded-2xl space-y-2 hover:border-gold hover:shadow-sm transition-all cursor-pointer shadow-2xs"
             >
               <Plus className="w-5 h-5 text-gold" />
-              <h3 className="font-bold text-slate-900 text-sm">Input Barang Manual & Batch</h3>
+              <h3 className="font-bold text-slate-900 text-sm">Input Barang</h3>
               <p className="text-xs text-slate-500 leading-relaxed">Formulir pendaftaran barang baru atau import file Excel/CSV secara otomatis.</p>
               <span className="text-xs font-bold text-gold-dark block pt-1">Buka Formulir Input &rarr;</span>
             </div>
