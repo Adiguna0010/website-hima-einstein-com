@@ -12,6 +12,12 @@ export default function Space({ showToast }) {
   const [selectedSize, setSelectedSize] = useState('Semua Ukuran');
   const [selectedStatus, setSelectedStatus] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
+  const [displayLimit, setDisplayLimit] = useState(25);
+  const lastRawDataRef = React.useRef({ instruments: '', reqs: '' });
+
+  useEffect(() => {
+    setDisplayLimit(25);
+  }, [selectedCategory, selectedSize, selectedStatus, searchQuery]);
 
   useEffect(() => {
     const CURRENT_DATA_VERSION = 'v2026_rekap_master_140_v2';
@@ -22,12 +28,13 @@ export default function Space({ showToast }) {
       let shouldReset = false;
       if (!saved || savedVersion !== CURRENT_DATA_VERSION) {
         shouldReset = true;
-      } else {
+      } else if (saved !== lastRawDataRef.current.instruments) {
         try {
           const parsed = JSON.parse(saved);
           if (!Array.isArray(parsed) || parsed.length <= 10 || parsed.some(i => !i.id || i.id.startsWith('HIMA-') || !i.category)) {
             shouldReset = true;
           } else {
+            lastRawDataRef.current.instruments = saved;
             setInstruments(parsed);
           }
         } catch (e) {
@@ -36,19 +43,23 @@ export default function Space({ showToast }) {
       }
 
       if (shouldReset) {
-        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
+        const defaultStr = JSON.stringify(DEFAULT_INVENTORY_ITEMS);
+        localStorage.setItem('hima_instruments', defaultStr);
         localStorage.setItem('hima_inventory_data_version', CURRENT_DATA_VERSION);
+        lastRawDataRef.current.instruments = defaultStr;
         setInstruments(DEFAULT_INVENTORY_ITEMS);
       }
 
       const savedReqs = localStorage.getItem('hima_borrow_requests');
-      if (savedReqs) {
+      if (savedReqs && savedReqs !== lastRawDataRef.current.reqs) {
         try {
+          lastRawDataRef.current.reqs = savedReqs;
           setBorrowRequests(JSON.parse(savedReqs));
         } catch (e) {
           setBorrowRequests([]);
         }
-      } else {
+      } else if (!savedReqs && lastRawDataRef.current.reqs !== '[]') {
+        lastRawDataRef.current.reqs = '[]';
         setBorrowRequests([]);
       }
     };
@@ -72,8 +83,8 @@ export default function Space({ showToast }) {
       bc.onmessage = () => loadData();
     } catch (e) {}
 
-    // Live Polling every 1.5s
-    const interval = setInterval(loadData, 1500);
+    // Gentle polling fallback (every 4s) only triggering state if raw JSON changed
+    const interval = setInterval(loadData, 4000);
 
     return () => {
       window.removeEventListener('storage', handleLiveSync);
@@ -565,95 +576,122 @@ export default function Space({ showToast }) {
                 </button>
               </div>
             ) : (
-              filteredInstruments.map((inst) => (
-                <div 
-                  key={inst.id}
-                  className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition-all text-left group"
-                >
-                  {/* Tool Image & Details */}
-                  <div className="flex items-start sm:items-center gap-3.5 flex-1 min-w-0">
-                    <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
-                      {inst.image && (inst.image.startsWith('/') || inst.image.startsWith('http') || inst.image.startsWith('data:')) ? (
-                        <img src={inst.image} alt={inst.name} className="w-full h-full object-cover" />
+              <>
+                {filteredInstruments.slice(0, displayLimit).map((inst) => (
+                  <div 
+                    key={inst.id}
+                    className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition-all text-left group"
+                  >
+                    {/* Tool Image & Details */}
+                    <div className="flex items-start sm:items-center gap-3.5 flex-1 min-w-0">
+                      <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+                        {inst.image && (inst.image.startsWith('/') || inst.image.startsWith('http') || inst.image.startsWith('data:')) ? (
+                          <img src={inst.image} alt={inst.name} loading="lazy" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-2xl">{inst.image || '📦'}</span>
+                        )}
+                      </div>
+
+                      <div className="space-y-1.5 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="text-sm font-bold text-slate-900 group-hover:text-gold-dark transition-colors">
+                            {inst.name}
+                          </h4>
+                          <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[9px] font-bold border border-slate-200">
+                            {inst.id}
+                          </span>
+                          {inst.category && (
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold border ${getCategoryBadgeClass(inst.category)}`}>
+                              {inst.category}
+                            </span>
+                          )}
+                          {inst.size && (
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${getSizeBadgeClass(inst.size)}`}>
+                              Ukuran: {inst.size}
+                            </span>
+                          )}
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
+                            inst.status === 'Available' 
+                              ? 'bg-emerald-50 text-emerald-600 border-emerald-500/20' 
+                              : 'bg-rose-50 text-rose-600 border-rose-500/20'
+                          }`}>
+                            {inst.status === 'Available' ? 'Tersedia' : 'Tidak Tersedia'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3 text-[11px] text-slate-500 flex-wrap">
+                          <span className="bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                            Stok: <strong className="text-slate-800 font-semibold">{inst.quantity || 1} Unit</strong>
+                          </span>
+                          <span className={`px-2 py-0.5 rounded border ${
+                            (inst.condition || 'Baik') === 'Baik' 
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                              : 'bg-rose-50 text-rose-700 border-rose-200'
+                          }`}>
+                            Kondisi: <strong className="font-semibold">{inst.condition || 'Baik'}</strong>
+                          </span>
+                          {inst.desc && (
+                            <span className="text-slate-500 font-light truncate max-w-xs">{inst.desc}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                      {inst.status === 'Available' ? (
+                        <>
+                          <button 
+                            onClick={() => handleSelectTool(inst)}
+                            className="px-4 py-2 bg-gradient-to-r from-gold to-gold-light hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer"
+                          >
+                            Pinjam Barang
+                          </button>
+                          <button 
+                            onClick={() => handleOpenScanner(inst)}
+                            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs flex items-center justify-center active:scale-95 transition-all border border-slate-200 cursor-pointer"
+                            title="Scan QR Code Alat Ini"
+                          >
+                            <Camera className="w-4 h-4 text-slate-600" />
+                          </button>
+                        </>
                       ) : (
-                        <span className="text-2xl">{inst.image || '📦'}</span>
+                        <button 
+                          disabled
+                          className="px-4 py-2 bg-slate-100 text-slate-400 font-semibold rounded-xl text-xs cursor-not-allowed border border-slate-200"
+                        >
+                          Sedang Dipinjam
+                        </button>
                       )}
                     </div>
+                  </div>
+                ))}
 
-                    <div className="space-y-1.5 min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="text-sm font-bold text-slate-900 group-hover:text-gold-dark transition-colors">
-                          {inst.name}
-                        </h4>
-                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[9px] font-bold border border-slate-200">
-                          {inst.id}
-                        </span>
-                        {inst.category && (
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold border ${getCategoryBadgeClass(inst.category)}`}>
-                            {inst.category}
-                          </span>
-                        )}
-                        {inst.size && (
-                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${getSizeBadgeClass(inst.size)}`}>
-                            Ukuran: {inst.size}
-                          </span>
-                        )}
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
-                          inst.status === 'Available' 
-                            ? 'bg-emerald-50 text-emerald-600 border-emerald-500/20' 
-                            : 'bg-rose-50 text-rose-600 border-rose-500/20'
-                        }`}>
-                          {inst.status === 'Available' ? 'Tersedia' : 'Tidak Tersedia'}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-3 text-[11px] text-slate-500 flex-wrap">
-                        <span className="bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
-                          Stok: <strong className="text-slate-800 font-semibold">{inst.quantity || 1} Unit</strong>
-                        </span>
-                        <span className={`px-2 py-0.5 rounded border ${
-                          (inst.condition || 'Baik') === 'Baik' 
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                            : 'bg-rose-50 text-rose-700 border-rose-200'
-                        }`}>
-                          Kondisi: <strong className="font-semibold">{inst.condition || 'Baik'}</strong>
-                        </span>
-                        {inst.desc && (
-                          <span className="text-slate-500 font-light truncate max-w-xs">{inst.desc}</span>
-                        )}
-                      </div>
+                {/* Progressive Load More Controls */}
+                {filteredInstruments.length > displayLimit && (
+                  <div className="p-4 bg-slate-50/80 text-center flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">
+                    <span className="text-xs text-slate-500 font-medium">
+                      Menampilkan <strong className="text-slate-900 font-bold">{Math.min(displayLimit, filteredInstruments.length)}</strong> dari <strong className="text-slate-900 font-bold">{filteredInstruments.length}</strong> barang
+                    </span>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <button
+                        type="button"
+                        onClick={() => setDisplayLimit(prev => prev + 30)}
+                        className="flex-1 sm:flex-none px-4 py-2 bg-white hover:bg-slate-100 text-slate-800 font-bold rounded-xl text-xs border border-slate-200 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      >
+                        Muat Lebih Banyak (+30)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDisplayLimit(filteredInstruments.length)}
+                        className="flex-1 sm:flex-none px-4 py-2 bg-gold/10 hover:bg-gold/20 text-gold-dark font-bold rounded-xl text-xs border border-gold/30 active:scale-95 transition-all cursor-pointer"
+                      >
+                        Tampilkan Semua ({filteredInstruments.length})
+                      </button>
                     </div>
                   </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                    {inst.status === 'Available' ? (
-                      <>
-                        <button 
-                          onClick={() => handleSelectTool(inst)}
-                          className="px-4 py-2 bg-gradient-to-r from-gold to-gold-light hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer"
-                        >
-                          Pinjam Barang
-                        </button>
-                        <button 
-                          onClick={() => handleOpenScanner(inst)}
-                          className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs flex items-center justify-center active:scale-95 transition-all border border-slate-200 cursor-pointer"
-                          title="Scan QR Code Alat Ini"
-                        >
-                          <Camera className="w-4 h-4 text-slate-600" />
-                        </button>
-                      </>
-                    ) : (
-                      <button 
-                        disabled
-                        className="px-4 py-2 bg-slate-100 text-slate-400 font-semibold rounded-xl text-xs cursor-not-allowed border border-slate-200"
-                      >
-                        Sedang Dipinjam
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))
+                )}
+              </>
             )}
           </div>
         </div>

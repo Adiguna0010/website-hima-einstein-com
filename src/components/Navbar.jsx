@@ -269,7 +269,7 @@ export default function Navbar() {
       } catch (e) {}
     }
 
-    const interval = setInterval(loadNotifications, 3000);
+    const interval = setInterval(loadNotifications, 8000);
     return () => {
       clearInterval(interval);
       window.removeEventListener('storage', handleSync);
@@ -282,7 +282,7 @@ export default function Navbar() {
 
   useEffect(() => {
     loadChats();
-    const chatInterval = setInterval(loadChats, 3000);
+    const chatInterval = setInterval(loadChats, 8000);
     return () => clearInterval(chatInterval);
   }, [currentUser, activeChat]);
 

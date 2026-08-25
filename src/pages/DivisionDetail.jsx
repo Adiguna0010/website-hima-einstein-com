@@ -138,8 +138,13 @@ export default function DivisionDetail({ showToast }) {
       localStorage.setItem('hima_vault_version', VAULT_VERSION);
       loadedVault = DEFAULT_DRIVE_VAULT;
     }
-    setVaultItems(loadedVault);
+    if (rawVault !== lastVaultRawRef.current) {
+      lastVaultRawRef.current = rawVault;
+      setVaultItems(loadedVault);
+    }
   };
+
+  const lastVaultRawRef = React.useRef('');
 
   useEffect(() => {
     // Vault Items
@@ -148,7 +153,7 @@ export default function DivisionDetail({ showToast }) {
     const handleSync = () => loadVaultItems();
     window.addEventListener('storage', handleSync);
     window.addEventListener('focus', handleSync);
-    const interval = setInterval(loadVaultItems, 1000);
+    const interval = setInterval(loadVaultItems, 5000);
 
     // Ristek Schedules
     const savedSchedules = localStorage.getItem('hima_ristek_schedules');

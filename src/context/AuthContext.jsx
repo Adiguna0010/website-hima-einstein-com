@@ -407,10 +407,10 @@ export const AuthProvider = ({ children }) => {
     // Fetch fresh database from cloud immediately
     syncUsersWithCloud();
 
-    // Setup periodic cloud polling (every 15 seconds)
+    // Setup periodic cloud polling (every 25 seconds)
     const pollInterval = setInterval(() => {
       syncUsersWithCloud();
-    }, 15000);
+    }, 25000);
 
     // Sync on tab focus
     const handleFocus = () => syncUsersWithCloud();

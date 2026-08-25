@@ -119,6 +119,8 @@ export default function LogistikDashboard({ showToast }) {
     }
   };
 
+  const lastRawDataRef = React.useRef({ instruments: '', reqs: '' });
+
   // Load Initial Data & Multi-Tab Real-Time Sync
   useEffect(() => {
     const CURRENT_DATA_VERSION = 'v2026_rekap_master_140_v2';
@@ -129,12 +131,13 @@ export default function LogistikDashboard({ showToast }) {
       let shouldReset = false;
       if (!savedInst || savedVersion !== CURRENT_DATA_VERSION) {
         shouldReset = true;
-      } else {
+      } else if (savedInst !== lastRawDataRef.current.instruments) {
         try {
           const parsed = JSON.parse(savedInst);
           if (!Array.isArray(parsed) || parsed.length <= 10 || parsed.some(i => !i.id || i.id.startsWith('HIMA-') || !i.category)) {
             shouldReset = true;
           } else {
+            lastRawDataRef.current.instruments = savedInst;
             setInstruments(parsed);
           }
         } catch (e) {
@@ -143,14 +146,17 @@ export default function LogistikDashboard({ showToast }) {
       }
 
       if (shouldReset) {
-        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
+        const defaultStr = JSON.stringify(DEFAULT_INVENTORY_ITEMS);
+        localStorage.setItem('hima_instruments', defaultStr);
         localStorage.setItem('hima_inventory_data_version', CURRENT_DATA_VERSION);
+        lastRawDataRef.current.instruments = defaultStr;
         setInstruments(DEFAULT_INVENTORY_ITEMS);
       }
 
       const savedReqs = localStorage.getItem('hima_borrow_requests');
-      if (savedReqs) {
+      if (savedReqs && savedReqs !== lastRawDataRef.current.reqs) {
         try {
+          lastRawDataRef.current.reqs = savedReqs;
           let parsedReqs = JSON.parse(savedReqs);
           if (Array.isArray(parsedReqs)) {
             parsedReqs = parsedReqs.map(r => {
@@ -167,7 +173,8 @@ export default function LogistikDashboard({ showToast }) {
         } catch (e) {
           setBorrowRequests([]);
         }
-      } else {
+      } else if (!savedReqs && lastRawDataRef.current.reqs !== '[]') {
+        lastRawDataRef.current.reqs = '[]';
         setBorrowRequests([]);
       }
     };
@@ -190,7 +197,7 @@ export default function LogistikDashboard({ showToast }) {
       bc.onmessage = () => loadData();
     } catch (e) {}
 
-    const liveInterval = setInterval(loadData, 1500);
+    const liveInterval = setInterval(loadData, 4000);
 
     return () => {
       window.removeEventListener('storage', handleSync);

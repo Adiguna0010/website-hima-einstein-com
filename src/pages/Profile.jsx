@@ -74,10 +74,17 @@ export default function Profile({ showToast }) {
     });
 
     if (modified) {
-      localStorage.setItem('hima_kas_payments', JSON.stringify(payments));
+      const serialized = JSON.stringify(payments);
+      localStorage.setItem('hima_kas_payments', serialized);
+      lastKasRawRef.current = serialized;
+      setKasPayments(payments);
+    } else if (raw !== lastKasRawRef.current) {
+      lastKasRawRef.current = raw;
+      setKasPayments(payments);
     }
-    setKasPayments(payments);
   };
+
+  const lastKasRawRef = React.useRef('');
 
   useEffect(() => {
     if (!currentUser) { navigate('/login'); return; }
@@ -98,8 +105,8 @@ export default function Profile({ showToast }) {
     };
     window.addEventListener('storage', handleStorageChange);
 
-    // Also poll every 3 seconds for same-tab updates
-    const interval = setInterval(loadKasPayments, 3000);
+    // Also poll every 6 seconds for same-tab updates
+    const interval = setInterval(loadKasPayments, 6000);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
