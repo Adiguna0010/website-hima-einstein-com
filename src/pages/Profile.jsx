@@ -50,6 +50,7 @@ export default function Profile({ showToast }) {
   const [nominalInput, setNominalInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const proofRef = useRef(null);
+  const lastKasRawRef = React.useRef('');
 
   const loadKasPayments = () => {
     const saved = localStorage.getItem('hima_kas_payments');
@@ -78,13 +79,11 @@ export default function Profile({ showToast }) {
       localStorage.setItem('hima_kas_payments', serialized);
       lastKasRawRef.current = serialized;
       setKasPayments(payments);
-    } else if (raw !== lastKasRawRef.current) {
-      lastKasRawRef.current = raw;
+    } else if (saved !== lastKasRawRef.current) {
+      lastKasRawRef.current = saved || '';
       setKasPayments(payments);
     }
   };
-
-  const lastKasRawRef = React.useRef('');
 
   useEffect(() => {
     if (!currentUser) { navigate('/login'); return; }
