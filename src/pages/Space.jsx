@@ -85,6 +85,7 @@ export default function Space({ showToast }) {
     };
   }, []);
 
+  const [activeTab, setActiveTab] = useState('katalog'); // 'katalog' | 'booking' | 'status'
   const [scannerOpen, setScannerOpen] = useState(false);
   const [activeToolId, setActiveToolId] = useState('');
   const [activeToolName, setActiveToolName] = useState('');
@@ -108,14 +109,20 @@ export default function Space({ showToast }) {
   }, [currentUser]);
 
   const handleSelectTool = (tool) => {
+    if (tool.status !== 'Available') {
+      showToast(`Alat "${tool.name}" saat ini sedang dipinjam / tidak tersedia.`, 'error');
+      return;
+    }
     setSelectedToolId(tool.id);
     setSelectedToolName(tool.name);
     setSubmittedSuccess(null);
     setShowForm(true);
+    setActiveTab('booking');
     if (currentUser) {
       if (!borrowerName && currentUser.name) setBorrowerName(currentUser.name);
       if (!phone && currentUser.phone) setPhone(currentUser.phone);
     }
+    showToast(`Alat "${tool.name}" (${tool.id}) dipilih! Formulir siap diisi.`, 'info');
   };
 
   const handleOpenScanner = (tool) => {
@@ -143,12 +150,14 @@ export default function Space({ showToast }) {
       setSelectedToolName(found.name);
       setSubmittedSuccess(null);
       setShowForm(true);
+      setActiveTab('booking');
       showToast(`Scan Berhasil: ${found.name} (${found.id}) terpilih!`, 'success');
     } else {
       setSelectedToolId(cleaned.toUpperCase());
       setSelectedToolName(activeToolName || cleaned);
       setSubmittedSuccess(null);
       setShowForm(true);
+      setActiveTab('booking');
       showToast(`Scan Berhasil: Kode ${cleaned} terpilih!`, 'success');
     }
   };
@@ -363,104 +372,178 @@ export default function Space({ showToast }) {
         </p>
       </div>
 
-      {/* Kategori Fungsi Chips Filter */}
-      <div className="bg-white border border-gold-border rounded-2xl p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5 text-gold" /> Kategori Inventaris ({INVENTORY_CATEGORIES.length - 1}):
+      {/* ── TOP TAB NAVIGATION BAR (OPTIMIZED FOR MOBILE & DESKTOP) ── */}
+      <div className="flex items-center gap-1 sm:gap-2 p-1.5 bg-slate-100/90 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-xs max-w-xl mx-auto">
+        <button
+          type="button"
+          onClick={() => setActiveTab('katalog')}
+          className={`flex-1 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeTab === 'katalog'
+              ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-extrabold'
+              : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+          }`}
+        >
+          <Box className={`w-3.5 h-3.5 ${activeTab === 'katalog' ? 'text-gold' : 'text-slate-400'}`} />
+          <span>Katalog Barang</span>
+          <span className="hidden sm:inline-block px-1.5 py-0.5 rounded-full text-[9px] font-mono bg-slate-100 text-slate-600">
+            {instruments.length}
           </span>
-          <span className="text-xs font-medium text-slate-500">
-            Menampilkan <strong className="text-slate-900">{filteredInstruments.length}</strong> dari {instruments.length} barang
-          </span>
-        </div>
+        </button>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {INVENTORY_CATEGORIES.map(cat => {
-            const count = cat === 'Semua' ? instruments.length : instruments.filter(i => i.category === cat).length;
-            const isSelected = selectedCategory === cat;
-            return (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-gradient-to-r from-gold to-gold-light text-white shadow-md shadow-gold/20'
-                    : 'bg-white border border-slate-200 text-slate-700 hover:border-gold/50 hover:bg-slate-50'
-                }`}
-              >
-                <span>{cat}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                  isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
-                }`}>
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <button
+          type="button"
+          onClick={() => setActiveTab('booking')}
+          className={`flex-1 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer relative ${
+            activeTab === 'booking'
+              ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-extrabold'
+              : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+          }`}
+        >
+          <Calendar className={`w-3.5 h-3.5 ${activeTab === 'booking' ? 'text-gold' : 'text-slate-400'}`} />
+          <span>Peminjaman Alat</span>
+          {selectedToolId && (
+            <span className="w-2 h-2 rounded-full bg-gold animate-ping"></span>
+          )}
+        </button>
 
-        {/* Search & Sub-filters Bar */}
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">
-          {/* Search Box */}
-          <div className="relative w-full sm:max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Cari nama barang, kode ID, atau deskripsi..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-9 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Status Dropdowns & Scan */}
-          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
-            <select
-              value={selectedSize}
-              onChange={(e) => setSelectedSize(e.target.value)}
-              className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
-            >
-              {INVENTORY_SIZES.map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
-            >
-              <option value="Semua">Semua Status</option>
-              <option value="Tersedia">Tersedia</option>
-              <option value="Dipinjam">Sedang Dipinjam / Tidak Tersedia</option>
-            </select>
-
-            <button
-              onClick={() => handleOpenScanner(null)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark font-bold text-xs border border-gold/30 transition-all active:scale-95 cursor-pointer shrink-0"
-            >
-              <QrCode className="w-3.5 h-3.5 text-gold-dark" /> Scan QR
-            </button>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={() => setActiveTab('status')}
+          className={`flex-1 py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeTab === 'status'
+              ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-extrabold'
+              : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+          }`}
+        >
+          <Clock className={`w-3.5 h-3.5 ${activeTab === 'status' ? 'text-gold' : 'text-slate-400'}`} />
+          <span>Status Pinjam</span>
+          {borrowRequests.length > 0 && (
+            <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold ${
+              borrowRequests.some(r => r.status === 'Pending')
+                ? 'bg-amber-100 text-amber-800 animate-pulse'
+                : 'bg-slate-100 text-slate-600'
+            }`}>
+              {borrowRequests.length}
+            </span>
+          )}
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        {/* Left Column: Instruments status board in LIST VIEW */}
-        <div className="lg:col-span-8 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider text-left flex items-center gap-1.5">
-              <ShieldCheck className="w-4.5 h-4.5 text-gold" /> Daftar Ketersediaan Barang & Aset ({filteredInstruments.length})
-            </h3>
+      {/* ── TAB 1: KATALOG BARANG & ASET ── */}
+      {activeTab === 'katalog' && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          {/* Selected item prompt banner if a tool is active */}
+          {selectedToolId && (
+            <div className="p-3 bg-gradient-to-r from-amber-50 to-amber-100/50 border border-gold/40 rounded-2xl flex items-center justify-between gap-3 text-left shadow-2xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-gold text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                  📦
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-slate-900 truncate">
+                    Alat Terpilih: <span className="text-gold-dark font-extrabold">{selectedToolName}</span> ({selectedToolId})
+                  </p>
+                  <p className="text-[10px] text-slate-500">Siap untuk mengisi formulir peminjaman</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('booking')}
+                className="px-3.5 py-1.5 bg-gold hover:brightness-110 text-white font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all shrink-0 flex items-center gap-1 cursor-pointer"
+              >
+                Isi Formulir <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+
+          {/* Kategori Fungsi Chips Filter */}
+          <div className="bg-white border border-gold-border rounded-2xl p-4 shadow-sm space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                <Filter className="w-3.5 h-3.5 text-gold" /> Kategori Inventaris ({INVENTORY_CATEGORIES.length - 1}):
+              </span>
+              <span className="text-xs font-medium text-slate-500">
+                Menampilkan <strong className="text-slate-900">{filteredInstruments.length}</strong> dari {instruments.length} barang
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {INVENTORY_CATEGORIES.map(cat => {
+                const count = cat === 'Semua' ? instruments.length : instruments.filter(i => i.category === cat).length;
+                const isSelected = selectedCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-gold to-gold-light text-white shadow-md shadow-gold/20'
+                        : 'bg-white border border-slate-200 text-slate-700 hover:border-gold/50 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>{cat}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Search & Sub-filters Bar */}
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">
+              {/* Search Box */}
+              <div className="relative w-full sm:max-w-md">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Cari nama barang, kode ID, atau deskripsi..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-9 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Status Dropdowns & Scan */}
+              <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+                <select
+                  value={selectedSize}
+                  onChange={(e) => setSelectedSize(e.target.value)}
+                  className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
+                >
+                  {INVENTORY_SIZES.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
+                >
+                  <option value="Semua">Semua Status</option>
+                  <option value="Tersedia">Tersedia</option>
+                  <option value="Dipinjam">Sedang Dipinjam / Tidak Tersedia</option>
+                </select>
+
+                <button
+                  onClick={() => handleOpenScanner(null)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark font-bold text-xs border border-gold/30 transition-all active:scale-95 cursor-pointer shrink-0"
+                >
+                  <QrCode className="w-3.5 h-3.5 text-gold-dark" /> Scan QR
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* List items container */}
@@ -574,18 +657,16 @@ export default function Space({ showToast }) {
             )}
           </div>
         </div>
+      )}
 
-        {/* Right Column: Reservation form */}
-        <div className="lg:col-span-4 space-y-6">
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider text-left flex items-center gap-1.5">
-            <Calendar className="w-4.5 h-4.5 text-gold" /> Formulir Booking
-          </h3>
-
-          <div className="bg-white border border-gold-border rounded-2xl p-6 shadow-md relative overflow-hidden min-h-[250px] flex flex-col justify-center text-slate-800">
+      {/* ── TAB 2: PEMINJAMAN ALAT (FORMULIR BOOKING) ── */}
+      {activeTab === 'booking' && (
+        <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in duration-200">
+          <div className="bg-white border border-gold-border rounded-2xl p-6 sm:p-8 shadow-md relative overflow-hidden min-h-[300px] flex flex-col justify-center text-slate-800">
             <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-gold/5 rounded-full blur-xl"></div>
 
             {submittedSuccess ? (
-              /* SUCCESS CONFIRMATION CARD (No external browser redirect) */
+              /* SUCCESS CONFIRMATION CARD */
               <div className="text-center py-4 space-y-4 animate-slide-in">
                 <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
                   <CheckCircle2 className="w-8 h-8" />
@@ -648,23 +729,54 @@ export default function Space({ showToast }) {
                   </div>
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSubmittedSuccess(null);
-                    setShowForm(false);
-                  }}
-                  className="w-full py-2.5 bg-gold hover:brightness-110 text-white font-bold rounded-xl text-xs active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer"
-                >
-                  Pinjam Alat Lain
-                </button>
+                <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSubmittedSuccess(null);
+                      setShowForm(false);
+                      setSelectedToolId('');
+                      setSelectedToolName('');
+                      setActiveTab('katalog');
+                    }}
+                    className="flex-1 py-2.5 bg-gold hover:brightness-110 text-white font-bold rounded-xl text-xs active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer"
+                  >
+                    Pinjam Alat Lain
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('status')}
+                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs active:scale-95 transition-all border border-slate-200 cursor-pointer"
+                  >
+                    Lihat Status Permohonan
+                  </button>
+                </div>
               </div>
-            ) : showForm ? (
-              <form onSubmit={handleReservationSubmit} className="space-y-3.5">
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5 text-left">
-                  <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider block">Alat / Barang Yang Dipilih</span>
-                  <p className="text-xs font-bold text-gold-dark truncate">{selectedToolName}</p>
-                  <p className="text-[9px] font-mono text-slate-500">{selectedToolId}</p>
+            ) : showForm && selectedToolId ? (
+              /* FORMULIR PEMINJAMAN */
+              <form onSubmit={handleReservationSubmit} className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="text-left space-y-0.5">
+                    <span className="text-[10px] font-bold text-gold-dark uppercase tracking-widest">
+                      Formulir Peminjaman
+                    </span>
+                    <h3 className="text-base font-extrabold text-slate-900">
+                      Konfirmasi Data Peminjam
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('katalog')}
+                    className="text-xs font-semibold text-gold-dark hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    Ganti Alat ↗
+                  </button>
+                </div>
+
+                <div className="p-3.5 bg-gold/5 border border-gold/30 rounded-xl space-y-0.5 text-left">
+                  <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider block">Alat / Barang Yang Dipilih:</span>
+                  <p className="text-sm font-bold text-gold-dark truncate">{selectedToolName}</p>
+                  <p className="text-[10px] font-mono text-slate-500 font-bold">ID: {selectedToolId}</p>
                 </div>
 
                 <div className="space-y-1 text-left">
@@ -738,10 +850,10 @@ export default function Space({ showToast }) {
                 <div className="flex gap-2 pt-2">
                   <button 
                     type="button"
-                    onClick={() => setShowForm(false)}
+                    onClick={() => setActiveTab('katalog')}
                     className="flex-1 py-2.5 border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                   >
-                    Batal
+                    Kembali ke Katalog
                   </button>
                   <button 
                     type="submit"
@@ -753,41 +865,75 @@ export default function Space({ showToast }) {
                 </div>
               </form>
             ) : (
-              <div className="text-center py-8 space-y-3">
-                <HelpCircle className="w-10 h-10 text-slate-350 mx-auto" />
-                <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
-                  Belum ada alat laboratorium yang dipilih. Silakan klik tombol <strong className="text-slate-800 font-bold">Pinjam Barang</strong> pada alat yang ingin dipinjam terlebih dahulu.
-                </p>
+              /* PROMPT JIKA BELUM ADA ALAT DIPILIH */
+              <div className="text-center py-10 space-y-4">
+                <div className="w-16 h-16 bg-gold/10 text-gold-dark rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+                  <Box className="w-8 h-8 text-gold" />
+                </div>
+                <div className="space-y-1 max-w-sm mx-auto">
+                  <h3 className="text-base font-extrabold text-slate-900">Belum Ada Alat yang Dipilih</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed font-light">
+                    Silakan pilih alat yang ingin dipinjam dari Katalog Barang atau scan langsung QR code pada alat laboratorium.
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('katalog')}
+                    className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-gold to-gold-light hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-md shadow-gold/20 cursor-pointer"
+                  >
+                    <Box className="w-4 h-4" /> Buka Katalog Barang ({instruments.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenScanner(null)}
+                    className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 border border-slate-200 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <QrCode className="w-4 h-4 text-gold-dark" /> Scan QR Code
+                  </button>
+                </div>
               </div>
             )}
           </div>
+        </div>
+      )}
 
-          {/* LIVE STATUS PEMINJAMAN SAYA CARD */}
-          <div className="bg-white border border-gold-border rounded-2xl p-5 sm:p-6 shadow-sm space-y-4 text-left">
+      {/* ── TAB 3: STATUS & RIWAYAT PEMINJAMAN ── */}
+      {activeTab === 'status' && (
+        <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-200">
+          <div className="bg-white border border-gold-border rounded-2xl p-5 sm:p-7 shadow-sm space-y-4 text-left">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="space-y-0.5">
                 <div className="inline-flex items-center gap-1.5 text-[10px] text-gold-dark font-bold tracking-widest uppercase">
-                  <Clock className="w-3.5 h-3.5 text-gold" /> STATUS PERMOHONAN
+                  <Clock className="w-3.5 h-3.5 text-gold" /> STATUS PERMOHONAN REAL-TIME
                 </div>
-                <h3 className="text-sm font-bold text-slate-900">
-                  Status & Riwayat Peminjaman
+                <h3 className="text-base font-extrabold text-slate-900">
+                  Status & Riwayat Peminjaman Mahasiswa
                 </h3>
               </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-mono">
+              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-mono">
                 {borrowRequests.length} Permohonan
               </span>
             </div>
 
             {borrowRequests.length === 0 ? (
-              <div className="text-center py-6 space-y-2">
-                <FileText className="w-8 h-8 text-slate-300 mx-auto" />
-                <p className="text-xs font-bold text-slate-700">Belum ada permohonan</p>
-                <p className="text-[11px] text-slate-400 max-w-xs mx-auto leading-relaxed">
+              <div className="text-center py-10 space-y-3">
+                <FileText className="w-10 h-10 text-slate-300 mx-auto" />
+                <p className="text-xs font-bold text-slate-700">Belum ada riwayat permohonan</p>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
                   Permohonan peminjaman yang Anda ajukan akan muncul di sini secara real-time beserta status persetujuan (ACC) dari Operator Logistik.
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('katalog')}
+                  className="mt-2 px-4 py-2 bg-gold hover:brightness-110 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer inline-flex items-center gap-1.5"
+                >
+                  <Box className="w-3.5 h-3.5" /> Ajukan Peminjaman Pertama
+                </button>
               </div>
             ) : (
-              <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
                 {borrowRequests.map((req) => {
                   const isPending = req.status === 'Pending';
                   const isApproved = req.status === 'Approved';
@@ -797,7 +943,7 @@ export default function Space({ showToast }) {
                   return (
                     <div 
                       key={req.id} 
-                      className={`p-3.5 rounded-xl border transition-all ${
+                      className={`p-4 rounded-xl border transition-all ${
                         isApproved
                           ? 'bg-emerald-50/40 border-emerald-300/80 shadow-2xs'
                           : isPending
@@ -809,13 +955,13 @@ export default function Space({ showToast }) {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <h4 className="text-xs font-bold text-slate-900">{req.instrumentName}</h4>
+                          <h4 className="text-xs sm:text-sm font-bold text-slate-900">{req.instrumentName}</h4>
                           <span className="text-[10px] font-mono text-slate-500 bg-white/80 px-1.5 py-0.5 rounded border border-slate-200 mt-1 inline-block">
                             {req.instrumentId}
                           </span>
                         </div>
                         
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider shrink-0 border inline-flex items-center gap-1 ${
+                        <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider shrink-0 border inline-flex items-center gap-1 ${
                           isApproved
                             ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                             : isPending
@@ -835,22 +981,22 @@ export default function Space({ showToast }) {
                       </div>
 
                       {isApproved && (
-                        <div className="mt-2 p-2 bg-emerald-100/70 border border-emerald-200 rounded-lg text-[10px] text-emerald-800 font-semibold flex items-center gap-1.5">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <div className="mt-2 p-2.5 bg-emerald-100/70 border border-emerald-200 rounded-lg text-xs text-emerald-800 font-semibold flex items-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                           <span>Disetujui! Silakan ambil alat di Laboratorium / Ruang HIMA.</span>
                         </div>
                       )}
 
                       {isPending && (
-                        <div className="mt-2 p-2 bg-amber-100/70 border border-amber-200 rounded-lg text-[10px] text-amber-800 flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        <div className="mt-2 p-2.5 bg-amber-100/70 border border-amber-200 rounded-lg text-xs text-amber-800 flex items-center gap-1.5">
+                          <Clock className="w-4 h-4 text-amber-600 shrink-0" />
                           <span>Permohonan sedang menunggu persetujuan (ACC) Operator.</span>
                         </div>
                       )}
 
                       {isReturned && (
-                        <div className="mt-2 p-2 bg-slate-100 border border-slate-200 rounded-lg text-[10px] text-slate-600 flex items-center gap-1.5">
-                          <CheckCheck className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                        <div className="mt-2 p-2.5 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-600 flex items-center gap-1.5">
+                          <CheckCheck className="w-4 h-4 text-slate-500 shrink-0" />
                           <span>Alat telah berhasil dikembalikan ke inventaris.</span>
                         </div>
                       )}
@@ -861,8 +1007,7 @@ export default function Space({ showToast }) {
             )}
           </div>
         </div>
-
-      </div>
+      )}
 
       {/* Barcode Web camera Scanner Modal */}
       <ScannerModal
