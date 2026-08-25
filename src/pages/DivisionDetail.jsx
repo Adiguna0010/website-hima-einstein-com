@@ -113,6 +113,7 @@ export default function DivisionDetail({ showToast }) {
   const [vaultItems, setVaultItems] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [collabProjects, setCollabProjects] = useState([]);
+  const lastVaultRawRef = React.useRef('');
 
   const loadVaultItems = () => {
     const VAULT_VERSION = 'v6_clean_titles_no_storage';
@@ -138,13 +139,11 @@ export default function DivisionDetail({ showToast }) {
       localStorage.setItem('hima_vault_version', VAULT_VERSION);
       loadedVault = DEFAULT_DRIVE_VAULT;
     }
-    if (rawVault !== lastVaultRawRef.current) {
-      lastVaultRawRef.current = rawVault;
+    if (savedVault !== lastVaultRawRef.current) {
+      lastVaultRawRef.current = savedVault || '';
       setVaultItems(loadedVault);
     }
   };
-
-  const lastVaultRawRef = React.useRef('');
 
   useEffect(() => {
     // Vault Items

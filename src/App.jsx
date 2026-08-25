@@ -1,42 +1,30 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import Home from './pages/Home';
+import Sphere from './pages/Sphere';
+import DivisionDetail from './pages/DivisionDetail';
+import Market from './pages/Market';
+import Space from './pages/Space';
+import Secretariat from './pages/Secretariat';
+import Calendar from './pages/Calendar';
+import Mitra from './pages/Mitra';
+import Investor from './pages/Investor';
+import Finance from './pages/Finance';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import CabinetStructure from './pages/CabinetStructure';
+import Profile from './pages/Profile';
+import MasterAdmin from './pages/Dashboard/MasterAdmin';
+import DanusDashboard from './pages/Dashboard/DanusDashboard';
+import RistekDashboard from './pages/Dashboard/RistekDashboard';
+import LogistikDashboard from './pages/Dashboard/LogistikDashboard';
+import BendaharaDashboard from './pages/Dashboard/BendaharaDashboard';
+import DivisionDashboard from './pages/Dashboard/DivisionDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { Toast } from './components/Toast';
-
-// Code-split all routes using React.lazy for instant load and lightweight mobile rendering
-const Home = lazy(() => import('./pages/Home'));
-const Sphere = lazy(() => import('./pages/Sphere'));
-const DivisionDetail = lazy(() => import('./pages/DivisionDetail'));
-const Market = lazy(() => import('./pages/Market'));
-const Space = lazy(() => import('./pages/Space'));
-const Secretariat = lazy(() => import('./pages/Secretariat'));
-const Calendar = lazy(() => import('./pages/Calendar'));
-const Mitra = lazy(() => import('./pages/Mitra'));
-const Investor = lazy(() => import('./pages/Investor'));
-const Finance = lazy(() => import('./pages/Finance'));
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
-const CabinetStructure = lazy(() => import('./pages/CabinetStructure'));
-const Profile = lazy(() => import('./pages/Profile'));
-
-// Code-split all dashboards
-const MasterAdmin = lazy(() => import('./pages/Dashboard/MasterAdmin'));
-const DanusDashboard = lazy(() => import('./pages/Dashboard/DanusDashboard'));
-const RistekDashboard = lazy(() => import('./pages/Dashboard/RistekDashboard'));
-const LogistikDashboard = lazy(() => import('./pages/Dashboard/LogistikDashboard'));
-const BendaharaDashboard = lazy(() => import('./pages/Dashboard/BendaharaDashboard'));
-const DivisionDashboard = lazy(() => import('./pages/Dashboard/DivisionDashboard'));
-
-// Ultra-lightweight route loading fallback
-const RouteLoadingFallback = () => (
-  <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-3 text-slate-400">
-    <div className="w-8 h-8 border-2 border-gold/20 border-t-gold rounded-full animate-spin"></div>
-    <span className="text-[11px] font-mono tracking-widest uppercase">Memuat Halaman...</span>
-  </div>
-);
 
 // Route Guarding Component
 function ProtectedRoute({ children, allowedRoles }) {
@@ -91,21 +79,20 @@ export default function App() {
             
             {/* Main view spacing wrapper */}
             <main className="flex-grow">
-              <Suspense fallback={<RouteLoadingFallback />}>
-                <Routes>
-                  {/* Public Routes */}
-                  <Route path="/" element={<HomeWrapper showToast={showToast} />} />
-                  <Route path="/sphere" element={<Sphere showToast={showToast} />} />
-                  <Route path="/sphere/:divisionKey" element={<DivisionDetail showToast={showToast} />} />
-                  <Route path="/vault" element={<Navigate to="/sphere/ristek" replace />} />
-                  <Route path="/market" element={<Market showToast={showToast} />} />
-                  <Route path="/space" element={<Space showToast={showToast} />} />
-                  <Route path="/secretariat" element={<Secretariat showToast={showToast} />} />
-                  <Route path="/finance" element={<Finance showToast={showToast} />} />
-                  <Route path="/calendar" element={<Calendar showToast={showToast} />} />
-                  <Route path="/mitra" element={<Mitra />} />
-                  <Route path="/investor" element={<Investor />} />
-                  <Route path="/struktur" element={<CabinetStructure />} />
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<HomeWrapper showToast={showToast} />} />
+                <Route path="/sphere" element={<Sphere showToast={showToast} />} />
+                <Route path="/sphere/:divisionKey" element={<DivisionDetail showToast={showToast} />} />
+                <Route path="/vault" element={<Navigate to="/sphere/ristek" replace />} />
+                <Route path="/market" element={<Market showToast={showToast} />} />
+                <Route path="/space" element={<Space showToast={showToast} />} />
+                <Route path="/secretariat" element={<Secretariat showToast={showToast} />} />
+                <Route path="/finance" element={<Finance showToast={showToast} />} />
+                <Route path="/calendar" element={<Calendar showToast={showToast} />} />
+                <Route path="/mitra" element={<Mitra />} />
+                <Route path="/investor" element={<Investor />} />
+                <Route path="/struktur" element={<CabinetStructure />} />
                   
                   {/* Auth Routes */}
                   <Route path="/login" element={<Login showToast={showToast} />} />
@@ -204,7 +191,6 @@ export default function App() {
                     }
                   />
                 </Routes>
-              </Suspense>
             </main>
 
             <Footer />
