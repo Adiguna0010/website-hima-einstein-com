@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ShoppingBag, CheckCircle, Clock, Trash2, ArrowUpRight, Package, 
   Plus, TrendingUp, TrendingDown, Coins, Wallet, FileSpreadsheet,
-  Edit3, Image, Upload, Eye, X, Sparkles, Check, Search, RefreshCw
+  Edit3, Image, Upload, Eye, X, Check, Search, RefreshCw
 } from 'lucide-react';
 import { DEFAULT_MARKET_PRODUCTS } from '../Market';
 
@@ -642,9 +642,6 @@ export default function DanusDashboard({ showToast }) {
             <div className="lg:col-span-5 bg-white border border-gold-border rounded-2xl p-6 shadow-sm space-y-5">
               <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
                 <div>
-                  <div className="inline-flex items-center gap-1 text-[10px] text-gold-dark font-bold tracking-widest uppercase">
-                    <Sparkles className="w-3.5 h-3.5 text-gold" /> {editingProductId ? 'Mode Edit Produk' : 'Katalog Market'}
-                  </div>
                   <h3 className="text-base font-extrabold text-slate-900">
                     {editingProductId ? 'Edit Data Produk' : 'Input Produk Baru'}
                   </h3>
