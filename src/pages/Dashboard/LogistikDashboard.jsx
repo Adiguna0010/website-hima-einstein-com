@@ -2343,33 +2343,36 @@ export default function LogistikDashboard({ showToast }) {
           <div className="space-y-3">
             {/* PRINT-ONLY OFFICIAL KOP SURAT HEADER */}
             <div className="hidden print:block pb-2 mb-3">
-              <div className="flex items-center justify-between gap-4 pb-2 border-b-2 border-slate-900">
-                <img 
-                  src="/Media/Logo HIma/logo hima warna transparan.png" 
-                  alt="Logo HIMA Einsten" 
-                  className="h-20 sm:h-24 w-auto object-contain shrink-0" 
-                  onError={(e) => {
-                    e.target.src = "/logo-hima-transparan.png";
-                  }}
-                />
-                <div className="text-right flex flex-col justify-center">
-                  <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-950 leading-tight">
+              <div className="flex items-center justify-between gap-6 pb-2.5 border-b-2 border-slate-950">
+                <div className="flex items-center">
+                  <img 
+                    src="/Media/Logo HIma/logo hima warna transparan.png" 
+                    alt="Logo HIMA Einsten" 
+                    className="h-24 sm:h-28 print:h-24 w-auto max-w-[280px] object-contain shrink-0" 
+                    style={{ height: '90px', maxHeight: '95px', width: 'auto' }}
+                    onError={(e) => {
+                      e.target.src = "/logo-hima-transparan.png";
+                    }}
+                  />
+                </div>
+                <div className="text-right flex flex-col justify-center space-y-0.5">
+                  <h2 className="text-xs sm:text-sm print:text-sm font-black uppercase tracking-wider text-slate-950 leading-snug">
                     HIMPUNAN MAHASISWA ELEKTRONIKA INSTRUMENTASI
                   </h2>
-                  <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-950 leading-tight">
+                  <h3 className="text-xs sm:text-sm print:text-sm font-black uppercase tracking-wider text-slate-950 leading-snug">
                     POLITEKNIK TEKNOLOGI NUKLIR INDONESIA
                   </h3>
-                  <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-950 leading-tight">
+                  <h4 className="text-xs sm:text-sm print:text-sm font-black uppercase tracking-wider text-slate-950 leading-snug">
                     BADAN RISET DAN INOVASI NASIONAL
                   </h4>
                 </div>
               </div>
 
-              <div className="text-center pt-2">
-                <h1 className="text-sm sm:text-base font-black uppercase tracking-widest text-slate-900">
+              <div className="text-center pt-2.5">
+                <h1 className="text-sm sm:text-base print:text-base font-black uppercase tracking-widest text-slate-900">
                   QR CODE ASET DAN LOGISTIK
                 </h1>
-                <p className="text-[9px] text-slate-500 font-mono mt-0.5">
+                <p className="text-[10px] text-slate-600 font-mono mt-0.5 font-semibold">
                   Total: {instruments.length} Unit Inventaris • Dicetak: {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
               </div>
