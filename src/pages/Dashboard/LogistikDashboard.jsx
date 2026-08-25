@@ -14,8 +14,8 @@ export default function LogistikDashboard({ showToast }) {
   const [instruments, setInstruments] = useState([]);
   const [borrowRequests, setBorrowRequests] = useState([]);
 
-  // Active Tab Panel: 'overview' | 'database' | 'input' | 'qr' | 'acc'
-  const [activeTab, setActiveTab] = useState('database');
+  // Active Tab Panel: 'overview' | 'database' | 'input' | 'qr'
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Filter States
   const [selectedCategory, setSelectedCategory] = useState('Semua');
@@ -121,7 +121,19 @@ export default function LogistikDashboard({ showToast }) {
       const savedReqs = localStorage.getItem('hima_borrow_requests');
       if (savedReqs) {
         try {
-          setBorrowRequests(JSON.parse(savedReqs));
+          let parsedReqs = JSON.parse(savedReqs);
+          if (Array.isArray(parsedReqs)) {
+            parsedReqs = parsedReqs.map(r => {
+              if (r.instrumentId === 'HIMA-ARDU-001') return { ...r, instrumentId: 'ASL-ELK-10-2025' };
+              if (r.instrumentId === 'HIMA-GERI-002') return { ...r, instrumentId: 'ASL-ELK-02-2025' };
+              if (r.instrumentId === 'HIMA-SOLD-003') return { ...r, instrumentId: 'ASL-ELK-08-2025' };
+              if (r.instrumentId === 'HIMA-TIMA-004') return { ...r, instrumentId: 'ASL-ELK-07-2025' };
+              return r;
+            });
+            setBorrowRequests(parsedReqs);
+          } else {
+            setBorrowRequests([]);
+          }
         } catch (e) {
           setBorrowRequests([]);
         }
@@ -855,7 +867,7 @@ export default function LogistikDashboard({ showToast }) {
             onClick={() => {
               if (window.confirm('Sinkronkan ulang seluruh data inventaris ke data master Rekapitulasi Inventaris HIMA Excel (140 barang)?')) {
                 localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
-                localStorage.setItem('hima_inventory_data_version', 'v2026_rekap_master_140');
+                localStorage.setItem('hima_inventory_data_version', 'v2026_rekap_master_140_v2');
                 setInstruments(DEFAULT_INVENTORY_ITEMS);
                 broadcastSync('inventory', DEFAULT_INVENTORY_ITEMS);
                 showToast('Database inventaris berhasil disinkronkan ulang ke master data Excel (140 barang)!', 'success');
@@ -881,11 +893,16 @@ export default function LogistikDashboard({ showToast }) {
         <button
           type="button"
           onClick={() => setActiveTab('overview')}
-          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 shrink-0 cursor-pointer ${
+          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 shrink-0 cursor-pointer ${
             activeTab === 'overview' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
           }`}
         >
-          Dashboard Utama Logistik
+          Dashboard Utama & ACC
+          {pendingRequestsCount > 0 && (
+            <span className="bg-rose-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse">
+              {pendingRequestsCount} Bth ACC
+            </span>
+          )}
         </button>
 
         <button
@@ -954,7 +971,7 @@ export default function LogistikDashboard({ showToast }) {
       )}
 
       {/* ========================================================================= */}
-      {/* PANEL OVERVIEW: DASHBOARD UTAMA LOGISTIK & RINGKASAN METRICS */}
+      {/* PANEL OVERVIEW: DASHBOARD UTAMA LOGISTIK & ACC PEMINJAMAN TERPADU */}
       {/* ========================================================================= */}
       {activeTab === 'overview' && (
         <div className="space-y-6 animate-fade-in">
@@ -1000,49 +1017,188 @@ export default function LogistikDashboard({ showToast }) {
             </div>
 
             <div 
-              onClick={() => setActiveTab('acc')}
-              className="p-4 bg-white border border-gold-border rounded-2xl flex items-center gap-3.5 shadow-sm hover:border-gold cursor-pointer transition-all"
+              className={`p-4 bg-white border rounded-2xl flex items-center gap-3.5 shadow-sm transition-all ${
+                pendingRequestsCount > 0 ? 'border-amber-400 bg-amber-50/20' : 'border-gold-border'
+              }`}
             >
-              <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 shrink-0">
-                <Radio className="w-5 h-5 animate-pulse" />
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                pendingRequestsCount > 0 ? 'bg-amber-100 text-amber-700 border border-amber-300 animate-pulse' : 'bg-rose-50 border border-rose-200 text-rose-600'
+              }`}>
+                <Radio className="w-5 h-5" />
               </div>
               <div>
-                <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sedang Dipinjam</span>
-                <span className="text-lg font-extrabold text-rose-600 font-heading">{borrowedCount} Unit</span>
+                <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Menunggu ACC</span>
+                <span className={`text-lg font-extrabold font-heading ${pendingRequestsCount > 0 ? 'text-amber-600' : 'text-slate-900'}`}>
+                  {pendingRequestsCount} Permohonan
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Quick Access Card */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* COMBINED ACC PERMOHONAN PEMINJAMAN SECTION IN MAIN DASHBOARD */}
+          <div className="space-y-4 pt-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-gold animate-ping"></span>
+                  <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-gold" /> ACC Permohonan Peminjaman Alat
+                  </h3>
+                  {pendingRequestsCount > 0 && (
+                    <span className="px-2.5 py-0.5 text-[10px] font-extrabold rounded-full bg-rose-600 text-white animate-pulse">
+                      {pendingRequestsCount} Menunggu ACC
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 font-light">
+                  Persetujuan permohonan peminjaman dari mahasiswa. Ketika di-ACC, status alat otomatis menjadi Dipinjam dan notifikasi terkirim.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <select
+                  value={borrowReqFilter}
+                  onChange={(e) => setBorrowReqFilter(e.target.value)}
+                  className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer shadow-2xs font-semibold"
+                >
+                  <option value="Semua">Semua Status Permohonan ({borrowRequests.length})</option>
+                  <option value="Pending">Menunggu ACC ({pendingRequestsCount})</option>
+                  <option value="Approved">Disetujui ({borrowRequests.filter(r => r.status === 'Approved').length})</option>
+                  <option value="Rejected">Ditolak ({borrowRequests.filter(r => r.status === 'Rejected').length})</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="bg-white border border-gold-border/70 rounded-2xl overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50/90 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                      <th className="px-6 py-3.5">Peminjam</th>
+                      <th className="px-6 py-3.5">Alat Lab & Kode</th>
+                      <th className="px-6 py-3.5">Tanggal Pengajuan</th>
+                      <th className="px-6 py-3.5">Status Otoritas</th>
+                      <th className="px-6 py-3.5 text-center">Tindakan ACC</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 text-xs text-slate-700">
+                    {filteredBorrowRequests.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="px-6 py-12 text-center text-slate-400">
+                          <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                          <p className="font-bold text-slate-600">Tidak ada permohonan dengan filter ini</p>
+                          <p className="text-xs text-slate-400">Permohonan peminjaman dari mahasiswa melalui katalog Space akan muncul otomatis di sini.</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredBorrowRequests.map((req) => (
+                        <tr key={req.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="px-6 py-4">
+                            <p className="font-bold text-slate-900 text-sm">{req.borrowerName}</p>
+                            {req.prodi && req.angkatan ? (
+                              <p className="text-[11px] text-slate-500 font-mono">{req.prodi} ({req.angkatan})</p>
+                            ) : (
+                              <p className="text-[11px] text-slate-500 font-mono">NIM: {req.borrowerNim}</p>
+                            )}
+                            {req.phone && (
+                              <a
+                                href={`https://wa.me/${req.phone.replace(/[^0-9]/g, '').replace(/^0/, '62')}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md text-[10px] font-bold hover:bg-emerald-100 transition-colors"
+                              >
+                                💬 WA: {req.phone}
+                              </a>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="font-bold text-slate-900">{req.instrumentName}</p>
+                            <span className="inline-block px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-mono text-[10px] mt-0.5">
+                              {req.instrumentId}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-slate-600 font-mono text-[11px]">{req.date}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider inline-flex items-center gap-1.5 ${
+                              req.status === 'Pending'
+                                ? 'bg-amber-50 text-amber-700 border-amber-500/30'
+                                : req.status === 'Approved'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-500/30'
+                                : 'bg-rose-50 text-rose-700 border-rose-500/30'
+                            }`}>
+                              {req.status === 'Pending' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>}
+                              {req.status === 'Pending' ? 'Menunggu ACC' : req.status === 'Approved' ? 'Disetujui (ACC)' : 'Ditolak'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              {req.status === 'Pending' ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleApproveRequest(req.id)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-300 hover:bg-emerald-600 hover:text-white transition-all text-emerald-700 font-bold rounded-xl text-xs active:scale-95 cursor-pointer shadow-2xs"
+                                  >
+                                    <UserCheck className="w-4 h-4" /> ACC / Setujui
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRejectRequest(req.id)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-300 hover:bg-rose-600 hover:text-white transition-all text-rose-700 font-bold rounded-xl text-xs active:scale-95 cursor-pointer shadow-2xs"
+                                  >
+                                    <UserX className="w-4 h-4" /> Tolak
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteRequest(req.id)}
+                                  className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all text-slate-600 font-semibold rounded-xl text-xs active:scale-95 cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" /> Hapus
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Access Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
             <div 
               onClick={() => setActiveTab('database')}
-              className="p-6 bg-white border border-slate-200 rounded-3xl space-y-2 hover:border-gold transition-all cursor-pointer shadow-xs"
+              className="p-5 bg-white border border-slate-200 rounded-2xl space-y-2 hover:border-gold hover:shadow-sm transition-all cursor-pointer shadow-2xs"
             >
-              <Box className="w-6 h-6 text-gold" />
+              <Box className="w-5 h-5 text-gold" />
               <h3 className="font-bold text-slate-900 text-sm">Panel Database Inventaris</h3>
-              <p className="text-xs text-slate-500">Cari barang, edit stok, ganti foto, ubah kondisi (Baik/Cukup/Rusak), dan ubah status.</p>
-              <span className="text-xs font-bold text-gold-dark block pt-2">Buka Panel Database &rarr;</span>
+              <p className="text-xs text-slate-500 leading-relaxed">Cari 140 barang inventaris, edit stok, ganti foto, ubah kondisi, dan status ketersediaan.</p>
+              <span className="text-xs font-bold text-gold-dark block pt-1">Buka Database ({instruments.length} Item) &rarr;</span>
             </div>
 
             <div 
               onClick={() => setActiveTab('input')}
-              className="p-6 bg-white border border-slate-200 rounded-3xl space-y-2 hover:border-gold transition-all cursor-pointer shadow-xs"
+              className="p-5 bg-white border border-slate-200 rounded-2xl space-y-2 hover:border-gold hover:shadow-sm transition-all cursor-pointer shadow-2xs"
             >
-              <Plus className="w-6 h-6 text-gold" />
+              <Plus className="w-5 h-5 text-gold" />
               <h3 className="font-bold text-slate-900 text-sm">Input Barang Manual & Batch</h3>
-              <p className="text-xs text-slate-500">Formulir pendaftaran barang satu per satu atau import file Excel/CSV secara otomatis.</p>
-              <span className="text-xs font-bold text-gold-dark block pt-2">Buka Panel Input &rarr;</span>
+              <p className="text-xs text-slate-500 leading-relaxed">Formulir pendaftaran barang baru atau import file Excel/CSV secara otomatis.</p>
+              <span className="text-xs font-bold text-gold-dark block pt-1">Buka Formulir Input &rarr;</span>
             </div>
 
             <div 
-              onClick={() => setActiveTab('acc')}
-              className="p-6 bg-white border border-slate-200 rounded-3xl space-y-2 hover:border-gold transition-all cursor-pointer shadow-xs"
+              onClick={() => setActiveTab('qr')}
+              className="p-5 bg-white border border-slate-200 rounded-2xl space-y-2 hover:border-gold hover:shadow-sm transition-all cursor-pointer shadow-2xs"
             >
-              <FileText className="w-6 h-6 text-gold" />
-              <h3 className="font-bold text-slate-900 text-sm">ACC Peminjaman Alat ({pendingRequestsCount} Pending)</h3>
-              <p className="text-xs text-slate-500">Persetujuan permohonan peminjaman alat laboratorium dari mahasiswa.</p>
-              <span className="text-xs font-bold text-gold-dark block pt-2">Buka Panel ACC &rarr;</span>
+              <QrCode className="w-5 h-5 text-gold" />
+              <h3 className="font-bold text-slate-900 text-sm">Batch & Print QR Code</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Generate kode QR untuk label inventaris dan download seluruhnya dalam file ZIP.</p>
+              <span className="text-xs font-bold text-gold-dark block pt-1">Buka Panel QR Code &rarr;</span>
             </div>
           </div>
         </div>
@@ -1053,6 +1209,26 @@ export default function LogistikDashboard({ showToast }) {
       {/* ========================================================================= */}
       {activeTab === 'database' && (
         <div className="space-y-5 animate-fade-in">
+          
+          {/* Pending ACC Alert Banner in Database Tab */}
+          {pendingRequestsCount > 0 && (
+            <div className="p-3.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900 shadow-2xs animate-fade-in">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
+                <div>
+                  <span className="font-bold text-amber-950">Pemberitahuan ACC: </span>
+                  <span>Terdapat <strong>{pendingRequestsCount} permohonan peminjaman baru</strong> dari mahasiswa yang menunggu persetujuan (ACC)!</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('overview')}
+                className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 flex items-center gap-1.5 self-start sm:self-auto"
+              >
+                <UserCheck className="w-3.5 h-3.5" /> Buka Panel ACC &rarr;
+              </button>
+            </div>
+          )}
           
           {/* Classification Mode Switcher */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
