@@ -1082,22 +1082,6 @@ export default function LogistikDashboard({ showToast }) {
         <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
-            onClick={() => {
-              if (window.confirm('Sinkronkan ulang seluruh data inventaris ke data master Rekapitulasi Inventaris HIMA Excel (140 barang)?')) {
-                localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
-                localStorage.setItem('hima_inventory_data_version', 'v2026_rekap_master_140_v2');
-                setInstruments(DEFAULT_INVENTORY_ITEMS);
-                broadcastSync('inventory', DEFAULT_INVENTORY_ITEMS);
-                showToast('Database inventaris berhasil disinkronkan ulang ke master data Excel (140 barang)!', 'success');
-              }
-            }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark text-xs font-bold border border-gold/30 shadow-xs transition-all active:scale-95 cursor-pointer"
-          >
-            <RefreshCw className="w-3.5 h-3.5" /> Sinkron Data Master Excel (140)
-          </button>
-
-          <button
-            type="button"
             onClick={handleExportLiveInventory}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
           >
