@@ -478,7 +478,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+      <nav className={`print:hidden fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled 
           ? 'bg-white/95 backdrop-blur-md border-b border-gold-border py-1 shadow-md' 
           : 'bg-white/40 backdrop-blur-md border-b border-gold-border/20 py-1.5'

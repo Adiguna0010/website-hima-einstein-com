@@ -4,7 +4,7 @@ import { ExternalLink, Globe } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-100 border-t border-gold-border/40 py-12 mt-20 relative overflow-hidden">
+    <footer className="print:hidden bg-slate-100 border-t border-gold-border/40 py-12 mt-20 relative overflow-hidden">
       {/* Decorative Blur Orb */}
       <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-gold/5 glow-orb"></div>
 

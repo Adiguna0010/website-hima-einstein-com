@@ -1036,10 +1036,10 @@ export default function LogistikDashboard({ showToast }) {
   });
 
   return (
-    <div className="pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 text-left text-slate-800">
+    <div className="pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 text-left text-slate-800 print:pt-0 print:pb-0 print:space-y-3 print:max-w-none print:px-0">
       
       {/* Dashboard Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-5 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-5 gap-4 print:hidden">
         <div className="space-y-1">
           <div className="inline-flex items-center gap-1.5 text-xs text-gold-dark font-bold tracking-widest uppercase">
             <Box className="w-3.5 h-3.5 text-gold" /> LOGISTIK BACKOFFICE PANEL
@@ -1080,7 +1080,7 @@ export default function LogistikDashboard({ showToast }) {
       </div>
 
       {/* RISTEK-STYLE TOP TAB MENU (UNDERLINE STYLE) */}
-      <div className="flex overflow-x-auto border-b border-slate-200 gap-1 pb-1">
+      <div className="flex overflow-x-auto border-b border-slate-200 gap-1 pb-1 print:hidden">
         <button
           type="button"
           onClick={() => setActiveTab('overview')}
@@ -1144,7 +1144,7 @@ export default function LogistikDashboard({ showToast }) {
 
       {/* Progress Bar for ZIP Generation */}
       {isGeneratingZip && (
-        <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-xl flex flex-col gap-2 animate-fade-in border border-gold/30">
+        <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-xl flex flex-col gap-2 animate-fade-in border border-gold/30 print:hidden">
           <div className="flex items-center justify-between text-xs font-bold">
             <span className="flex items-center gap-2">
               <RefreshCw className="w-4 h-4 text-gold animate-spin" />
@@ -2297,7 +2297,7 @@ export default function LogistikDashboard({ showToast }) {
       {/* ========================================================================= */}
       {activeTab === 'qr' && (
         <div className="space-y-6 animate-fade-in">
-          <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-gold/30 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-gold/30 flex flex-col md:flex-row md:items-center justify-between gap-6 print:hidden">
             <div className="space-y-2 max-w-xl">
               <h2 className="text-2xl font-black font-heading text-white">
                 Download & Cetak QR Code Inventaris Sekaligus
@@ -2330,34 +2330,53 @@ export default function LogistikDashboard({ showToast }) {
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            {/* PRINT-ONLY OFFICIAL HEADER */}
+            <div className="hidden print:block text-center border-b-2 border-slate-800 pb-3 mb-4">
+              <div className="flex items-center justify-center gap-3 mb-1">
+                <img src="/logo-hima-transparan.png" alt="Logo HIMA" className="h-10 w-auto object-contain" />
+                <div className="w-0.5 h-8 bg-slate-400"></div>
+                <div className="text-left">
+                  <h1 className="text-sm font-black tracking-wider text-slate-900 uppercase">
+                    QR CODE ASET DAN LOGISTIK
+                  </h1>
+                  <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                    HIMA EINSTEIN • POLITEKNIK TEKNOLOGI NUKLIR INDONESIA
+                  </p>
+                </div>
+              </div>
+              <p className="text-[9px] text-slate-500 font-mono">
+                Total: {instruments.length} Unit Inventaris • Dicetak: {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between print:hidden">
               <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
                 <QrCode className="w-4 h-4 text-gold" /> Preview Lembar Stiker QR ({instruments.length} Barang)
               </h3>
               <span className="text-xs text-slate-500">Format stiker ukuran standar A4</span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 print:grid-cols-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 print:grid-cols-4 print:gap-2.5">
               {instruments.map((inst) => (
                 <div 
                   key={inst.id}
-                  className="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center shadow-xs hover:border-gold/50 transition-all group"
+                  className="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center shadow-xs hover:border-gold/50 transition-all group print:border-slate-400 print:rounded-xl print:p-2 print:shadow-none print:break-inside-avoid"
                 >
-                  <div className="w-full text-left border-b border-slate-100 pb-1.5 mb-2">
+                  <div className="w-full text-left border-b border-slate-100 pb-1.5 mb-2 print:pb-1 print:mb-1">
                     <p className="font-bold text-slate-900 text-xs truncate" title={inst.name}>{inst.name}</p>
                     <p className="font-mono text-[10px] text-slate-500 font-bold">{inst.id}</p>
                   </div>
 
-                  <div className="p-2 bg-white border border-slate-100 rounded-xl mb-2 group-hover:scale-105 transition-transform">
+                  <div className="p-2 bg-white border border-slate-100 rounded-xl mb-2 group-hover:scale-105 transition-transform print:p-1 print:border-none print:mb-1">
                     <img 
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(inst.id)}`}
                       alt={inst.name}
-                      className="w-24 h-24 object-contain"
+                      className="w-24 h-24 object-contain print:w-20 print:h-20"
                       loading="lazy"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between w-full mt-auto pt-1 text-[10px] text-slate-500">
+                  <div className="flex items-center justify-between w-full mt-auto pt-1 text-[10px] text-slate-500 print:text-[9px]">
                     <span className="font-bold text-gold-dark truncate">{inst.category}</span>
                     <span>Stok: {inst.quantity || 1}</span>
                   </div>
@@ -2365,7 +2384,7 @@ export default function LogistikDashboard({ showToast }) {
                   <button
                     type="button"
                     onClick={() => setSelectedQrInstrument(inst)}
-                    className="w-full mt-2 py-1 bg-slate-50 hover:bg-gold/10 hover:text-gold-dark text-slate-600 rounded-lg text-[10px] font-bold border border-slate-200 transition-colors cursor-pointer"
+                    className="w-full mt-2 py-1 bg-slate-50 hover:bg-gold/10 hover:text-gold-dark text-slate-600 rounded-lg text-[10px] font-bold border border-slate-200 transition-colors cursor-pointer print:hidden"
                   >
                     Buka QR Card
                   </button>
