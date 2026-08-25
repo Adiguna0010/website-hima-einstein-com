@@ -744,7 +744,7 @@ export default function LogistikDashboard({ showToast }) {
         id: Date.now() + idx,
         recipientEmail: email,
         recipientNim: req.borrowerNim || '022400042',
-        message: `✅ Permohonan peminjaman alat "${req.instrumentName}" (${req.instrumentId}) Anda telah DISETUJUI (ACC) oleh Operator Logistik! Silakan ambil alat di Laboratorium / Ruang HIMA Einstein.`,
+        message: `✅ Permohonan peminjaman alat "${req.instrumentName}" (${req.instrumentId}) Anda telah DISETUJUI (ACC) oleh Operator Logistik! Silakan ambil alat di Laboratorium / Ruang HIMA Einsten.`,
         read: false,
         timestamp: Date.now() + idx
       });
@@ -864,7 +864,7 @@ export default function LogistikDashboard({ showToast }) {
         id: Date.now() + idx,
         recipientEmail: email,
         recipientNim: req.borrowerNim || '022400042',
-        message: `📦 Pengembalian alat "${req.instrumentName}" (${req.instrumentId}) telah DITERIMA dan diverifikasi oleh Operator Logistik. Terima kasih telah meminjam dan menjaga alat inventaris HIMA Einstein.`,
+        message: `📦 Pengembalian alat "${req.instrumentName}" (${req.instrumentId}) telah DITERIMA dan diverifikasi oleh Operator Logistik. Terima kasih telah meminjam dan menjaga alat inventaris HIMA Einsten.`,
         read: false,
         timestamp: Date.now() + idx
       });
