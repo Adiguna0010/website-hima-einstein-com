@@ -245,7 +245,7 @@ function mergeUsers(cloudUsers) {
   // 1. Seed defaults
   DEFAULT_USERS.forEach(u => {
     const key = getUserKey(u);
-    if (key) map.set(key, { ...u });
+    if (key) map.set(key, { ...u, role: u.role === 'Anggota Biasa' ? 'Anggota Hima' : (u.role || 'Anggota Hima') });
   });
 
   // 2. Overlay / add cloud users
@@ -255,7 +255,17 @@ function mergeUsers(cloudUsers) {
       const key = getUserKey(u);
       if (key) {
         const existing = map.get(key) || {};
-        map.set(key, { ...existing, ...u });
+        const incomingRole = u.role === 'Anggota Biasa' ? 'Anggota Hima' : (u.role || 'Anggota Hima');
+        const existingRole = existing.role === 'Anggota Biasa' ? 'Anggota Hima' : (existing.role || 'Anggota Hima');
+
+        let finalRole = incomingRole;
+        if (incomingRole === 'Anggota Hima' && existingRole && existingRole !== 'Anggota Hima' && !u.isExplicitDemote) {
+          finalRole = existingRole;
+        } else if (u.roleUpdatedAt && existing.roleUpdatedAt) {
+          finalRole = u.roleUpdatedAt >= existing.roleUpdatedAt ? incomingRole : existingRole;
+        }
+
+        map.set(key, { ...existing, ...u, role: finalRole });
       }
     });
   }

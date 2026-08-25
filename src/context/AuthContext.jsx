@@ -151,14 +151,14 @@ export const AuthProvider = ({ children }) => {
     return `name_${(u.name || '').trim().toLowerCase()}`;
   };
 
-  // Helper to merge arrays of users without duplicates
+  // Helper to merge arrays of users without duplicates and preserve latest roles
   const mergeUserLists = (baseList, incomingList) => {
     const userMap = new Map();
     (baseList || []).forEach(u => {
       if (u) {
         const key = getUserKey(u);
         if (key) {
-          const role = u.role === 'Anggota Biasa' ? 'Anggota Hima' : u.role;
+          const role = u.role === 'Anggota Biasa' ? 'Anggota Hima' : (u.role || 'Anggota Hima');
           userMap.set(key, { ...u, role });
         }
       }
@@ -167,11 +167,19 @@ export const AuthProvider = ({ children }) => {
       if (u) {
         const key = getUserKey(u);
         if (key) {
-          const defaultUser = userMap.get(key) || {};
-          const merged = { ...defaultUser, ...u };
-          if (merged.role === 'Anggota Biasa') {
-            merged.role = 'Anggota Hima';
+          const existingUser = userMap.get(key) || {};
+          const incomingRole = u.role === 'Anggota Biasa' ? 'Anggota Hima' : (u.role || 'Anggota Hima');
+          const existingRole = existingUser.role === 'Anggota Biasa' ? 'Anggota Hima' : (existingUser.role || 'Anggota Hima');
+
+          let finalRole = incomingRole;
+          // If incoming role is default 'Anggota Hima' but existing user has an assigned Operator/Admin/BPH role, preserve the assigned role!
+          if (incomingRole === 'Anggota Hima' && existingRole && existingRole !== 'Anggota Hima' && !u.isExplicitDemote) {
+            finalRole = existingRole;
+          } else if (u.roleUpdatedAt && existingUser.roleUpdatedAt) {
+            finalRole = u.roleUpdatedAt >= existingUser.roleUpdatedAt ? incomingRole : existingRole;
           }
+
+          const merged = { ...existingUser, ...u, role: finalRole };
           userMap.set(key, merged);
         }
       }
@@ -268,7 +276,8 @@ export const AuthProvider = ({ children }) => {
       const cloudData = await fetchFromAnyCloud();
       if (cloudData) {
         const currentLocal = JSON.parse(localStorage.getItem('hima_users') || '[]');
-        const merged = mergeUserLists(DEFAULT_USERS, mergeUserLists(currentLocal, cloudData.users));
+        // Overlay local user changes onto cloud data so local role updates are never lost
+        const merged = mergeUserLists(DEFAULT_USERS, mergeUserLists(cloudData.users, currentLocal));
         
         setUsers(merged);
         localStorage.setItem('hima_users', JSON.stringify(merged));
@@ -282,6 +291,9 @@ export const AuthProvider = ({ children }) => {
           setLoginLogs(uniqueLogs);
           localStorage.setItem('hima_login_logs', JSON.stringify(uniqueLogs));
         }
+
+        // Push back merged state to cloud
+        saveToAnyCloud(merged);
 
         setLastSyncedAt(new Date());
 
@@ -647,10 +659,16 @@ export const AuthProvider = ({ children }) => {
     const searchTarget = (emailOrNim || '').trim();
     const normalizedTarget = normalizeEmail(searchTarget);
     let targetUser = null;
+    const now = Date.now();
 
     const updatedUsers = users.map(u => {
       if ((u.email && normalizeEmail(u.email) === normalizedTarget) || (u.nim && String(u.nim).trim() === searchTarget)) {
-        targetUser = { ...u, role };
+        targetUser = { 
+          ...u, 
+          role, 
+          roleUpdatedAt: now,
+          isExplicitDemote: role === 'Anggota Hima' || role === 'Anggota Biasa'
+        };
         return targetUser;
       }
       return u;
@@ -659,7 +677,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('hima_users', JSON.stringify(updatedUsers));
 
     if (currentUser && ((currentUser.email && normalizeEmail(currentUser.email) === normalizedTarget) || (currentUser.nim && String(currentUser.nim).trim() === searchTarget))) {
-      const updatedSelf = { ...currentUser, role };
+      const updatedSelf = { ...currentUser, role, roleUpdatedAt: now };
       setCurrentUser(updatedSelf);
       sessionStorage.setItem('hima_current_user', JSON.stringify(updatedSelf));
     }
@@ -667,7 +685,6 @@ export const AuthProvider = ({ children }) => {
     // Send notification to the user about their role change
     if (targetUser && targetUser.email) {
       try {
-        const now = Date.now();
         const savedNotifs = JSON.parse(localStorage.getItem('hima_notifications') || '[]');
         const roleNotif = {
           id: `notif_role_${now}_${Math.random().toString(36).slice(2, 6)}`,
@@ -695,7 +712,7 @@ export const AuthProvider = ({ children }) => {
     setLoginLogs(updatedLogs);
     localStorage.setItem('hima_login_logs', JSON.stringify(updatedLogs));
 
-    saveToAnyCloud(updatedUsers);
+    saveToAnyCloud(updatedUsers, updatedLogs);
   };
 
   const sendOTP = async (phone, code) => {
