@@ -2330,23 +2330,35 @@ export default function LogistikDashboard({ showToast }) {
           </div>
 
           <div className="space-y-3">
-            {/* PRINT-ONLY OFFICIAL HEADER */}
-            <div className="hidden print:block text-center border-b-2 border-slate-800 pb-3 mb-4">
-              <div className="flex items-center justify-center gap-3 mb-1">
-                <img src="/logo-hima-transparan.png" alt="Logo HIMA" className="h-10 w-auto object-contain" />
-                <div className="w-0.5 h-8 bg-slate-400"></div>
-                <div className="text-left">
-                  <h1 className="text-sm font-black tracking-wider text-slate-900 uppercase">
-                    QR CODE ASET DAN LOGISTIK
-                  </h1>
-                  <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-                    HIMA EINSTEIN • POLITEKNIK TEKNOLOGI NUKLIR INDONESIA
-                  </p>
+            {/* PRINT-ONLY OFFICIAL KOP SURAT HEADER */}
+            <div className="hidden print:block pb-3 mb-4">
+              <div className="flex items-center justify-between gap-4 pb-2 border-b-2 border-slate-900">
+                <img 
+                  src="/logo-hima-transparan.png" 
+                  alt="Logo HIMA Einsten" 
+                  className="h-14 w-auto object-contain shrink-0" 
+                />
+                <div className="text-right">
+                  <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 leading-tight">
+                    HIMPUNAN MAHASISWA ELEKTRONIKA INSTRUMENTASI
+                  </h2>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 leading-tight">
+                    POLITEKNIK TEKNOLOGI NUKLIR INDONESIA
+                  </h3>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 leading-tight">
+                    BADAN RISET DAN INOVASI NASIONAL
+                  </h4>
                 </div>
               </div>
-              <p className="text-[9px] text-slate-500 font-mono">
-                Total: {instruments.length} Unit Inventaris • Dicetak: {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </p>
+
+              <div className="text-center pt-2.5">
+                <h1 className="text-sm font-black uppercase tracking-widest text-slate-900">
+                  QR CODE ASET DAN LOGISTIK
+                </h1>
+                <p className="text-[9px] text-slate-500 font-mono mt-0.5">
+                  Total: {instruments.length} Unit Inventaris • Dicetak: {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+              </div>
             </div>
 
             <div className="flex items-center justify-between print:hidden">
