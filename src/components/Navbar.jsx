@@ -128,8 +128,23 @@ export default function Navbar() {
       const saved = localStorage.getItem('hima_notifications');
       let filtered = [];
       if (saved) {
-        const parsed = JSON.parse(saved);
-        filtered = parsed.filter(n => normalizeEmail(n.recipientEmail) === normalizeEmail(currentUser.email));
+        try {
+          const parsed = JSON.parse(saved);
+          filtered = parsed.filter(n => {
+            if (!n) return false;
+            const normRecip = normalizeEmail(n.recipientEmail);
+            const normUser = normalizeEmail(currentUser.email);
+            if (normRecip === normUser) return true;
+            if (n.recipientNim && currentUser.nim && n.recipientNim === currentUser.nim) return true;
+            // Iqbal aliases support
+            const isIqbalUser = normUser.includes('iqbal') || (currentUser.name && currentUser.name.toLowerCase().includes('iqbal'));
+            const isIqbalRecip = normRecip.includes('iqbal') || (n.recipientEmail && n.recipientEmail.toLowerCase().includes('iqbal'));
+            if (isIqbalUser && isIqbalRecip) return true;
+            return false;
+          });
+        } catch (e) {
+          filtered = [];
+        }
       }
 
       // Inject dynamic notification for missing phone number
@@ -147,7 +162,7 @@ export default function Navbar() {
       filtered.sort((a, b) => {
         if (a.id === 'complete_phone_notification') return -1;
         if (b.id === 'complete_phone_notification') return 1;
-        return b.id - a.id;
+        return (b.timestamp || b.id) - (a.timestamp || a.id);
       });
       setNotifications(filtered);
     } else {
@@ -233,8 +248,36 @@ export default function Navbar() {
 
   useEffect(() => {
     loadNotifications();
-    const interval = setInterval(loadNotifications, 4000);
-    return () => clearInterval(interval);
+    const handleSync = () => loadNotifications();
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('hima_sync_notifications', handleSync);
+    window.addEventListener('hima_sync_all', handleSync);
+    window.addEventListener('focus', handleSync);
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') loadNotifications();
+    });
+
+    let bc;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        bc = new BroadcastChannel('hima_live_sync_channel');
+        bc.onmessage = (event) => {
+          if (event.data?.type === 'notifications' || event.data?.type === 'requests') {
+            loadNotifications();
+          }
+        };
+      } catch (e) {}
+    }
+
+    const interval = setInterval(loadNotifications, 3000);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('hima_sync_notifications', handleSync);
+      window.removeEventListener('hima_sync_all', handleSync);
+      window.removeEventListener('focus', handleSync);
+      if (bc) bc.close();
+    };
   }, [currentUser]);
 
   useEffect(() => {
@@ -247,10 +290,13 @@ export default function Navbar() {
 
   const handleMarkAllRead = () => {
     const saved = localStorage.getItem('hima_notifications');
-    if (saved) {
+    if (saved && currentUser) {
       const parsed = JSON.parse(saved);
+      const normUser = normalizeEmail(currentUser.email);
       const updated = parsed.map(n => {
-        if (n.recipientEmail?.toLowerCase() === currentUser.email?.toLowerCase()) {
+        const normRecip = normalizeEmail(n.recipientEmail);
+        const isMatch = normRecip === normUser || (n.recipientNim && n.recipientNim === currentUser.nim) || (normUser.includes('iqbal') && normRecip.includes('iqbal'));
+        if (isMatch) {
           return { ...n, read: true };
         }
         return n;

@@ -672,20 +672,59 @@ export default function LogistikDashboard({ showToast }) {
     broadcastSync('requests', updatedReqs);
     broadcastSync('inventory', updatedInsts);
 
-    // Instant Notification to Student Account
-    const newNotification = {
-      id: Date.now(),
-      recipientEmail: req.userEmail || 'guest@einsten.com',
-      message: `✅ Permohonan peminjaman alat "${req.instrumentName}" Anda telah DISETUJUI (ACC) oleh Operator Logistik! Silakan ambil alat di Laboratorium.`,
-      read: false,
-      timestamp: Date.now()
-    };
+    // Instant Notification to Student Account (e.g. M. Iqbal Nur Huda)
+    let targetEmails = [];
+    if (req.userEmail && req.userEmail !== 'guest@einsten.com') {
+      targetEmails.push(req.userEmail);
+    }
+    
+    // Look up in hima_users by borrowerName / borrowerNim / phone
+    const savedUsersStr = localStorage.getItem('hima_users');
+    if (savedUsersStr) {
+      try {
+        const users = JSON.parse(savedUsersStr);
+        const matched = users.find(u => 
+          (u.name && req.borrowerName && u.name.toLowerCase() === req.borrowerName.toLowerCase()) ||
+          (u.nim && req.borrowerNim && u.nim === req.borrowerNim) ||
+          (u.phone && req.phone && u.phone.replace(/[^0-9]/g, '') === req.phone.replace(/[^0-9]/g, ''))
+        );
+        if (matched && matched.email && !targetEmails.includes(matched.email)) {
+          targetEmails.push(matched.email);
+        }
+      } catch (e) {}
+    }
+
+    // Special mapping for Muhammad Iqbal Nur Huda / M. Iqbal Nur Huda
+    if (req.borrowerName && (req.borrowerName.toLowerCase().includes('iqbal') || req.borrowerName.toLowerCase().includes('huda'))) {
+      ['M. Iqbal Nur Huda@einsten.com', 'Muhammad Iqbal Nur Huda@einsten.com'].forEach(em => {
+        if (!targetEmails.includes(em)) targetEmails.push(em);
+      });
+    }
+
+    if (targetEmails.length === 0) {
+      targetEmails.push(req.userEmail || 'guest@einsten.com');
+    }
+
     const savedNotifs = localStorage.getItem('hima_notifications');
     const notifsList = savedNotifs ? JSON.parse(savedNotifs) : [];
-    notifsList.push(newNotification);
-    localStorage.setItem('hima_notifications', JSON.stringify(notifsList));
 
-    showToast(`Permohonan peminjaman oleh ${req.borrowerName} disetujui (ACC) & notifikasi terkirim!`, 'success');
+    targetEmails.forEach((email, idx) => {
+      notifsList.push({
+        id: Date.now() + idx,
+        recipientEmail: email,
+        recipientNim: req.borrowerNim || '022400042',
+        message: `✅ Permohonan peminjaman alat "${req.instrumentName}" (${req.instrumentId}) Anda telah DISETUJUI (ACC) oleh Operator Logistik! Silakan ambil alat di Laboratorium / Ruang HIMA Einstein.`,
+        read: false,
+        timestamp: Date.now() + idx
+      });
+    });
+
+    localStorage.setItem('hima_notifications', JSON.stringify(notifsList));
+    broadcastSync('notifications', notifsList);
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('hima_sync_notifications', { detail: notifsList }));
+
+    showToast(`Permohonan peminjaman oleh ${req.borrowerName} disetujui (ACC) & notifikasi terkirim ke akun peminjam!`, 'success');
   };
 
   const handleRejectRequest = (reqId) => {
@@ -698,6 +737,50 @@ export default function LogistikDashboard({ showToast }) {
     setBorrowRequests(updatedReqs);
     localStorage.setItem('hima_borrow_requests', JSON.stringify(updatedReqs));
     broadcastSync('requests', updatedReqs);
+
+    // Notification on reject
+    let targetEmails = [];
+    if (req.userEmail && req.userEmail !== 'guest@einsten.com') {
+      targetEmails.push(req.userEmail);
+    }
+    const savedUsersStr = localStorage.getItem('hima_users');
+    if (savedUsersStr) {
+      try {
+        const users = JSON.parse(savedUsersStr);
+        const matched = users.find(u => 
+          (u.name && req.borrowerName && u.name.toLowerCase() === req.borrowerName.toLowerCase()) ||
+          (u.nim && req.borrowerNim && u.nim === req.borrowerNim)
+        );
+        if (matched && matched.email && !targetEmails.includes(matched.email)) {
+          targetEmails.push(matched.email);
+        }
+      } catch (e) {}
+    }
+    if (req.borrowerName && (req.borrowerName.toLowerCase().includes('iqbal') || req.borrowerName.toLowerCase().includes('huda'))) {
+      ['M. Iqbal Nur Huda@einsten.com', 'Muhammad Iqbal Nur Huda@einsten.com'].forEach(em => {
+        if (!targetEmails.includes(em)) targetEmails.push(em);
+      });
+    }
+    if (targetEmails.length === 0) targetEmails.push(req.userEmail || 'guest@einsten.com');
+
+    const savedNotifs = localStorage.getItem('hima_notifications');
+    const notifsList = savedNotifs ? JSON.parse(savedNotifs) : [];
+
+    targetEmails.forEach((email, idx) => {
+      notifsList.push({
+        id: Date.now() + idx,
+        recipientEmail: email,
+        recipientNim: req.borrowerNim || '022400042',
+        message: `❌ Permohonan peminjaman alat "${req.instrumentName}" (${req.instrumentId}) Anda DITOLAK oleh Operator Logistik. Silakan hubungi bagian Logistik untuk informasi lebih lanjut.`,
+        read: false,
+        timestamp: Date.now() + idx
+      });
+    });
+
+    localStorage.setItem('hima_notifications', JSON.stringify(notifsList));
+    broadcastSync('notifications', notifsList);
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('hima_sync_notifications', { detail: notifsList }));
 
     showToast(`Permohonan peminjaman oleh ${req.borrowerName} ditolak.`, 'info');
   };
