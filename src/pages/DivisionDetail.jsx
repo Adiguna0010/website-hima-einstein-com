@@ -4,6 +4,7 @@ import { ArrowLeft, Users, Terminal, Globe, BookOpen, Rocket, ShoppingCart, Radi
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { DEFAULT_DRIVE_VAULT } from '../data/driveVaultItems';
+import { DEFAULT_INVENTORY_ITEMS } from '../data/inventoryData';
 
 // Helper component for coming soon sections
 function ComingSoon({ title }) {
@@ -798,24 +799,60 @@ export default function DivisionDetail({ showToast }) {
       title: 'Aset dan Logistik',
       icon: '📦',
       iconComponent: <Box className="w-8 h-8 text-gold" />,
-      desc: 'Portal peminjaman alat penunjang praktikum mahasiswa (solder, multimeter, starter kit Arduino) secara transparan.',
-      renderContent: () => (
-        <div className="max-w-md mx-auto space-y-4">
-          <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-left mb-3">Peminjaman Cepat</h4>
-          <div className="p-4 bg-white border border-gold-border rounded-2xl flex items-center justify-between text-left shadow-sm">
-            <div>
-              <h5 className="text-xs font-bold text-slate-800">Multimeter Sanwa CD800a</h5>
-              <span className="inline-block mt-1 px-2 py-0.5 text-[8px] bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 rounded font-bold uppercase tracking-wider">Tersedia</span>
+      desc: 'Portal peminjaman alat penunjang praktikum mahasiswa, ATK, properti kegiatan, dan inventaris HIMA EINSTEN secara transparan.',
+      renderContent: () => {
+        const featured = DEFAULT_INVENTORY_ITEMS.slice(0, 4);
+        return (
+          <div className="max-w-2xl mx-auto space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest text-left">Katalog Unggulan Aset & Logistik</h4>
+              <span className="text-[10px] text-slate-400 font-mono">[ 140 Item Terdaftar ]</span>
             </div>
-            <Link
-              to="/space"
-              className="px-4 py-2 bg-gold text-white text-xs font-bold rounded-xl hover:brightness-110 transition-all shadow-sm"
-            >
-              Booking Alat
-            </Link>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {featured.map((item) => (
+                <div key={item.id} className="p-3.5 bg-white border border-gold-border/60 rounded-2xl flex items-center justify-between text-left shadow-sm hover:border-gold/40 transition-all">
+                  <div className="flex items-center gap-3 min-w-0 pr-2">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                      {item.image && item.image.startsWith('/') ? (
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-xl">📦</span>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <h5 className="text-xs font-bold text-slate-800 truncate">{item.name}</h5>
+                      <span className="text-[10px] text-slate-400 font-mono block truncate">{item.id}</span>
+                      <div className="mt-0.5">
+                        <span className={`inline-block px-1.5 py-0.5 text-[8px] rounded font-bold uppercase ${
+                          item.status === 'Available' 
+                            ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' 
+                            : 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
+                        }`}>
+                          {item.status === 'Available' ? 'Tersedia' : 'Tidak Tersedia'} ({item.quantity})
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <Link
+                    to="/space"
+                    className="px-3 py-1.5 bg-gold text-white text-[10px] font-bold rounded-xl hover:brightness-110 transition-all shadow-sm shrink-0"
+                  >
+                    Pinjam
+                  </Link>
+                </div>
+              ))}
+            </div>
+            <div className="pt-3 text-center">
+              <Link 
+                to="/space"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-gold hover:underline"
+              >
+                Buka Katalog Lengkap Inventaris HIMA di Space &rarr;
+              </Link>
+            </div>
           </div>
-        </div>
-      )
+        );
+      }
     }
   };
 

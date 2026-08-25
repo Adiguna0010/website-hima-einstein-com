@@ -14,19 +14,32 @@ export default function Space({ showToast }) {
   const [classificationMode, setClassificationMode] = useState('fungsi');
 
   useEffect(() => {
+    const CURRENT_DATA_VERSION = 'v2026_rekap_master_140_v2';
     const loadData = () => {
+      const savedVersion = localStorage.getItem('hima_inventory_data_version');
       const saved = localStorage.getItem('hima_instruments');
-      if (saved) {
+
+      let shouldReset = false;
+      if (!saved || savedVersion !== CURRENT_DATA_VERSION) {
+        shouldReset = true;
+      } else {
         try {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (!Array.isArray(parsed) || parsed.length <= 10 || parsed.some(i => !i.id || i.id.startsWith('HIMA-') || !i.category)) {
+            shouldReset = true;
+          } else {
             setInstruments(parsed);
-            return;
           }
-        } catch (e) {}
+        } catch (e) {
+          shouldReset = true;
+        }
       }
-      localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
-      setInstruments(DEFAULT_INVENTORY_ITEMS);
+
+      if (shouldReset) {
+        localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
+        localStorage.setItem('hima_inventory_data_version', CURRENT_DATA_VERSION);
+        setInstruments(DEFAULT_INVENTORY_ITEMS);
+      }
     };
 
     loadData();

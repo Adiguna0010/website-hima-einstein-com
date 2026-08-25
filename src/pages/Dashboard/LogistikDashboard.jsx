@@ -91,23 +91,30 @@ export default function LogistikDashboard({ showToast }) {
 
   // Load Initial Data & Multi-Tab Real-Time Sync
   useEffect(() => {
+    const CURRENT_DATA_VERSION = 'v2026_rekap_master_140_v2';
     const loadData = () => {
+      const savedVersion = localStorage.getItem('hima_inventory_data_version');
       const savedInst = localStorage.getItem('hima_instruments');
-      if (savedInst) {
+
+      let shouldReset = false;
+      if (!savedInst || savedVersion !== CURRENT_DATA_VERSION) {
+        shouldReset = true;
+      } else {
         try {
           const parsed = JSON.parse(savedInst);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setInstruments(parsed);
+          if (!Array.isArray(parsed) || parsed.length <= 10 || parsed.some(i => !i.id || i.id.startsWith('HIMA-') || !i.category)) {
+            shouldReset = true;
           } else {
-            localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
-            setInstruments(DEFAULT_INVENTORY_ITEMS);
+            setInstruments(parsed);
           }
         } catch (e) {
-          localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
-          setInstruments(DEFAULT_INVENTORY_ITEMS);
+          shouldReset = true;
         }
-      } else {
+      }
+
+      if (shouldReset) {
         localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
+        localStorage.setItem('hima_inventory_data_version', CURRENT_DATA_VERSION);
         setInstruments(DEFAULT_INVENTORY_ITEMS);
       }
 
@@ -348,19 +355,38 @@ export default function LogistikDashboard({ showToast }) {
         let allParsedItems = [];
         const existingIds = new Set(instruments.map(i => i.id.toUpperCase()));
 
+        // Check if there are size sheets to build size map
+        const sizeMap = new Map();
+        ['Besar', 'Medium', 'Kecil'].forEach(sizeName => {
+          if (workbook.Sheets[sizeName]) {
+            const sizeJson = XLSX.utils.sheet_to_json(workbook.Sheets[sizeName]);
+            sizeJson.forEach(r => {
+              const bName = r.BENDA || r['NAMA BARANG'] || r.benda || r.nama_barang;
+              if (bName) {
+                sizeMap.set(String(bName).trim().toLowerCase(), sizeName);
+              }
+            });
+          }
+        });
+
         workbook.SheetNames.forEach(sheetName => {
+          // If sheet is purely size sheet and workbook has category sheets, don't duplicate items
+          const isPureSizeSheet = ['Besar', 'Medium', 'Kecil'].includes(sheetName);
+          const hasCategorySheets = workbook.SheetNames.some(s => ['Elektronik', 'Furniture', 'Properti Kegiatan', 'ATK', 'P3K', 'DANUS', 'Olahraga', 'Pemakaian Bersama'].includes(s));
+          if (isPureSizeSheet && hasCategorySheets) return;
+
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
           if (!jsonData || jsonData.length <= 1) return;
 
           const headers = jsonData[0].map(h => String(h || '').trim().toLowerCase());
-          const idIdx = headers.findIndex(h => h.includes('id') || h.includes('kode') || h.includes('code'));
+          const idIdx = headers.findIndex(h => h.includes('code') || h.includes('kode') || h.includes('id'));
           const nameIdx = headers.findIndex(h => h.includes('nama') || h.includes('name') || h.includes('benda') || h.includes('alat') || h.includes('barang'));
           const catIdx = headers.findIndex(h => h.includes('kategori') || h.includes('category') || h.includes('divisi'));
           const sizeIdx = headers.findIndex(h => h.includes('ukuran') || h.includes('size'));
-          const qtyIdx = headers.findIndex(h => h.includes('jumlah') || h.includes('qty') || h.includes('stok') || h.includes('stock'));
+          const qtyIdx = headers.findIndex(h => h.includes('jumlah') || h.includes('qty') || h.includes('stok') || h.includes('stock') || h.includes('total'));
           const condIdx = headers.findIndex(h => h.includes('kondisi') || h.includes('condition'));
-          const descIdx = headers.findIndex(h => h.includes('deskripsi') || h.includes('desc') || h.includes('ket') || h.includes('spesifikasi'));
+          const descIdx = headers.findIndex(h => h.includes('keterangan') || h.includes('deskripsi') || h.includes('desc') || h.includes('ket') || h.includes('spesifikasi'));
           const imgIdx = headers.findIndex(h => h.includes('foto') || h.includes('image') || h.includes('gambar') || h.includes('url'));
           const statusIdx = headers.findIndex(h => h.includes('status'));
 
@@ -375,8 +401,23 @@ export default function LogistikDashboard({ showToast }) {
 
             let defaultCat = INVENTORY_CATEGORIES.includes(sheetName) ? sheetName : 'Properti Kegiatan';
             let cat = (catIdx !== -1 && row[catIdx]) ? String(row[catIdx]).trim() : defaultCat;
-            let size = (sizeIdx !== -1 && row[sizeIdx]) ? String(row[sizeIdx]).trim() : (['Besar', 'Medium', 'Kecil'].includes(sheetName) ? sheetName : 'Medium');
-            let qty = (qtyIdx !== -1 && !isNaN(row[qtyIdx])) ? parseInt(row[qtyIdx]) : 1;
+            if (!INVENTORY_CATEGORIES.includes(cat)) {
+              if (cat.toLowerCase().includes('elek')) cat = 'Elektronik';
+              else if (cat.toLowerCase().includes('furn')) cat = 'Furniture';
+              else if (cat.toLowerCase().includes('prop') || cat.toLowerCase().includes('kegiatan')) cat = 'Properti Kegiatan';
+              else if (cat.toLowerCase().includes('atk')) cat = 'ATK';
+              else if (cat.toLowerCase().includes('p3k')) cat = 'P3K';
+              else if (cat.toLowerCase().includes('danus')) cat = 'DANUS';
+              else if (cat.toLowerCase().includes('olahraga')) cat = 'Olahraga';
+              else if (cat.toLowerCase().includes('bersama')) cat = 'Pemakaian Bersama';
+              else cat = 'Properti Kegiatan';
+            }
+
+            let size = (sizeIdx !== -1 && row[sizeIdx]) 
+              ? String(row[sizeIdx]).trim() 
+              : (sizeMap.get(rawName.toLowerCase()) || (['Besar', 'Medium', 'Kecil'].includes(sheetName) ? sheetName : (['Furniture', 'Properti Kegiatan'].includes(cat) ? 'Besar' : (['ATK', 'P3K', 'Elektronik'].includes(cat) ? 'Kecil' : 'Medium'))));
+
+            let qty = (qtyIdx !== -1 && !isNaN(parseInt(row[qtyIdx]))) ? parseInt(row[qtyIdx]) : 1;
             let cond = (condIdx !== -1 && row[condIdx]) ? String(row[condIdx]).trim() : 'Baik';
 
             let rawId = (idIdx !== -1 && row[idIdx]) ? String(row[idIdx]).trim().toUpperCase() : `ASL-${cat.substring(0, 3).toUpperCase()}-${Date.now().toString().slice(-4)}${i}`;
@@ -388,9 +429,24 @@ export default function LogistikDashboard({ showToast }) {
             }
             existingIds.add(finalId.toUpperCase());
 
-            const desc = (descIdx !== -1 && row[descIdx]) ? String(row[descIdx]).trim() : `${rawName} inventaris HIMA EINSTEN (${cat}).`;
-            const img = (imgIdx !== -1 && row[imgIdx]) ? String(row[imgIdx]).trim() : '📦';
-            const status = (statusIdx !== -1 && String(row[statusIdx]).toLowerCase().includes('pinjam')) ? 'Borrowed' : 'Available';
+            const rawKet = (descIdx !== -1 && row[descIdx]) ? String(row[descIdx]).trim() : '';
+            const desc = rawKet || `${rawName} inventaris HIMA EINSTEN (${cat}).`;
+
+            let img = (imgIdx !== -1 && row[imgIdx]) ? String(row[imgIdx]).trim() : '📦';
+            if (img === '📦') {
+              const nLower = rawName.toLowerCase();
+              if (nLower.includes('arduino')) img = '/Media/Media Aset dan Logistik/Arduino Uno.webp';
+              else if (nLower.includes('gerinda')) img = '/Media/Media Aset dan Logistik/Gerinda.png';
+              else if (nLower.includes('solder')) img = '/Media/Media Aset dan Logistik/Solder.jpg';
+              else if (nLower.includes('timah') || nLower.includes('sedot timah')) img = '/Media/Media Aset dan Logistik/Timah.jpg';
+            }
+
+            let status = 'Available';
+            if (statusIdx !== -1 && row[statusIdx]) {
+              const sVal = String(row[statusIdx]).toLowerCase();
+              if (sVal.includes('pinjam')) status = 'Borrowed';
+              else if (sVal.includes('tidak') || qty === 0) status = 'Unavailable';
+            }
 
             allParsedItems.push({
               id: finalId,
@@ -442,68 +498,147 @@ export default function LogistikDashboard({ showToast }) {
   };
 
   const handleDownloadTemplate = (format = 'xlsx') => {
-    const templateData = [
-      {
-        Kode_ID: 'ASL-ELK-01-2025',
-        Nama_Barang: 'Arduino Uno R3',
-        Kategori: 'Elektronik',
-        Ukuran: 'Kecil',
-        Jumlah: 4,
-        Kondisi: 'Baik',
-        Deskripsi: 'Mikrokontroler ATmega328P untuk IoT',
-        Status: 'Tersedia',
-        Foto: ''
-      },
-      {
-        Kode_ID: 'ASL-ELK-02-2025',
-        Nama_Barang: 'Mesin Gerinda Tangan',
-        Kategori: 'Elektronik',
-        Ukuran: 'Medium',
-        Jumlah: 1,
-        Kondisi: 'Baik',
-        Deskripsi: 'Mesin gerinda listrik pemotong',
-        Status: 'Tersedia',
-        Foto: ''
-      }
-    ];
-
     if (format === 'xlsx') {
-      const ws = XLSX.utils.json_to_sheet(templateData);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Template_Inventaris');
-      XLSX.writeFile(wb, 'template_rekapitulasi_inventaris_hima.xlsx');
+
+      const sheetsConfig = [
+        {
+          name: 'Elektronik',
+          data: [
+            { NO: 1, 'NAMA BARANG': 'Toa', 'CODE NAME': 'ASL-ELK-01-2025', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+            { NO: 2, 'NAMA BARANG': 'Gerinda', 'CODE NAME': 'ASL-ELK-02-2025', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+            { NO: 3, 'NAMA BARANG': 'Arduino Uno R3', 'CODE NAME': 'ASL-ELK-10-2025', JUMLAH: 4, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' }
+          ]
+        },
+        {
+          name: 'Furniture',
+          data: [
+            { NO: 1, 'NAMA BARANG': 'Dispenser', 'CODE NAME': 'ASL-FUR-01-2025', JUMLAH: 2, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+            { NO: 2, 'NAMA BARANG': 'Galon', 'CODE NAME': 'ASL-FUR-02-2025', JUMLAH: 3, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+            { NO: 3, 'NAMA BARANG': 'Kursi', 'CODE NAME': 'ASL-FUR-04-2025', JUMLAH: 3, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' }
+          ]
+        },
+        {
+          name: 'Properti Kegiatan',
+          data: [
+            { NO: 1, 'NAMA BARANG': 'Banner HIma Einsten', 'CODE NAME': 'ASL-PKG-01-2025', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: 'Ukuran (2,5m x 1,5 m)' },
+            { NO: 2, 'NAMA BARANG': 'Quecard', 'CODE NAME': 'ASL-PKG-02-2025', JUMLAH: 2, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: 'Ukuran A5' },
+            { NO: 3, 'NAMA BARANG': 'Bendera HIMA', 'CODE NAME': 'ASL-PKG-03-2025', JUMLAH: 3, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: 'Ukuran (150cm x 100cm)' }
+          ]
+        },
+        {
+          name: 'ATK',
+          data: [
+            { NO: 1, 'NAMA BARANG': 'Kertas serut (pack)', 'CODE NAME': 'ASL-ATK-01-2025', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+            { NO: 2, 'NAMA BARANG': 'Amplop coklat', 'CODE NAME': 'ASL-ATK-02-2025', JUMLAH: 20, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+            { NO: 3, 'NAMA BARANG': 'Gunting', 'CODE NAME': 'ASL-ATK-06-2025', JUMLAH: 6, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' }
+          ]
+        },
+        {
+          name: 'P3K',
+          data: [
+            { NO: 1, 'NAMA BARANG': 'Kotak P3K', 'CODE NAME': 'ASL-P3K-01-2025', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+            { NO: 2, 'NAMA BARANG': 'Sarung tangan', 'CODE NAME': 'ASL-P3K-02-2025', JUMLAH: 3, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+            { NO: 3, 'NAMA BARANG': 'Betadine (botol)', 'CODE NAME': 'ASL-P3K-04-2025', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' }
+          ]
+        },
+        {
+          name: 'DANUS',
+          data: [
+            { NO: 1, 'NAMA BARANG': 'Cup Plastik', 'CODE NAME': 'DNS-01-2025', JUMLAH: 4, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+            { NO: 2, 'NAMA BARANG': 'Gayung Es', 'CODE NAME': 'DNS-02-2025', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+            { NO: 3, 'NAMA BARANG': 'Kotak Es(hijau)', 'CODE NAME': 'DNS-03-2025', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' }
+          ]
+        },
+        {
+          name: 'Olahraga',
+          data: [
+            { NO: 1, 'NAMA BARANG': 'Bola kasti', 'CODE NAME': 'PEMA-OR-01-2025', JUMLAH: 4, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+            { NO: 2, 'NAMA BARANG': 'Bola pimpong (slop)', 'CODE NAME': 'PEMA-OR-02-2025', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+            { NO: 3, 'NAMA BARANG': 'Cone', 'CODE NAME': 'PEMA-OR-04-2025', JUMLAH: 16, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' }
+          ]
+        },
+        {
+          name: 'Pemakaian Bersama',
+          data: [
+            { NO: 1, 'BENDA': 'Banner HIma Einsten', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: 'Ukuran (2,5m x 1,5 m)' },
+            { NO: 2, 'BENDA': 'Quecard', JUMLAH: 2, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: 'Ukuran A5' },
+            { NO: 3, 'BENDA': 'Bendera HIMA', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: 'Ukuran (150cm x 100cm)' }
+          ]
+        }
+      ];
+
+      sheetsConfig.forEach(s => {
+        const ws = XLSX.utils.json_to_sheet(s.data);
+        XLSX.utils.book_append_sheet(wb, ws, s.name);
+      });
+
+      XLSX.writeFile(wb, 'Template_Rekapitulasi_Inventaris_HIMA.xlsx');
+      showToast('Template Excel berhasil diunduh sesuai format Rekapitulasi Inventaris HIMA!', 'success');
     } else {
-      const csvContent = "Kode_ID,Nama_Barang,Kategori,Ukuran,Jumlah,Kondisi,Deskripsi,Status,Foto\n" +
-        templateData.map(r => `"${r.Kode_ID}","${r.Nama_Barang}","${r.Kategori}","${r.Ukuran}","${r.Jumlah}","${r.Kondisi}","${r.Deskripsi}","${r.Status}","${r.Foto}"`).join('\n');
+      const templateData = [
+        { NO: 1, NAMA_BARANG: 'Toa', CODE_NAME: 'ASL-ELK-01-2025', KATEGORI: 'Elektronik', UKURAN: 'Besar', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+        { NO: 2, NAMA_BARANG: 'Dispenser', CODE_NAME: 'ASL-FUR-01-2025', KATEGORI: 'Furniture', UKURAN: 'Besar', JUMLAH: 2, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+        { NO: 3, NAMA_BARANG: 'Banner HIma Einsten', CODE_NAME: 'ASL-PKG-01-2025', KATEGORI: 'Properti Kegiatan', UKURAN: 'Besar', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: 'Ukuran (2,5m x 1,5 m)' },
+        { NO: 4, NAMA_BARANG: 'Kertas serut (pack)', CODE_NAME: 'ASL-ATK-01-2025', KATEGORI: 'ATK', UKURAN: 'Kecil', JUMLAH: 1, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+        { NO: 5, NAMA_BARANG: 'Cup Plastik', CODE_NAME: 'DNS-01-2025', KATEGORI: 'DANUS', UKURAN: 'Medium', JUMLAH: 4, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' },
+        { NO: 6, NAMA_BARANG: 'Bola kasti', CODE_NAME: 'PEMA-OR-01-2025', KATEGORI: 'Olahraga', UKURAN: 'Medium', JUMLAH: 4, KONDISI: 'Baik', STATUS: 'Tersedia', KETERANGAN: '' }
+      ];
+
+      const csvContent = "NO,NAMA_BARANG,CODE_NAME,KATEGORI,UKURAN,JUMLAH,KONDISI,STATUS,KETERANGAN\n" +
+        templateData.map(r => `"${r.NO}","${r.NAMA_BARANG}","${r.CODE_NAME}","${r.KATEGORI}","${r.UKURAN}","${r.JUMLAH}","${r.KONDISI}","${r.STATUS}","${r.KETERANGAN}"`).join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', 'template_rekapitulasi_inventaris_hima.csv');
+      link.setAttribute('download', 'Template_Rekapitulasi_Inventaris_HIMA.csv');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      showToast('Template CSV berhasil diunduh!', 'success');
     }
   };
 
   const handleExportLiveInventory = () => {
-    const exportData = instruments.map((inst, index) => ({
-      No: index + 1,
-      Kode_ID: inst.id,
-      Nama_Barang: inst.name,
-      Kategori: inst.category || 'Properti Kegiatan',
-      Ukuran: inst.size || 'Medium',
-      Jumlah: inst.quantity || 1,
-      Kondisi: inst.condition || 'Baik',
-      Status: inst.status === 'Available' ? 'Tersedia' : 'Sedang Dipinjam',
-      Deskripsi: inst.desc || ''
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Rekapitulasi_Live');
+
+    // 1. Sheet Semua Barang
+    const allExportData = instruments.map((inst, index) => ({
+      NO: index + 1,
+      'NAMA BARANG': inst.name,
+      'CODE NAME': inst.id,
+      KATEGORI: inst.category || 'Properti Kegiatan',
+      UKURAN: inst.size || 'Medium',
+      JUMLAH: inst.quantity || 1,
+      KONDISI: inst.condition || 'Baik',
+      STATUS: inst.status === 'Available' ? 'Tersedia' : (inst.status === 'Borrowed' ? 'Sedang Dipinjam' : 'Tidak Tersedia'),
+      KETERANGAN: inst.desc || ''
+    }));
+    const wsAll = XLSX.utils.json_to_sheet(allExportData);
+    XLSX.utils.book_append_sheet(wb, wsAll, 'Semua_Inventaris');
+
+    // 2. Sheets by category (matching Rekapitulasi inventaris HIMA format)
+    const validCats = INVENTORY_CATEGORIES.filter(c => c !== 'Semua');
+    validCats.forEach(cat => {
+      const catItems = instruments.filter(i => i.category === cat);
+      if (catItems.length > 0) {
+        const catData = catItems.map((inst, idx) => ({
+          NO: idx + 1,
+          'NAMA BARANG': inst.name,
+          'CODE NAME': inst.id,
+          JUMLAH: inst.quantity || 1,
+          KONDISI: inst.condition || 'Baik',
+          STATUS: inst.status === 'Available' ? 'Tersedia' : (inst.status === 'Borrowed' ? 'Sedang Dipinjam' : 'Tidak Tersedia'),
+          KETERANGAN: inst.desc || ''
+        }));
+        const wsCat = XLSX.utils.json_to_sheet(catData);
+        const safeSheetName = cat.substring(0, 30);
+        XLSX.utils.book_append_sheet(wb, wsCat, safeSheetName);
+      }
+    });
+
     XLSX.writeFile(wb, `Rekapitulasi_Inventaris_HIMA_Live_${new Date().toISOString().slice(0,10)}.xlsx`);
-    showToast('Data inventaris berhasil diekspor ke file Excel!', 'success');
+    showToast('Data inventaris berhasil diekspor ke file Excel sesuai format Rekapitulasi!', 'success');
   };
 
   // Borrow Approval Handlers with Notification & Instant Sync
@@ -717,6 +852,22 @@ export default function LogistikDashboard({ showToast }) {
         <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
+            onClick={() => {
+              if (window.confirm('Sinkronkan ulang seluruh data inventaris ke data master Rekapitulasi Inventaris HIMA Excel (140 barang)?')) {
+                localStorage.setItem('hima_instruments', JSON.stringify(DEFAULT_INVENTORY_ITEMS));
+                localStorage.setItem('hima_inventory_data_version', 'v2026_rekap_master_140');
+                setInstruments(DEFAULT_INVENTORY_ITEMS);
+                broadcastSync('inventory', DEFAULT_INVENTORY_ITEMS);
+                showToast('Database inventaris berhasil disinkronkan ulang ke master data Excel (140 barang)!', 'success');
+              }
+            }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gold/10 hover:bg-gold/20 text-gold-dark text-xs font-bold border border-gold/30 shadow-xs transition-all active:scale-95 cursor-pointer"
+          >
+            <RefreshCw className="w-3.5 h-3.5" /> Sinkron Data Master Excel (140)
+          </button>
+
+          <button
+            type="button"
             onClick={handleExportLiveInventory}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
           >
@@ -744,7 +895,7 @@ export default function LogistikDashboard({ showToast }) {
             activeTab === 'database' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
           }`}
         >
-          1. Panel Database Inventaris ({instruments.length})
+          Panel Database Inventaris ({instruments.length})
         </button>
 
         <button
@@ -754,7 +905,7 @@ export default function LogistikDashboard({ showToast }) {
             activeTab === 'input' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
           }`}
         >
-          2. Input Barang (Manual & Spreadsheet)
+          Input Barang (Manual & Spreadsheet)
         </button>
 
         <button
@@ -764,7 +915,7 @@ export default function LogistikDashboard({ showToast }) {
             activeTab === 'qr' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
           }`}
         >
-          3. Batch & Print QR Code
+          Batch & Print QR Code
         </button>
 
         <button
@@ -774,7 +925,7 @@ export default function LogistikDashboard({ showToast }) {
             activeTab === 'acc' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
           }`}
         >
-          4. ACC Peminjaman Alat
+          ACC Peminjaman Alat
           {pendingRequestsCount > 0 && (
             <span className="bg-rose-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse">
               {pendingRequestsCount} Bth ACC
@@ -869,7 +1020,7 @@ export default function LogistikDashboard({ showToast }) {
               className="p-6 bg-white border border-slate-200 rounded-3xl space-y-2 hover:border-gold transition-all cursor-pointer shadow-xs"
             >
               <Box className="w-6 h-6 text-gold" />
-              <h3 className="font-bold text-slate-900 text-sm">1. Panel Database Inventaris</h3>
+              <h3 className="font-bold text-slate-900 text-sm">Panel Database Inventaris</h3>
               <p className="text-xs text-slate-500">Cari barang, edit stok, ganti foto, ubah kondisi (Baik/Cukup/Rusak), dan ubah status.</p>
               <span className="text-xs font-bold text-gold-dark block pt-2">Buka Panel Database &rarr;</span>
             </div>
@@ -879,7 +1030,7 @@ export default function LogistikDashboard({ showToast }) {
               className="p-6 bg-white border border-slate-200 rounded-3xl space-y-2 hover:border-gold transition-all cursor-pointer shadow-xs"
             >
               <Plus className="w-6 h-6 text-gold" />
-              <h3 className="font-bold text-slate-900 text-sm">2. Input Barang Manual & Batch</h3>
+              <h3 className="font-bold text-slate-900 text-sm">Input Barang Manual & Batch</h3>
               <p className="text-xs text-slate-500">Formulir pendaftaran barang satu per satu atau import file Excel/CSV secara otomatis.</p>
               <span className="text-xs font-bold text-gold-dark block pt-2">Buka Panel Input &rarr;</span>
             </div>
@@ -889,7 +1040,7 @@ export default function LogistikDashboard({ showToast }) {
               className="p-6 bg-white border border-slate-200 rounded-3xl space-y-2 hover:border-gold transition-all cursor-pointer shadow-xs"
             >
               <FileText className="w-6 h-6 text-gold" />
-              <h3 className="font-bold text-slate-900 text-sm">4. ACC Peminjaman Alat ({pendingRequestsCount} Pending)</h3>
+              <h3 className="font-bold text-slate-900 text-sm">ACC Peminjaman Alat ({pendingRequestsCount} Pending)</h3>
               <p className="text-xs text-slate-500">Persetujuan permohonan peminjaman alat laboratorium dari mahasiswa.</p>
               <span className="text-xs font-bold text-gold-dark block pt-2">Buka Panel ACC &rarr;</span>
             </div>
