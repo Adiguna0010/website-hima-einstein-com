@@ -18,9 +18,29 @@ export default async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-    const { phone, message } = body;
+    const { phone, phones, target, message } = body;
 
-    const targetPhone = phone || '6282171748617';
+    let targetPhones = [];
+    if (Array.isArray(phones)) {
+      targetPhones = phones;
+    } else if (Array.isArray(phone)) {
+      targetPhones = phone;
+    } else if (phones && typeof phones === 'string') {
+      targetPhones = phones.split(',').map(s => s.trim());
+    } else if (phone && typeof phone === 'string') {
+      targetPhones = phone.split(',').map(s => s.trim());
+    } else if (target && typeof target === 'string') {
+      targetPhones = target.split(',').map(s => s.trim());
+    }
+
+    const cleanTargets = Array.from(new Set(
+      targetPhones
+        .map(p => String(p).replace(/[^0-9]/g, '').replace(/^0/, '62'))
+        .filter(p => p.length >= 9)
+    ));
+
+    const finalTarget = cleanTargets.length > 0 ? cleanTargets.join(',') : '6282171748617';
+
     if (!message) {
       return res.status(400).json({ success: false, reason: 'Pesan wajib diisi.' });
     }
@@ -34,13 +54,13 @@ export default async function handler(req, res) {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: new URLSearchParams({
-        target: targetPhone,
+        target: finalTarget,
         message: message
       })
     });
 
     const result = await response.json();
-    return res.status(200).json({ success: true, result });
+    return res.status(200).json({ success: true, targets: finalTarget, result });
   } catch (error) {
     return res.status(500).json({ 
       success: false, 

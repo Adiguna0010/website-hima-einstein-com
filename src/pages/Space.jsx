@@ -211,9 +211,10 @@ export default function Space({ showToast }) {
       });
     }
 
+    // Save notifications for operators
     const savedUsers = localStorage.getItem('hima_users');
     const usersList = savedUsers ? JSON.parse(savedUsers) : [];
-    const operators = usersList.filter(u => u.role === 'Operator Logistik');
+    const operators = (usersList || []).filter(u => u && u.role === 'Operator Logistik');
 
     if (operators.length === 0) {
       newNotifications.push({
@@ -225,13 +226,15 @@ export default function Space({ showToast }) {
       });
     } else {
       operators.forEach((op, index) => {
-        newNotifications.push({
-          id: Date.now() + 1 + index,
-          recipientEmail: op.email,
-          message: `Permohonan Baru! ${borrowerName.trim()} (${prodi.trim()} ${angkatan.trim()}) mengajukan peminjaman alat "${selectedToolName}". Mohon segera ditinjau.`,
-          read: false,
-          timestamp: Date.now()
-        });
+        if (op.email) {
+          newNotifications.push({
+            id: Date.now() + 1 + index,
+            recipientEmail: op.email,
+            message: `Permohonan Baru! ${borrowerName.trim()} (${prodi.trim()} ${angkatan.trim()}) mengajukan peminjaman alat "${selectedToolName}". Mohon segera ditinjau.`,
+            read: false,
+            timestamp: Date.now()
+          });
+        }
       });
     }
 
@@ -241,14 +244,26 @@ export default function Space({ showToast }) {
 
     // Construct text message
     const text = `Halo Admin Aset & Logistik hima einsten.com! 📦\n\nAda permohonan peminjaman alat laboratorium baru dari portal Einsten Space:\n- *Nama Alat:* ${selectedToolName}\n- *ID Alat:* ${selectedToolId}\n\n*Data Peminjam:*\n- *Nama:* ${borrowerName.trim()}\n- *Program Studi:* ${prodi.trim()}\n- *Angkatan:* ${angkatan.trim()}\n- *WhatsApp:* ${phone.trim()}\n- *Tanggal Pengajuan:* ${new Date().toLocaleDateString('id-ID')}\n\nMohon konfirmasi & verifikasi permohonan peminjaman. Terima kasih!`;
-    const waNumber = '6282171748617';
 
-    // Direct background sending via serverless WhatsApp Gateway API (No browser redirect/popup)
+    // Extract all operator phone numbers
+    const DEFAULT_OPERATOR_PHONES = ['6282171748617'];
+    const operatorPhones = Array.from(new Set(
+      operators
+        .map(u => u.phone ? String(u.phone).replace(/[^0-9]/g, '').replace(/^0/, '62') : '')
+        .filter(p => p.length >= 9)
+    ));
+
+    const targetPhones = operatorPhones.length > 0 ? operatorPhones : DEFAULT_OPERATOR_PHONES;
+
+    // Direct background sending via serverless WhatsApp Gateway API to ALL Operator Logistik numbers
     try {
       await fetch('/api/send-wa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: waNumber, message: text })
+        body: JSON.stringify({ 
+          phones: targetPhones, 
+          message: text 
+        })
       });
     } catch (err) {
       // Fallback direct request
@@ -259,7 +274,7 @@ export default function Space({ showToast }) {
             'Authorization': 'oAkLBXzaU41RszNf6j78',
             'Content-Type': 'application/x-www-form-urlencoded'
           },
-          body: new URLSearchParams({ target: waNumber, message: text })
+          body: new URLSearchParams({ target: targetPhones.join(','), message: text })
         });
       } catch (e) {
         console.error('WA background send fallback error:', e);
@@ -273,10 +288,13 @@ export default function Space({ showToast }) {
       borrowerName: borrowerName.trim(),
       prodi: prodi.trim(),
       angkatan: angkatan.trim(),
-      phone: phone.trim()
+      phone: phone.trim(),
+      operators: operators.filter(o => o.phone),
+      chatText: text
     });
 
-    showToast('Permohonan peminjaman berhasil diajukan & otomatis terkirim ke WhatsApp Admin Logistik!', 'success');
+    const operatorCountText = targetPhones.length > 1 ? `ke ${targetPhones.length} nomor Operator Logistik` : 'ke WhatsApp Admin Logistik';
+    showToast(`Permohonan peminjaman berhasil diajukan & otomatis terkirim ${operatorCountText}!`, 'success');
   };
 
   const getCategoryBadgeClass = (category) => {
@@ -581,7 +599,7 @@ export default function Space({ showToast }) {
                     Permohonan Berhasil Diajukan!
                   </h4>
                   <p className="text-xs text-slate-500 font-light leading-relaxed">
-                    Permohonan peminjaman Anda telah tercatat dan sedang menunggu persetujuan (ACC) dari Operator Logistik.
+                    Permohonan peminjaman Anda telah tercatat dan otomatis terkirim via WhatsApp ke seluruh Operator Logistik ({submittedSuccess.operators?.length || 1} operator) untuk ditinjau & di-ACC.
                   </p>
                 </div>
 
@@ -599,6 +617,36 @@ export default function Space({ showToast }) {
                     <span className="text-slate-700">{submittedSuccess.prodi} ({submittedSuccess.angkatan})</span>
                   </div>
                 </div>
+
+                {submittedSuccess.operators && submittedSuccess.operators.length > 0 && (
+                  <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-left space-y-2">
+                    <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
+                      Kontak WhatsApp Operator Logistik:
+                    </span>
+                    <div className="flex flex-col gap-1.5">
+                      {submittedSuccess.operators.map((op, idx) => {
+                        const cleanPhone = (op.phone || '').replace(/[^0-9]/g, '').replace(/^0/, '62');
+                        return (
+                          <a
+                            key={idx}
+                            href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent(submittedSuccess.chatText || '')}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center justify-between px-3 py-1.5 bg-white hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold rounded-lg border border-emerald-300 transition-all shadow-2xs"
+                          >
+                            <span className="flex items-center gap-1.5">
+                              <Phone className="w-3 h-3 text-emerald-600" />
+                              {op.name}
+                            </span>
+                            <span className="text-[10px] font-mono text-emerald-600 font-normal">
+                              {op.phone} ↗
+                            </span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 <button
                   type="button"
