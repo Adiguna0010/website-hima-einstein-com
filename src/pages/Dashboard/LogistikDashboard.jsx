@@ -35,6 +35,33 @@ export default function LogistikDashboard({ showToast }) {
   // Single QR Modal State
   const [selectedQrInstrument, setSelectedQrInstrument] = useState(null);
   const [singleQrDataUrl, setSingleQrDataUrl] = useState('');
+  const [qrCodeMap, setQrCodeMap] = useState({});
+
+  // Pre-generate all QR codes locally for instant 100% offline print without missing/blank QR codes
+  useEffect(() => {
+    if (!instruments || instruments.length === 0) return;
+    let isMounted = true;
+    const generateAllQrs = async () => {
+      const map = {};
+      await Promise.all(
+        instruments.map(async (inst) => {
+          try {
+            const url = await QRCode.toDataURL(inst.id || inst.name, {
+              width: 240,
+              margin: 1,
+              color: { dark: '#000000', light: '#ffffff' }
+            });
+            map[inst.id] = url;
+          } catch (e) {
+            console.error('Failed to generate QR for', inst.id, e);
+          }
+        })
+      );
+      if (isMounted) setQrCodeMap(map);
+    };
+    generateAllQrs();
+    return () => { isMounted = false; };
+  }, [instruments]);
 
   // Edit Item Modal State
   const [editingInstrument, setEditingInstrument] = useState(null);
@@ -2331,28 +2358,31 @@ export default function LogistikDashboard({ showToast }) {
 
           <div className="space-y-3">
             {/* PRINT-ONLY OFFICIAL KOP SURAT HEADER */}
-            <div className="hidden print:block pb-3 mb-4">
+            <div className="hidden print:block pb-2 mb-3">
               <div className="flex items-center justify-between gap-4 pb-2 border-b-2 border-slate-900">
                 <img 
-                  src="/logo-hima-transparan.png" 
+                  src="/Media/Logo HIma/logo hima warna transparan.png" 
                   alt="Logo HIMA Einsten" 
-                  className="h-14 w-auto object-contain shrink-0" 
+                  className="h-20 sm:h-24 w-auto object-contain shrink-0" 
+                  onError={(e) => {
+                    e.target.src = "/logo-hima-transparan.png";
+                  }}
                 />
-                <div className="text-right">
-                  <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 leading-tight">
+                <div className="text-right flex flex-col justify-center">
+                  <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-950 leading-tight">
                     HIMPUNAN MAHASISWA ELEKTRONIKA INSTRUMENTASI
                   </h2>
-                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 leading-tight">
+                  <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-950 leading-tight">
                     POLITEKNIK TEKNOLOGI NUKLIR INDONESIA
                   </h3>
-                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 leading-tight">
+                  <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-950 leading-tight">
                     BADAN RISET DAN INOVASI NASIONAL
                   </h4>
                 </div>
               </div>
 
-              <div className="text-center pt-2.5">
-                <h1 className="text-sm font-black uppercase tracking-widest text-slate-900">
+              <div className="text-center pt-2">
+                <h1 className="text-sm sm:text-base font-black uppercase tracking-widest text-slate-900">
                   QR CODE ASET DAN LOGISTIK
                 </h1>
                 <p className="text-[9px] text-slate-500 font-mono mt-0.5">
@@ -2372,34 +2402,26 @@ export default function LogistikDashboard({ showToast }) {
               {instruments.map((inst) => (
                 <div 
                   key={inst.id}
-                  className="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center shadow-xs hover:border-gold/50 transition-all group print:border-slate-400 print:rounded-xl print:p-2 print:shadow-none print:break-inside-avoid"
+                  className="bg-white border border-slate-300 rounded-xl p-2.5 flex flex-col items-center text-center shadow-2xs hover:border-gold/50 transition-all print:border-slate-800 print:rounded-lg print:p-2 print:shadow-none print:break-inside-avoid"
                 >
-                  <div className="w-full text-left border-b border-slate-100 pb-1.5 mb-2 print:pb-1 print:mb-1">
-                    <p className="font-bold text-slate-900 text-xs truncate" title={inst.name}>{inst.name}</p>
-                    <p className="font-mono text-[10px] text-slate-500 font-bold">{inst.id}</p>
+                  <div className="w-full text-left border-b border-slate-200 pb-1 mb-1 print:pb-0.5 print:mb-1">
+                    <p className="font-bold text-slate-900 text-xs truncate print:text-[11px] leading-tight" title={inst.name}>{inst.name}</p>
+                    <p className="font-mono text-[10px] text-slate-600 font-bold print:text-[9px]">{inst.id}</p>
                   </div>
 
-                  <div className="p-2 bg-white border border-slate-100 rounded-xl mb-2 group-hover:scale-105 transition-transform print:p-1 print:border-none print:mb-1">
-                    <img 
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(inst.id)}`}
-                      alt={inst.name}
-                      className="w-24 h-24 object-contain print:w-20 print:h-20"
-                      loading="lazy"
-                    />
+                  <div className="p-1 bg-white flex items-center justify-center my-auto">
+                    {qrCodeMap[inst.id] ? (
+                      <img 
+                        src={qrCodeMap[inst.id]}
+                        alt={inst.name}
+                        className="w-24 h-24 object-contain print:w-24 print:h-24 mx-auto"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 flex items-center justify-center text-[10px] text-slate-400 font-mono">
+                        Memuat QR...
+                      </div>
+                    )}
                   </div>
-
-                  <div className="flex items-center justify-between w-full mt-auto pt-1 text-[10px] text-slate-500 print:text-[9px]">
-                    <span className="font-bold text-gold-dark truncate">{inst.category}</span>
-                    <span>Stok: {inst.quantity || 1}</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setSelectedQrInstrument(inst)}
-                    className="w-full mt-2 py-1 bg-slate-50 hover:bg-gold/10 hover:text-gold-dark text-slate-600 rounded-lg text-[10px] font-bold border border-slate-200 transition-colors cursor-pointer print:hidden"
-                  >
-                    Buka QR Card
-                  </button>
                 </div>
               ))}
             </div>
