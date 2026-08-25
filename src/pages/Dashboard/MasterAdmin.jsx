@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Shield, CheckCircle, XCircle, ArrowUpRight, RefreshCw, Users, ShieldCheck, 
-  UserPlus, Clock, Laptop, Smartphone, Activity, Trash2, Mail, Phone, Lock, User, X, Check
+  UserPlus, Clock, Laptop, Smartphone, Activity, Trash2, Mail, Phone, Lock, User, X, Check, Search
 } from 'lucide-react';
 
 export default function MasterAdmin({ showToast }) {
@@ -19,6 +19,8 @@ export default function MasterAdmin({ showToast }) {
     lastSyncedAt 
   } = useAuth();
 
+  const [activeTab, setActiveTab] = useState('users'); // 'users' | 'logs'
+  const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState('All');
 
   // Add User Modal States
@@ -108,10 +110,15 @@ export default function MasterAdmin({ showToast }) {
     { value: 'Master Admin', label: '👑 Master Admin (Otoritas Ketua / Wakil Himpunan)', db: '/dashboard/master' }
   ];
 
-  // Filter users
+  // Filter users with role and search query
   const filteredUsers = users.filter(u => {
-    if (filterRole === 'All') return true;
-    return u.role === filterRole;
+    const matchesRole = filterRole === 'All' || u.role === filterRole;
+    const query = searchQuery.trim().toLowerCase();
+    const matchesSearch = !query || 
+      (u.name && u.name.toLowerCase().includes(query)) ||
+      (u.nim && String(u.nim).toLowerCase().includes(query)) ||
+      (u.email && u.email.toLowerCase().includes(query));
+    return matchesRole && matchesSearch;
   });
 
   return (
@@ -134,11 +141,11 @@ export default function MasterAdmin({ showToast }) {
           </p>
         </div>
 
-        {/* Action Controls & Filters */}
+        {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
             onClick={() => setShowAddUserModal(true)}
-            className="px-3.5 py-1.5 bg-gradient-to-r from-gold to-gold-light hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+            className="px-4 py-2 bg-gradient-to-r from-gold to-gold-light hover:brightness-110 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
           >
             <UserPlus className="w-3.5 h-3.5" />
             <span>Tambah Akun</span>
@@ -147,31 +154,24 @@ export default function MasterAdmin({ showToast }) {
           <button
             onClick={handleManualSync}
             disabled={isSyncing}
-            className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all disabled:opacity-50"
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all disabled:opacity-50"
             title="Sinkronkan database dengan Cloud Vercel"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-gold ${isSyncing ? 'animate-spin' : ''}`} />
             <span>{isSyncing ? 'Sinkronisasi...' : 'Sinkron Data'}</span>
           </button>
-
-          <div className="flex items-center gap-1.5">
-            <select
-              value={filterRole}
-              onChange={(e) => setFilterRole(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
-            >
-              <option value="All">Semua Peran</option>
-              {rolesList.map((r) => (
-                <option key={r.value} value={r.value}>{r.value}</option>
-              ))}
-            </select>
-          </div>
         </div>
       </div>
 
-      {/* Metrics Row */}
+      {/* Metrics Row (Interactive Shortcuts) */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
-        <div className="p-5 bg-white border border-gold-border rounded-2xl flex items-center gap-4 shadow-sm">
+        <div 
+          onClick={() => { setActiveTab('users'); setFilterRole('All'); }}
+          className={`p-5 bg-white border rounded-2xl flex items-center gap-4 shadow-sm cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${
+            activeTab === 'users' && filterRole === 'All' ? 'border-gold ring-2 ring-gold/20' : 'border-gold-border'
+          }`}
+          title="Klik untuk membuka Tab Daftar Akun"
+        >
           <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center text-gold shrink-0">
             <Users className="w-5 h-5" />
           </div>
@@ -181,7 +181,11 @@ export default function MasterAdmin({ showToast }) {
           </div>
         </div>
 
-        <div className="p-5 bg-white border border-gold-border rounded-2xl flex items-center gap-4 shadow-sm">
+        <div 
+          onClick={() => { setActiveTab('users'); }}
+          className="p-5 bg-white border border-gold-border rounded-2xl flex items-center gap-4 shadow-sm cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md"
+          title="Klik untuk melihat Antrean Akun Pending"
+        >
           <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0">
             <RefreshCw className="w-5 h-5 animate-spin" />
           </div>
@@ -193,7 +197,11 @@ export default function MasterAdmin({ showToast }) {
           </div>
         </div>
 
-        <div className="p-5 bg-white border border-gold-border rounded-2xl flex items-center gap-4 shadow-sm">
+        <div 
+          onClick={() => { setActiveTab('users'); }}
+          className="p-5 bg-white border border-gold-border rounded-2xl flex items-center gap-4 shadow-sm cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md"
+          title="Klik untuk melihat Operator Divisi"
+        >
           <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
             <ShieldCheck className="w-5 h-5" />
           </div>
@@ -205,7 +213,13 @@ export default function MasterAdmin({ showToast }) {
           </div>
         </div>
 
-        <div className="p-5 bg-white border border-gold-border rounded-2xl flex items-center gap-4 shadow-sm">
+        <div 
+          onClick={() => setActiveTab('logs')}
+          className={`p-5 bg-white border rounded-2xl flex items-center gap-4 shadow-sm cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${
+            activeTab === 'logs' ? 'border-gold ring-2 ring-gold/20' : 'border-gold-border'
+          }`}
+          title="Klik untuk membuka Tab Log Aktivitas Login"
+        >
           <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0">
             <Activity className="w-5 h-5" />
           </div>
@@ -218,22 +232,79 @@ export default function MasterAdmin({ showToast }) {
         </div>
       </div>
 
-      {/* ── SECTION: REAL-TIME LOGIN MONITORING & ACTIVITY LOGS ── */}
-      <div className="bg-white border border-gold-border rounded-2xl p-6 shadow-md space-y-4 text-left">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              <h2 className="text-base font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-                <Activity className="w-4 h-4 text-gold" /> Log Aktivitas & Monitoring Siapa yang Login
-              </h2>
-            </div>
-            <p className="text-xs text-slate-500 font-light mt-0.5">
-              Notifikasi dan riwayat pendaftaran & akses login anggota ke sistem secara real-time.
-            </p>
-          </div>
+      {/* ── TAB PANEL SWITCHER ── */}
+      <div className="bg-white border border-gold-border rounded-2xl p-2.5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 p-1 bg-slate-100/80 rounded-xl w-full sm:w-auto">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all ${
+              activeTab === 'users'
+                ? 'bg-white text-slate-900 shadow-sm border border-slate-200/70'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Users className={`w-4 h-4 ${activeTab === 'users' ? 'text-gold' : 'text-slate-400'}`} />
+            <span>Daftar Akun Mahasiswa</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+              activeTab === 'users' ? 'bg-gold text-white' : 'bg-slate-200 text-slate-600'
+            }`}>
+              {filteredUsers.length}
+            </span>
+          </button>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setActiveTab('logs')}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all ${
+              activeTab === 'logs'
+                ? 'bg-white text-slate-900 shadow-sm border border-slate-200/70'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <Activity className={`w-4 h-4 ${activeTab === 'logs' ? 'text-gold' : 'text-slate-400'}`} />
+            <span>Log Aktivitas Login</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+              activeTab === 'logs' ? 'bg-gold text-white' : 'bg-slate-200 text-slate-600'
+            }`}>
+              {loginLogs?.length || 0}
+            </span>
+          </button>
+        </div>
+
+        {/* Tab Contextual Actions */}
+        {activeTab === 'users' && (
+          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto px-1">
+            {/* Search Box */}
+            <div className="relative flex-grow sm:flex-grow-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari nama / NIM / email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full sm:w-56 bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-gold"
+              />
+            </div>
+
+            {/* Role Filter */}
+            <select
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 font-bold focus:outline-none focus:border-gold"
+            >
+              <option value="All">Semua Peran ({users.length})</option>
+              {rolesList.map((r) => (
+                <option key={r.value} value={r.value}>{r.value}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {activeTab === 'logs' && (
+          <div className="flex items-center gap-2 w-full sm:w-auto px-1">
             <button
               onClick={() => {
                 if (window.confirm('Bersihkan semua riwayat log login?')) {
@@ -241,7 +312,7 @@ export default function MasterAdmin({ showToast }) {
                   showToast('Riwayat log login telah dibersihkan.', 'info');
                 }
               }}
-              className="px-3 py-1.5 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 border border-slate-200 text-slate-600 text-[11px] font-bold rounded-lg transition-colors flex items-center gap-1 active:scale-95"
+              className="px-3 py-1.5 bg-slate-50 hover:bg-rose-50 hover:text-rose-600 border border-slate-200 text-slate-600 text-[11px] font-bold rounded-lg transition-colors flex items-center gap-1 active:scale-95"
             >
               <Trash2 className="w-3 h-3" /> Bersihkan Log
             </button>
@@ -252,247 +323,289 @@ export default function MasterAdmin({ showToast }) {
               <RefreshCw className="w-3 h-3" /> Refresh
             </button>
           </div>
-        </div>
+        )}
+      </div>
 
-        {/* Live Logs Stream Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                <th className="px-4 py-3">Nama Anggota</th>
-                <th className="px-4 py-3">NIM</th>
-                <th className="px-4 py-3">Peran / Divisi</th>
-                <th className="px-4 py-3">Perangkat</th>
-                <th className="px-4 py-3">Waktu Login</th>
-                <th className="px-4 py-3 text-center">Status Sesi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
-              {(!loginLogs || loginLogs.length === 0) ? (
-                <tr>
-                  <td colSpan="6" className="px-4 py-8 text-center text-slate-400 text-xs">
-                    <Activity className="w-6 h-6 mx-auto mb-1.5 text-slate-300 animate-pulse" />
-                    Belum ada log aktivitas login anggota tercatat hari ini.
-                  </td>
+      {/* ── TAB CONTENT 1: DAFTAR AKUN MAHASISWA ── */}
+      {activeTab === 'users' && (
+        <div className="bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md animate-in fade-in duration-200">
+          <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <Users className="w-4 h-4 text-gold" /> Daftar Seluruh Akun Mahasiswa Terdaftar
+              </h2>
+              <p className="text-xs text-slate-500 font-light mt-0.5">
+                Data tersimpan terpusat di Cloud Database dan tersinkronisasi di seluruh perangkat.
+              </p>
+            </div>
+            <span className="text-xs text-slate-500 font-medium font-mono bg-white px-3 py-1 rounded-lg border border-slate-200 self-start sm:self-auto">
+              Menampilkan: {filteredUsers.length} dari {users.length} Mahasiswa
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <th className="px-6 py-4">Nama Mahasiswa</th>
+                  <th className="px-6 py-4">NIM / Student ID</th>
+                  <th className="px-6 py-4">Email</th>
+                  <th className="px-6 py-4">Terakhir Login</th>
+                  <th className="px-6 py-4">Status Akun</th>
+                  <th className="px-6 py-4">Peran Aktif (Role)</th>
+                  <th className="px-6 py-4 text-center">Tindakan Otoritas</th>
                 </tr>
-              ) : (
-                loginLogs.slice(0, 15).map((log, idx) => (
-                  <tr key={log.id || idx} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-4 py-3 font-bold text-slate-900">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-gold/15 text-gold-dark font-bold text-[10px] flex items-center justify-center">
-                          {log.name ? log.name.charAt(0).toUpperCase() : 'U'}
-                        </div>
-                        <div>
-                          <span>{log.name}</span>
-                          <span className="block text-[10px] text-slate-400 font-normal">{log.email}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-slate-600">{log.nim}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        log.role === 'Master Admin' ? 'bg-gold/15 text-gold-dark' : 'bg-slate-100 text-slate-700'
-                      }`}>
-                        {log.role}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 font-mono text-[11px]">
-                      <span className="inline-flex items-center gap-1">
-                        {log.device?.includes('Mobile') || log.device?.includes('Smartphone') ? (
-                          <Smartphone className="w-3.5 h-3.5 text-amber-500" />
-                        ) : (
-                          <Laptop className="w-3.5 h-3.5 text-blue-500" />
-                        )}
-                        {log.device || 'Desktop'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-slate-600 text-[11px]">
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-slate-400" />
-                        {log.timeString || new Date(log.timestamp).toLocaleString('id-ID')}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
-                        <CheckCircle className="w-3 h-3" /> Berhasil Masuk
-                      </span>
+              </thead>
+              <tbody className="divide-y divide-slate-200 text-xs text-slate-700">
+                {filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-10 text-center text-slate-400">
+                      <Users className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                      Tidak ditemukan data pengguna yang cocok dengan pencarian / filter.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                ) : (
+                  filteredUsers.map((user) => {
+                    const isSelf = currentUser && (
+                      (currentUser.nim && user.nim && String(currentUser.nim).trim() === String(user.nim).trim()) ||
+                      (currentUser.email && user.email && currentUser.email.toLowerCase().replace(/\s+/g, '') === user.email.toLowerCase().replace(/\s+/g, ''))
+                    );
 
-      {/* ── SECTION: ALL REGISTERED USERS TABLE ── */}
-      <div className="bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md">
-        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <Users className="w-4 h-4 text-gold" /> Daftar Seluruh Akun Mahasiswa Terdaftar
-            </h2>
-            <p className="text-xs text-slate-500 font-light mt-0.5">
-              Data tersimpan terpusat di Cloud Database dan tersinkronisasi di seluruh perangkat.
-            </p>
-          </div>
-          <span className="text-xs text-slate-500 font-medium font-mono bg-white px-3 py-1 rounded-lg border border-slate-200">
-            Total: {filteredUsers.length} Mahasiswa
-          </span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                <th className="px-6 py-4">Nama Mahasiswa</th>
-                <th className="px-6 py-4">NIM / Student ID</th>
-                <th className="px-6 py-4">Email</th>
-                <th className="px-6 py-4">Terakhir Login</th>
-                <th className="px-6 py-4">Status Akun</th>
-                <th className="px-6 py-4">Peran Aktif (Role)</th>
-                <th className="px-6 py-4 text-center">Tindakan Otoritas</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 text-xs text-slate-700">
-              {filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="px-6 py-10 text-center text-slate-450">
-                    Tidak ditemukan data pengguna terdaftar.
-                  </td>
-                </tr>
-              ) : (
-                filteredUsers.map((user) => {
-                  const isSelf = currentUser && (
-                    (currentUser.nim && user.nim && String(currentUser.nim).trim() === String(user.nim).trim()) ||
-                    (currentUser.email && user.email && currentUser.email.toLowerCase().replace(/\s+/g, '') === user.email.toLowerCase().replace(/\s+/g, ''))
-                  );
-
-                  return (
-                    <tr key={user.nim || user.email} className={`hover:bg-slate-50/50 transition-colors ${isSelf ? 'bg-gold/5' : ''}`}>
-                      <td className="px-6 py-4 font-bold text-slate-800 text-left">
-                        <div className="flex items-center gap-1">
-                          {user.name}
-                          {isSelf && (
-                            <span className="px-1.5 py-0.5 rounded bg-gold/15 text-gold-dark text-[8px] font-bold uppercase border border-gold/30">Anda</span>
-                          )}
-                        </div>
-                        {user.phone && (
-                          <div className="text-[10px] text-slate-500 font-mono mt-0.5 font-normal">
-                            Telp: {user.phone}
+                    return (
+                      <tr key={user.nim || user.email} className={`hover:bg-slate-50/50 transition-colors ${isSelf ? 'bg-gold/5' : ''}`}>
+                        <td className="px-6 py-4 font-bold text-slate-800 text-left">
+                          <div className="flex items-center gap-1">
+                            {user.name}
+                            {isSelf && (
+                              <span className="px-1.5 py-0.5 rounded bg-gold/15 text-gold-dark text-[8px] font-bold uppercase border border-gold/30">Anda</span>
+                            )}
                           </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 font-mono text-slate-600">{user.nim}</td>
-                      <td className="px-6 py-4 text-slate-650">{user.email}</td>
-                      
-                      {/* Last Login Column */}
-                      <td className="px-6 py-4 font-mono text-[11px] text-slate-500">
-                        {user.lastLogin ? (
-                          <span className="inline-flex items-center gap-1 text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                            <Clock className="w-3 h-3 text-emerald-600" />
-                            {user.lastLogin}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 italic">Belum Ada Sesi</span>
-                        )}
-                      </td>
+                          {user.phone && (
+                            <div className="text-[10px] text-slate-500 font-mono mt-0.5 font-normal">
+                              Telp: {user.phone}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 font-mono text-slate-600">{user.nim}</td>
+                        <td className="px-6 py-4 text-slate-600">{user.email}</td>
+                        
+                        {/* Last Login Column */}
+                        <td className="px-6 py-4 font-mono text-[11px] text-slate-500">
+                          {user.lastLogin ? (
+                            <span className="inline-flex items-center gap-1 text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                              <Clock className="w-3 h-3 text-emerald-600" />
+                              {user.lastLogin}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 italic">Belum Ada Sesi</span>
+                          )}
+                        </td>
 
-                      <td className="px-6 py-4">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
-                          user.status === 'Active' 
-                            ? 'bg-emerald-50 text-emerald-600 border-emerald-500/20' 
-                            : user.status === 'Rejected'
-                              ? 'bg-rose-50 text-rose-600 border-rose-500/20'
-                              : 'bg-amber-50 text-amber-600 border-amber-500/20'
+                        <td className="px-6 py-4">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
+                            user.status === 'Active' 
+                              ? 'bg-emerald-50 text-emerald-600 border-emerald-500/20' 
+                              : user.status === 'Rejected'
+                                ? 'bg-rose-50 text-rose-600 border-rose-500/20'
+                                : 'bg-amber-50 text-amber-600 border-amber-500/20'
+                          }`}>
+                            {user.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 font-bold text-slate-800">
+                          {(() => {
+                            const roleObj = rolesList.find(r => r.value === user.role);
+                            return (
+                              <div className="flex flex-col gap-1">
+                                <span className={user.role === 'Master Admin' ? 'text-gold-dark font-extrabold' : (user.role === 'Anggota Hima' || user.role === 'Anggota Biasa') ? 'text-slate-500 font-normal' : 'text-gold font-bold'}>
+                                  {user.role === 'Anggota Biasa' ? 'Anggota Hima' : user.role}
+                                </span>
+                                {roleObj?.db && user.role !== 'Master Admin' && (
+                                  <a
+                                    href={roleObj.db}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1 text-[9px] text-blue-600 hover:text-blue-800 hover:underline font-mono"
+                                    title={`Buka ${roleObj.label}`}
+                                  >
+                                    Buka Dashboard <ArrowUpRight className="w-2.5 h-2.5" />
+                                  </a>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            
+                            {/* Approve/Reject for Pending accounts */}
+                            {user.status === 'Pending' && (
+                              <>
+                                <button
+                                  onClick={() => handleApprove(user.email)}
+                                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg transition-colors flex items-center gap-0.5 active:scale-95 shadow-sm"
+                                >
+                                  <CheckCircle className="w-3 h-3 text-white" /> Approve
+                                </button>
+                                <button
+                                  onClick={() => handleReject(user.email)}
+                                  className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-lg transition-colors flex items-center gap-0.5 active:scale-95 shadow-sm"
+                                >
+                                  <XCircle className="w-3 h-3 text-white" /> Reject
+                                </button>
+                              </>
+                            )}
+
+                            {/* Role Promotion & Demotion for Active accounts */}
+                            {user.status === 'Active' && !isSelf && (
+                              <div className="flex items-center gap-2">
+                                <select
+                                  value={user.role === 'Anggota Biasa' ? 'Anggota Hima' : user.role}
+                                  onChange={(e) => handleRoleChange(user.email, e.target.value)}
+                                  className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-[10px] font-bold text-slate-800 focus:outline-none focus:border-gold max-w-[200px]"
+                                >
+                                  {rolesList.map((r) => (
+                                    <option key={r.value} value={r.value}>{r.label}</option>
+                                  ))}
+                                </select>
+
+                                {user.role !== 'Anggota Hima' && user.role !== 'Anggota Biasa' && (
+                                  <button
+                                    onClick={() => handleDemote(user.email)}
+                                    className="px-2.5 py-1 bg-slate-50 border border-slate-200 hover:border-rose-500/30 hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-[10px] font-bold rounded-lg transition-all active:scale-95"
+                                    title="Demote to Anggota Hima"
+                                  >
+                                    Demote
+                                  </button>
+                                )}
+                              </div>
+                            )}
+
+                            {isSelf && (
+                              <span className="text-[10px] text-slate-500 font-mono italic">Tidak dapat diubah</span>
+                            )}
+
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── TAB CONTENT 2: LOG AKTIVITAS & MONITORING LOGIN ── */}
+      {activeTab === 'logs' && (
+        <div className="bg-white border border-gold-border rounded-2xl p-6 shadow-md space-y-4 text-left animate-in fade-in duration-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <h2 className="text-base font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-gold" /> Log Aktivitas & Monitoring Siapa yang Login
+                </h2>
+              </div>
+              <p className="text-xs text-slate-500 font-light mt-0.5">
+                Notifikasi dan riwayat pendaftaran & akses login anggota ke sistem secara real-time.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => {
+                  if (window.confirm('Bersihkan semua riwayat log login?')) {
+                    clearLoginLogs();
+                    showToast('Riwayat log login telah dibersihkan.', 'info');
+                  }
+                }}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 border border-slate-200 text-slate-600 text-[11px] font-bold rounded-lg transition-colors flex items-center gap-1 active:scale-95"
+              >
+                <Trash2 className="w-3 h-3" /> Bersihkan Log
+              </button>
+              <button
+                onClick={handleManualSync}
+                className="px-3 py-1.5 bg-gold/10 hover:bg-gold/20 text-gold-dark border border-gold/30 text-[11px] font-bold rounded-lg transition-colors flex items-center gap-1 active:scale-95"
+              >
+                <RefreshCw className="w-3 h-3" /> Refresh
+              </button>
+            </div>
+          </div>
+
+          {/* Live Logs Stream Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <th className="px-4 py-3">Nama Anggota</th>
+                  <th className="px-4 py-3">NIM</th>
+                  <th className="px-4 py-3">Peran / Divisi</th>
+                  <th className="px-4 py-3">Perangkat</th>
+                  <th className="px-4 py-3">Waktu Login</th>
+                  <th className="px-4 py-3 text-center">Status Sesi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
+                {(!loginLogs || loginLogs.length === 0) ? (
+                  <tr>
+                    <td colSpan="6" className="px-4 py-8 text-center text-slate-400 text-xs">
+                      <Activity className="w-6 h-6 mx-auto mb-1.5 text-slate-300 animate-pulse" />
+                      Belum ada log aktivitas login anggota tercatat hari ini.
+                    </td>
+                  </tr>
+                ) : (
+                  loginLogs.slice(0, 30).map((log, idx) => (
+                    <tr key={log.id || idx} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="px-4 py-3 font-bold text-slate-900">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-gold/15 text-gold-dark font-bold text-[10px] flex items-center justify-center">
+                            {log.name ? log.name.charAt(0).toUpperCase() : 'U'}
+                          </div>
+                          <div>
+                            <span>{log.name}</span>
+                            <span className="block text-[10px] text-slate-400 font-normal">{log.email}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-slate-600">{log.nim}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          log.role === 'Master Admin' ? 'bg-gold/15 text-gold-dark' : 'bg-slate-100 text-slate-700'
                         }`}>
-                          {user.status}
+                          {log.role}
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-bold text-slate-800">
-                        {(() => {
-                          const roleObj = rolesList.find(r => r.value === user.role);
-                          return (
-                            <div className="flex flex-col gap-1">
-                              <span className={user.role === 'Master Admin' ? 'text-gold-dark font-extrabold' : (user.role === 'Anggota Hima' || user.role === 'Anggota Biasa') ? 'text-slate-500 font-normal' : 'text-gold font-bold'}>
-                                {user.role === 'Anggota Biasa' ? 'Anggota Hima' : user.role}
-                              </span>
-                              {roleObj?.db && user.role !== 'Master Admin' && (
-                                <a
-                                  href={roleObj.db}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="inline-flex items-center gap-1 text-[9px] text-blue-600 hover:text-blue-800 hover:underline font-mono"
-                                  title={`Buka ${roleObj.label}`}
-                                >
-                                  Buka Dashboard <ArrowUpRight className="w-2.5 h-2.5" />
-                                </a>
-                              )}
-                            </div>
-                          );
-                        })()}
+                      <td className="px-4 py-3 text-slate-500 font-mono text-[11px]">
+                        <span className="inline-flex items-center gap-1">
+                          {log.device?.includes('Mobile') || log.device?.includes('Smartphone') ? (
+                            <Smartphone className="w-3.5 h-3.5 text-amber-500" />
+                          ) : (
+                            <Laptop className="w-3.5 h-3.5 text-blue-500" />
+                          )}
+                          {log.device || 'Desktop'}
+                        </span>
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          
-                          {/* Approve/Reject for Pending accounts */}
-                          {user.status === 'Pending' && (
-                            <>
-                              <button
-                                onClick={() => handleApprove(user.email)}
-                                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg transition-colors flex items-center gap-0.5 active:scale-95 shadow-sm"
-                              >
-                                <CheckCircle className="w-3 h-3 text-white" /> Approve
-                              </button>
-                              <button
-                                onClick={() => handleReject(user.email)}
-                                className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-lg transition-colors flex items-center gap-0.5 active:scale-95 shadow-sm"
-                              >
-                                <XCircle className="w-3 h-3 text-white" /> Reject
-                              </button>
-                            </>
-                          )}
-
-                          {/* Role Promotion & Demotion for Active accounts */}
-                          {user.status === 'Active' && !isSelf && (
-                            <div className="flex items-center gap-2">
-                              <select
-                                value={user.role === 'Anggota Biasa' ? 'Anggota Hima' : user.role}
-                                onChange={(e) => handleRoleChange(user.email, e.target.value)}
-                                className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-[10px] font-bold text-slate-800 focus:outline-none focus:border-gold max-w-[200px]"
-                              >
-                                {rolesList.map((r) => (
-                                  <option key={r.value} value={r.value}>{r.label}</option>
-                                ))}
-                              </select>
-
-                              {user.role !== 'Anggota Hima' && user.role !== 'Anggota Biasa' && (
-                                <button
-                                  onClick={() => handleDemote(user.email)}
-                                  className="px-2.5 py-1 bg-slate-50 border border-slate-200 hover:border-rose-500/30 hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-[10px] font-bold rounded-lg transition-all active:scale-95"
-                                  title="Demote to Anggota Hima"
-                                >
-                                  Demote
-                                </button>
-                              )}
-                            </div>
-                          )}
-
-                          {isSelf && (
-                            <span className="text-[10px] text-slate-500 font-mono italic">Tidak dapat diubah</span>
-                          )}
-
-                        </div>
+                      <td className="px-4 py-3 font-mono text-slate-600 text-[11px]">
+                        <span className="inline-flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-slate-400" />
+                          {log.timeString || new Date(log.timestamp).toLocaleString('id-ID')}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                          <CheckCircle className="w-3 h-3" /> Berhasil Masuk
+                        </span>
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── MODAL: TAMBAH AKUN MAHASISWA BARU ── */}
       {showAddUserModal && (
