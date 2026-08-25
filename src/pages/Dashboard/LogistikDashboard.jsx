@@ -6,7 +6,7 @@ import {
   Box, ToggleLeft, ToggleRight, Radio, ShieldCheck, Plus, Trash2, Edit3, UserCheck, UserX, 
   FileText, QrCode, Upload, Download, FileSpreadsheet, X, Printer, CheckCircle2, 
   Layers, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, 
-  RefreshCw, Sparkles, Check, Filter
+  RefreshCw, Sparkles, Check, Filter, Users, CheckCheck, Clock, RotateCcw
 } from 'lucide-react';
 import { DEFAULT_INVENTORY_ITEMS, INVENTORY_CATEGORIES, INVENTORY_SIZES } from '../../data/inventoryData';
 
@@ -14,7 +14,7 @@ export default function LogistikDashboard({ showToast }) {
   const [instruments, setInstruments] = useState([]);
   const [borrowRequests, setBorrowRequests] = useState([]);
 
-  // Active Tab Panel: 'overview' | 'database' | 'input' | 'qr'
+  // Active Tab Panel: 'overview' | 'database' | 'peminjam' | 'input' | 'qr'
   const [activeTab, setActiveTab] = useState('overview');
 
   // Filter States
@@ -23,6 +23,10 @@ export default function LogistikDashboard({ showToast }) {
   const [selectedCondition, setSelectedCondition] = useState('Semua');
   const [selectedStatus, setSelectedStatus] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Borrower Panel States
+  const [borrowerSearchQuery, setBorrowerSearchQuery] = useState('');
+  const [borrowerStatusFilter, setBorrowerStatusFilter] = useState('Semua');
 
   // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
@@ -793,6 +797,88 @@ export default function LogistikDashboard({ showToast }) {
     showToast('Riwayat permohonan berhasil dihapus.', 'success');
   };
 
+  // Mark loan as Returned (Pengembalian Barang)
+  const handleMarkReturned = (reqId) => {
+    const req = borrowRequests.find(r => r.id === reqId);
+    if (!req) return;
+
+    // 1. Update borrow request status to 'Returned'
+    const updatedReqs = borrowRequests.map(r => 
+      r.id === reqId ? { ...r, status: 'Returned', returnedAt: new Date().toLocaleDateString('id-ID') } : r
+    );
+    setBorrowRequests(updatedReqs);
+    localStorage.setItem('hima_borrow_requests', JSON.stringify(updatedReqs));
+
+    // 2. Set instrument status back to 'Available'
+    const updatedInsts = instruments.map(inst => 
+      inst.id === req.instrumentId ? { ...inst, status: 'Available' } : inst
+    );
+    setInstruments(updatedInsts);
+    localStorage.setItem('hima_instruments', JSON.stringify(updatedInsts));
+
+    broadcastSync('requests', updatedReqs);
+    broadcastSync('inventory', updatedInsts);
+
+    // 3. Send confirmation notification to borrower account
+    let targetEmails = [];
+    if (req.userEmail && req.userEmail !== 'guest@einsten.com') targetEmails.push(req.userEmail);
+    if (req.borrowerName && (req.borrowerName.toLowerCase().includes('iqbal') || req.borrowerName.toLowerCase().includes('huda'))) {
+      ['M. Iqbal Nur Huda@einsten.com', 'Muhammad Iqbal Nur Huda@einsten.com'].forEach(em => {
+        if (!targetEmails.includes(em)) targetEmails.push(em);
+      });
+    }
+    if (targetEmails.length === 0) targetEmails.push('guest@einsten.com');
+
+    const savedNotifs = localStorage.getItem('hima_notifications');
+    const notifsList = savedNotifs ? JSON.parse(savedNotifs) : [];
+
+    targetEmails.forEach((email, idx) => {
+      notifsList.push({
+        id: Date.now() + idx,
+        recipientEmail: email,
+        recipientNim: req.borrowerNim || '022400042',
+        message: `📦 Pengembalian alat "${req.instrumentName}" (${req.instrumentId}) telah DITERIMA dan diverifikasi oleh Operator Logistik. Terima kasih telah meminjam dan menjaga alat inventaris HIMA Einstein.`,
+        read: false,
+        timestamp: Date.now() + idx
+      });
+    });
+
+    localStorage.setItem('hima_notifications', JSON.stringify(notifsList));
+    broadcastSync('notifications', notifsList);
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('hima_sync_notifications', { detail: notifsList }));
+
+    showToast(`Alat "${req.instrumentName}" berhasil ditandai telah dikembalikan & status alat kini Tersedia!`, 'success');
+  };
+
+  // Export Borrowers List to Excel
+  const handleExportBorrowersList = () => {
+    if (borrowRequests.length === 0) {
+      showToast('Belum ada data peminjam untuk diekspor!', 'warning');
+      return;
+    }
+
+    const exportData = borrowRequests.map((r, i) => ({
+      'No': i + 1,
+      'Nama Peminjam': r.borrowerName || '-',
+      'NIM': r.borrowerNim || '-',
+      'Program Studi': r.prodi || '-',
+      'Angkatan': r.angkatan || '-',
+      'No WhatsApp': r.phone || '-',
+      'Nama Alat': r.instrumentName || '-',
+      'Kode Alat': r.instrumentId || '-',
+      'Tanggal Pengajuan': r.date || '-',
+      'Tanggal Pengembalian': r.returnedAt || '-',
+      'Status': r.status === 'Approved' ? 'Sedang Dipinjam (Aktif)' : r.status === 'Pending' ? 'Menunggu ACC' : r.status === 'Returned' ? 'Sudah Dikembalikan' : 'Ditolak'
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Daftar Peminjam');
+    XLSX.writeFile(wb, `Daftar_Peminjam_Inventaris_HIMA_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    showToast('Daftar peminjam inventaris berhasil diekspor ke Excel!', 'success');
+  };
+
   // Batch QR Code Download as ZIP
   const handleDownloadAllQrZip = async (targetItems, zipTitle = 'QR_Inventaris_Semua') => {
     if (!targetItems || targetItems.length === 0) {
@@ -921,9 +1007,32 @@ export default function LogistikDashboard({ showToast }) {
   const startIdx = (validCurrentPage - 1) * effectivePageSize;
   const paginatedInstruments = filteredInstruments.slice(startIdx, startIdx + effectivePageSize);
 
-  // Filtered Borrow Requests
+  // Filtered Borrow Requests (for ACC)
   const filteredBorrowRequests = borrowRequests.filter(req => {
     return borrowReqFilter === 'Semua' || req.status === borrowReqFilter;
+  });
+
+  // Borrower Panel Calculations & Filtering
+  const activeLoansCount = borrowRequests.filter(r => r.status === 'Approved').length;
+  const returnedLoansCount = borrowRequests.filter(r => r.status === 'Returned').length;
+
+  const filteredBorrowersList = borrowRequests.filter(req => {
+    const matchesStatus = borrowerStatusFilter === 'Semua' 
+      ? true 
+      : borrowerStatusFilter === 'Active'
+      ? req.status === 'Approved'
+      : req.status === borrowerStatusFilter;
+
+    const q = borrowerSearchQuery.toLowerCase().trim();
+    const matchesSearch = !q ||
+      (req.borrowerName && req.borrowerName.toLowerCase().includes(q)) ||
+      (req.borrowerNim && req.borrowerNim.toLowerCase().includes(q)) ||
+      (req.prodi && req.prodi.toLowerCase().includes(q)) ||
+      (req.phone && req.phone.includes(q)) ||
+      (req.instrumentName && req.instrumentName.toLowerCase().includes(q)) ||
+      (req.instrumentId && req.instrumentId.toLowerCase().includes(q));
+
+    return matchesStatus && matchesSearch;
   });
 
   return (
@@ -995,6 +1104,21 @@ export default function LogistikDashboard({ showToast }) {
           }`}
         >
           Panel Database Inventaris ({instruments.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('peminjam')}
+          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 shrink-0 cursor-pointer ${
+            activeTab === 'peminjam' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
+          }`}
+        >
+          Panel Daftar Peminjam
+          {activeLoansCount > 0 && (
+            <span className="bg-emerald-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+              {activeLoansCount} Aktif
+            </span>
+          )}
         </button>
 
         <button
@@ -1237,7 +1361,7 @@ export default function LogistikDashboard({ showToast }) {
           </div>
 
           {/* Quick Access Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
             <div 
               onClick={() => setActiveTab('database')}
               className="p-5 bg-white border border-slate-200 rounded-2xl space-y-2 hover:border-gold hover:shadow-sm transition-all cursor-pointer shadow-2xs"
@@ -1246,6 +1370,16 @@ export default function LogistikDashboard({ showToast }) {
               <h3 className="font-bold text-slate-900 text-sm">Panel Database Inventaris</h3>
               <p className="text-xs text-slate-500 leading-relaxed">Cari 140 barang inventaris, edit stok, ganti foto, ubah kondisi, dan status ketersediaan.</p>
               <span className="text-xs font-bold text-gold-dark block pt-1">Buka Database ({instruments.length} Item) &rarr;</span>
+            </div>
+
+            <div 
+              onClick={() => setActiveTab('peminjam')}
+              className="p-5 bg-white border border-slate-200 rounded-2xl space-y-2 hover:border-gold hover:shadow-sm transition-all cursor-pointer shadow-2xs"
+            >
+              <Users className="w-5 h-5 text-gold" />
+              <h3 className="font-bold text-slate-900 text-sm">Panel Daftar Peminjam</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">Rekap data siapa saja yang sedang meminjam alat, kontak WA, dan konfirmasi pengembalian.</p>
+              <span className="text-xs font-bold text-gold-dark block pt-1">Buka Daftar Peminjam ({activeLoansCount} Aktif) &rarr;</span>
             </div>
 
             <div 
@@ -1636,6 +1770,236 @@ export default function LogistikDashboard({ showToast }) {
             )}
           </div>
 
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* PANEL 3: DAFTAR PEMINJAM & RIWAYAT PEMINJAMAN ALAT */}
+      {/* ========================================================================= */}
+      {activeTab === 'peminjam' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Header & Metrics */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="p-4 bg-white border border-gold-border rounded-2xl flex items-center gap-3.5 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sedang Meminjam</span>
+                <span className="text-lg font-extrabold text-emerald-700 font-heading">{activeLoansCount} Orang</span>
+              </div>
+            </div>
+
+            <div className="p-4 bg-white border border-gold-border rounded-2xl flex items-center gap-3.5 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0">
+                <Box className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Alat Dipinjam</span>
+                <span className="text-lg font-extrabold text-blue-700 font-heading">{activeLoansCount} Unit</span>
+              </div>
+            </div>
+
+            <div className="p-4 bg-white border border-gold-border rounded-2xl flex items-center gap-3.5 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Menunggu ACC</span>
+                <span className="text-lg font-extrabold text-amber-600 font-heading">{pendingRequestsCount} Permohonan</span>
+              </div>
+            </div>
+
+            <div className="p-4 bg-white border border-gold-border rounded-2xl flex items-center gap-3.5 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 shrink-0">
+                <CheckCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sudah Selesai</span>
+                <span className="text-lg font-extrabold text-slate-700 font-heading">{returnedLoansCount} Kali</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Search, Filter, and Export Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari peminjam (nama, NIM, prodi, no WA, nama/kode alat)..."
+                value={borrowerSearchQuery}
+                onChange={(e) => setBorrowerSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-9 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gold focus:bg-white transition-all"
+              />
+              {borrowerSearchQuery && (
+                <button 
+                  onClick={() => setBorrowerSearchQuery('')} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+              <select
+                value={borrowerStatusFilter}
+                onChange={(e) => setBorrowerStatusFilter(e.target.value)}
+                className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
+              >
+                <option value="Semua">Semua Status ({borrowRequests.length})</option>
+                <option value="Active">Sedang Meminjam ({activeLoansCount})</option>
+                <option value="Pending">Menunggu ACC ({pendingRequestsCount})</option>
+                <option value="Returned">Sudah Dikembalikan ({returnedLoansCount})</option>
+                <option value="Rejected">Ditolak ({borrowRequests.filter(r => r.status === 'Rejected').length})</option>
+              </select>
+
+              <button
+                type="button"
+                onClick={handleExportBorrowersList}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
+              >
+                <Download className="w-3.5 h-3.5" /> Ekspor ke Excel
+              </button>
+            </div>
+          </div>
+
+          {/* Table of Borrowers */}
+          <div className="bg-white border border-gold-border/70 rounded-2xl overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50/90 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                    <th className="px-6 py-3.5">Identitas Peminjam</th>
+                    <th className="px-6 py-3.5">Barang & Kode Alat</th>
+                    <th className="px-6 py-3.5">Tanggal Pinjam</th>
+                    <th className="px-6 py-3.5">Status Peminjaman</th>
+                    <th className="px-6 py-3.5 text-center">Tindakan Logistik</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 text-xs text-slate-700">
+                  {filteredBorrowersList.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-12 text-center text-slate-400">
+                        <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                        <p className="font-bold text-slate-600">Tidak ada data peminjam yang cocok</p>
+                        <p className="text-xs text-slate-400">Data mahasiswa yang mengajukan atau sedang meminjam alat akan terdaftar otomatis di sini.</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredBorrowersList.map((req) => {
+                      const isApproved = req.status === 'Approved';
+                      const isPending = req.status === 'Pending';
+                      const isReturned = req.status === 'Returned';
+                      const isRejected = req.status === 'Rejected';
+
+                      return (
+                        <tr key={req.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-8 h-8 rounded-full bg-gold/10 text-gold-dark font-bold flex items-center justify-center text-xs shrink-0 mt-0.5">
+                                {(req.borrowerName || 'U').charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-bold text-slate-900 text-sm">{req.borrowerName}</p>
+                                {req.prodi && req.angkatan ? (
+                                  <p className="text-[11px] text-slate-500 font-mono">{req.prodi} ({req.angkatan})</p>
+                                ) : (
+                                  <p className="text-[11px] text-slate-500 font-mono">NIM: {req.borrowerNim}</p>
+                                )}
+                                {req.phone && (
+                                  <a
+                                    href={`https://wa.me/${req.phone.replace(/[^0-9]/g, '').replace(/^0/, '62')}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md text-[10px] font-bold hover:bg-emerald-100 transition-colors"
+                                  >
+                                    💬 WA: {req.phone}
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="px-6 py-4">
+                            <p className="font-bold text-slate-900">{req.instrumentName}</p>
+                            <span className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px] mt-0.5 border border-slate-200">
+                              {req.instrumentId}
+                            </span>
+                          </td>
+
+                          <td className="px-6 py-4">
+                            <p className="text-slate-700 font-mono text-[11px]">{req.date}</p>
+                            {req.returnedAt && (
+                              <p className="text-[10px] text-slate-400 font-mono">Kembali: {req.returnedAt}</p>
+                            )}
+                          </td>
+
+                          <td className="px-6 py-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider inline-flex items-center gap-1.5 ${
+                              isApproved
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-500/30'
+                                : isPending
+                                ? 'bg-amber-50 text-amber-700 border-amber-500/30'
+                                : isReturned
+                                ? 'bg-slate-100 text-slate-700 border-slate-300'
+                                : 'bg-rose-50 text-rose-700 border-rose-500/30'
+                            }`}>
+                              {isPending && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>}
+                              {isApproved && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>}
+                              {isApproved ? 'Sedang Dipinjam' : isPending ? 'Menunggu ACC' : isReturned ? 'Sudah Kembali' : 'Ditolak'}
+                            </span>
+                          </td>
+
+                          <td className="px-6 py-4 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              {isApproved && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleMarkReturned(req.id)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-300 hover:bg-blue-600 hover:text-white transition-all text-blue-700 font-bold rounded-xl text-xs active:scale-95 cursor-pointer shadow-2xs"
+                                >
+                                  <CheckCheck className="w-4 h-4" /> Tandai Kembali
+                                </button>
+                              )}
+
+                              {isPending && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleApproveRequest(req.id)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-300 hover:bg-emerald-600 hover:text-white transition-all text-emerald-700 font-bold rounded-xl text-xs active:scale-95 cursor-pointer shadow-2xs"
+                                  >
+                                    <UserCheck className="w-4 h-4" /> ACC
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRejectRequest(req.id)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-300 hover:bg-rose-600 hover:text-white transition-all text-rose-700 font-bold rounded-xl text-xs active:scale-95 cursor-pointer shadow-2xs"
+                                  >
+                                    <UserX className="w-4 h-4" /> Tolak
+                                  </button>
+                                </>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteRequest(req.id)}
+                                className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all text-slate-600 font-semibold rounded-xl text-xs active:scale-95 cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" /> Hapus
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
