@@ -6,7 +6,7 @@ import {
   Box, ToggleLeft, ToggleRight, Radio, ShieldCheck, Plus, Trash2, Edit3, UserCheck, UserX, 
   FileText, QrCode, Upload, Download, FileSpreadsheet, X, Printer, CheckCircle2, 
   Layers, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, 
-  RefreshCw, Sparkles, Check
+  RefreshCw, Sparkles, Check, Filter
 } from 'lucide-react';
 import { DEFAULT_INVENTORY_ITEMS, INVENTORY_CATEGORIES, INVENTORY_SIZES } from '../../data/inventoryData';
 
@@ -23,7 +23,6 @@ export default function LogistikDashboard({ showToast }) {
   const [selectedCondition, setSelectedCondition] = useState('Semua');
   const [selectedStatus, setSelectedStatus] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
-  const [classificationMode, setClassificationMode] = useState('fungsi'); // 'fungsi' | 'ukuran'
 
   // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
@@ -1215,27 +1214,12 @@ export default function LogistikDashboard({ showToast }) {
             </div>
           )}
           
-          {/* Classification Mode Switcher */}
+          {/* Category Filter & Actions Bar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 w-fit">
-              <button
-                type="button"
-                onClick={() => { setClassificationMode('fungsi'); setSelectedSize('Semua Ukuran'); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  classificationMode === 'fungsi' ? 'bg-white text-gold-dark shadow-xs' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                🏷️ Klasifikasi Fungsi ({INVENTORY_CATEGORIES.length - 1})
-              </button>
-              <button
-                type="button"
-                onClick={() => { setClassificationMode('ukuran'); setSelectedCategory('Semua'); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  classificationMode === 'ukuran' ? 'bg-white text-gold-dark shadow-xs' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                📐 Klasifikasi Ukuran (3)
-              </button>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                <Filter className="w-3.5 h-3.5 text-gold" /> Kategori Inventaris ({INVENTORY_CATEGORIES.length - 1}):
+              </span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -1260,53 +1244,28 @@ export default function LogistikDashboard({ showToast }) {
           </div>
 
           {/* Filter Chips */}
-          {classificationMode === 'fungsi' ? (
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {INVENTORY_CATEGORIES.map(cat => {
-                const count = cat === 'Semua' ? instruments.length : instruments.filter(i => i.category === cat).length;
-                const isSelected = selectedCategory === cat;
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                      isSelected ? 'bg-gold text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span>{cat}</span>
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-                    }`}>
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {INVENTORY_SIZES.map(sz => {
-                const count = sz === 'Semua Ukuran' ? instruments.length : instruments.filter(i => i.size === sz).length;
-                const isSelected = selectedSize === sz;
-                return (
-                  <button
-                    key={sz}
-                    onClick={() => setSelectedSize(sz)}
-                    className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                      isSelected ? 'bg-gold text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span>{sz}</span>
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-                    }`}>
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {INVENTORY_CATEGORIES.map(cat => {
+              const count = cat === 'Semua' ? instruments.length : instruments.filter(i => i.category === cat).length;
+              const isSelected = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    isSelected ? 'bg-gold text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:border-gold/40 hover:bg-slate-50'
+                  }`}
+                >
+                  <span>{cat}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                    isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
           {/* Search & Multi-Filter Bar */}
           <div className="bg-white border border-slate-200 rounded-2xl p-3.5 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xs">
@@ -1330,23 +1289,13 @@ export default function LogistikDashboard({ showToast }) {
             </div>
 
             <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
-              {classificationMode === 'fungsi' ? (
-                <select
-                  value={selectedSize}
-                  onChange={(e) => setSelectedSize(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
-                >
-                  {INVENTORY_SIZES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              ) : (
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
-                >
-                  {INVENTORY_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              )}
+              <select
+                value={selectedSize}
+                onChange={(e) => setSelectedSize(e.target.value)}
+                className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
+              >
+                {INVENTORY_SIZES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
 
               <select
                 value={selectedCondition}

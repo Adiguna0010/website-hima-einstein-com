@@ -11,7 +11,6 @@ export default function Space({ showToast }) {
   const [selectedSize, setSelectedSize] = useState('Semua Ukuran');
   const [selectedStatus, setSelectedStatus] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
-  const [classificationMode, setClassificationMode] = useState('fungsi');
 
   useEffect(() => {
     const CURRENT_DATA_VERSION = 'v2026_rekap_master_140_v2';
@@ -336,118 +335,41 @@ export default function Space({ showToast }) {
         </p>
       </div>
 
-      {/* Classification Mode Switcher Tabs */}
-      <div className="bg-white border border-gold-border rounded-2xl p-4 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-2">
-            <Tag className="w-4 h-4 text-gold" />
-            <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">Mode Klasifikasi Inventaris:</span>
-          </div>
-
-          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-            <button
-              onClick={() => {
-                setClassificationMode('fungsi');
-                setSelectedSize('Semua Ukuran');
-              }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                classificationMode === 'fungsi'
-                  ? 'bg-gold text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              🏷️ Berdasarkan Kategori Fungsi ({INVENTORY_CATEGORIES.length - 1})
-            </button>
-            <button
-              onClick={() => {
-                setClassificationMode('ukuran');
-                setSelectedCategory('Semua');
-              }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                classificationMode === 'ukuran'
-                  ? 'bg-gold text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              📐 Berdasarkan Ukuran Fisik (3)
-            </button>
-          </div>
+      {/* Kategori Fungsi Chips Filter */}
+      <div className="bg-white border border-gold-border rounded-2xl p-4 shadow-sm space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+            <Filter className="w-3.5 h-3.5 text-gold" /> Kategori Inventaris ({INVENTORY_CATEGORIES.length - 1}):
+          </span>
+          <span className="text-xs font-medium text-slate-500">
+            Menampilkan <strong className="text-slate-900">{filteredInstruments.length}</strong> dari {instruments.length} barang
+          </span>
         </div>
 
-        {/* Classification Filters based on active mode */}
-        {classificationMode === 'fungsi' ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                <Filter className="w-3.5 h-3.5 text-gold" /> Klasifikasi Kategori / Fungsi:
-              </span>
-              <span className="text-xs font-medium text-slate-500">
-                Menampilkan <strong className="text-slate-900">{filteredInstruments.length}</strong> dari {instruments.length} barang
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {INVENTORY_CATEGORIES.map(cat => {
-                const count = cat === 'Semua' ? instruments.length : instruments.filter(i => i.category === cat).length;
-                const isSelected = selectedCategory === cat;
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-gradient-to-r from-gold to-gold-light text-white shadow-md shadow-gold/20'
-                        : 'bg-white border border-slate-200 text-slate-700 hover:border-gold/50 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span>{cat}</span>
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
-                    }`}>
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                <Filter className="w-3.5 h-3.5 text-gold" /> Klasifikasi Ukuran Fisik:
-              </span>
-              <span className="text-xs font-medium text-slate-500">
-                Menampilkan <strong className="text-slate-900">{filteredInstruments.length}</strong> dari {instruments.length} barang
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {INVENTORY_SIZES.map(sz => {
-                const count = sz === 'Semua Ukuran' ? instruments.length : instruments.filter(i => i.size === sz).length;
-                const isSelected = selectedSize === sz;
-                return (
-                  <button
-                    key={sz}
-                    onClick={() => setSelectedSize(sz)}
-                    className={`shrink-0 px-4 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-gradient-to-r from-gold to-gold-light text-white shadow-md shadow-gold/20'
-                        : 'bg-white border border-slate-200 text-slate-700 hover:border-gold/50 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span>{sz}</span>
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
-                    }`}>
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {INVENTORY_CATEGORIES.map(cat => {
+            const count = cat === 'Semua' ? instruments.length : instruments.filter(i => i.category === cat).length;
+            const isSelected = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-gold to-gold-light text-white shadow-md shadow-gold/20'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:border-gold/50 hover:bg-slate-50'
+                }`}
+              >
+                <span>{cat}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                  isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
         {/* Search & Sub-filters Bar */}
         <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">
@@ -473,34 +395,20 @@ export default function Space({ showToast }) {
 
           {/* Status Dropdowns & Scan */}
           <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
-            {classificationMode === 'fungsi' && (
-              <select
-                value={selectedSize}
-                onChange={(e) => setSelectedSize(e.target.value)}
-                className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold"
-              >
-                {INVENTORY_SIZES.map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            )}
-
-            {classificationMode === 'ukuran' && (
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold"
-              >
-                {INVENTORY_CATEGORIES.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            )}
+            <select
+              value={selectedSize}
+              onChange={(e) => setSelectedSize(e.target.value)}
+              className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
+            >
+              {INVENTORY_SIZES.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
 
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold"
+              className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
             >
               <option value="Semua">Semua Status</option>
               <option value="Tersedia">Tersedia</option>
