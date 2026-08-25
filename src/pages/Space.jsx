@@ -339,9 +339,6 @@ export default function Space({ showToast }) {
       <div className="absolute top-1/4 right-10 w-96 h-96 bg-gold/5 glow-orb"></div>
       
       <div className="text-center max-w-2xl mx-auto space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 text-gold-dark text-xs font-bold border border-gold/30">
-          <Layers className="w-3.5 h-3.5" /> REKAPITULASI INVENTARIS LIVE
-        </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold uppercase text-slate-900">EINSTEN SPACE</h1>
         <p className="text-slate-500 text-xs sm:text-sm leading-relaxed font-light">
           Portal terpadu peminjaman & katalog inventaris aset, logistik, instrumen laboratorium, ATK, P3K, properti dan perlengkapan HIMA EINSTEN.
