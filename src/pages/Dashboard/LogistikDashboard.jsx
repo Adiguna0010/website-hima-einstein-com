@@ -934,21 +934,6 @@ export default function LogistikDashboard({ showToast }) {
         >
           Batch & Print QR Code
         </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('acc')}
-          className={`px-4 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 shrink-0 cursor-pointer ${
-            activeTab === 'acc' ? 'text-gold border-gold font-extrabold' : 'text-slate-400 border-transparent hover:text-slate-700'
-          }`}
-        >
-          ACC Peminjaman Alat
-          {pendingRequestsCount > 0 && (
-            <span className="bg-rose-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse">
-              {pendingRequestsCount} Bth ACC
-            </span>
-          )}
-        </button>
       </div>
 
       {/* Progress Bar for ZIP Generation */}
@@ -1998,125 +1983,7 @@ export default function LogistikDashboard({ showToast }) {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* PANEL 4: ACC PEMINJAMAN ALAT (OTOMATIS NOTIFIKASI MAHASISWA SAAT DI-ACC) */}
-      {/* ========================================================================= */}
-      {activeTab === 'acc' && (
-        <div className="space-y-5 animate-fade-in">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="space-y-1">
-              <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <FileText className="w-4 h-4 text-gold" /> ACC Permohonan Peminjaman Alat
-              </h3>
-              <p className="text-xs text-slate-500">
-                Persetujuan permohonan peminjaman dari mahasiswa. Ketika di-ACC, sistem secara otomatis mengirimkan notifikasi ke akun peminjam.
-              </p>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <select
-                value={borrowReqFilter}
-                onChange={(e) => setBorrowReqFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-gold cursor-pointer"
-              >
-                <option value="Semua">Semua Status Permohonan</option>
-                <option value="Pending">Menunggu ACC (Pending)</option>
-                <option value="Approved">Disetujui (Approved)</option>
-                <option value="Rejected">Ditolak (Rejected)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="bg-white border border-gold-border rounded-2xl overflow-hidden shadow-md">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                    <th className="px-6 py-4">Peminjam</th>
-                    <th className="px-6 py-4">Alat Lab & Kode</th>
-                    <th className="px-6 py-4">Tanggal Pengajuan</th>
-                    <th className="px-6 py-4">Status Otoritas</th>
-                    <th className="px-6 py-4 text-center">Tindakan ACC</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 text-xs text-slate-700">
-                  {filteredBorrowRequests.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" className="px-6 py-16 text-center text-slate-400">
-                        <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                        <p className="font-bold text-slate-600">Belum ada data permohonan peminjaman</p>
-                        <p className="text-xs text-slate-400">Permohonan peminjaman dari mahasiswa akan muncul di sini.</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredBorrowRequests.map((req) => (
-                      <tr key={req.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="px-6 py-4">
-                          <p className="font-bold text-slate-900 text-sm">{req.borrowerName}</p>
-                          {req.prodi && req.angkatan ? (
-                            <p className="text-[11px] text-slate-500 font-mono">{req.prodi} ({req.angkatan})</p>
-                          ) : (
-                            <p className="text-[11px] text-slate-500 font-mono">NIM: {req.borrowerNim}</p>
-                          )}
-                          {req.phone && (
-                            <p className="text-[11px] text-gold-dark font-mono font-semibold">WA: {req.phone}</p>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="font-bold text-slate-900">{req.instrumentName}</p>
-                          <p className="text-[11px] text-slate-500 font-mono">ID: {req.instrumentId}</p>
-                        </td>
-                        <td className="px-6 py-4 text-slate-600 font-light">{req.date}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${
-                            req.status === 'Pending'
-                              ? 'bg-amber-50 text-amber-700 border-amber-500/30'
-                              : req.status === 'Approved'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-500/30'
-                              : 'bg-rose-50 text-rose-700 border-rose-500/30'
-                          }`}>
-                            {req.status === 'Pending' ? 'Menunggu ACC' : req.status === 'Approved' ? 'Disetujui (ACC)' : 'Ditolak'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            {req.status === 'Pending' ? (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => handleApproveRequest(req.id)}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-300 hover:bg-emerald-600 hover:text-white transition-all text-emerald-700 font-bold rounded-xl text-xs active:scale-95 cursor-pointer shadow-2xs"
-                                >
-                                  <UserCheck className="w-4 h-4" /> ACC / Setujui
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRejectRequest(req.id)}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-300 hover:bg-rose-600 hover:text-white transition-all text-rose-700 font-bold rounded-xl text-xs active:scale-95 cursor-pointer shadow-2xs"
-                                >
-                                  <UserX className="w-4 h-4" /> Tolak
-                                </button>
-                              </>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteRequest(req.id)}
-                                className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all text-slate-600 font-semibold rounded-xl text-xs active:scale-95 cursor-pointer"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" /> Hapus
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ========================================================================= */}
       {/* MODAL 1: EDIT INVENTARIS ITEM (EDIT STOK, FOTO, KONDISI, STATUS, DLL) */}
