@@ -157,7 +157,10 @@ export const AuthProvider = ({ children }) => {
     (baseList || []).forEach(u => {
       if (u) {
         const key = getUserKey(u);
-        if (key) userMap.set(key, { ...u });
+        if (key) {
+          const role = u.role === 'Anggota Biasa' ? 'Anggota Hima' : u.role;
+          userMap.set(key, { ...u, role });
+        }
       }
     });
     (incomingList || []).forEach(u => {
@@ -165,7 +168,11 @@ export const AuthProvider = ({ children }) => {
         const key = getUserKey(u);
         if (key) {
           const defaultUser = userMap.get(key) || {};
-          userMap.set(key, { ...defaultUser, ...u });
+          const merged = { ...defaultUser, ...u };
+          if (merged.role === 'Anggota Biasa') {
+            merged.role = 'Anggota Hima';
+          }
+          userMap.set(key, merged);
         }
       }
     });
@@ -439,7 +446,7 @@ export const AuthProvider = ({ children }) => {
       phone: phone ? String(phone).trim() : '',
       email: generatedEmail,
       password: password || String(nim).trim(),
-      role: 'Anggota Biasa',
+      role: 'Anggota Hima',
       status: 'Active',
       createdAt: new Date().toISOString()
     };
@@ -530,7 +537,7 @@ export const AuthProvider = ({ children }) => {
       name: user.name,
       nim: user.nim || '-',
       email: user.email,
-      role: user.role || 'Anggota Biasa',
+      role: (user.role === 'Anggota Biasa' ? 'Anggota Hima' : user.role) || 'Anggota Hima',
       timestamp: now,
       timeString: timeStr,
       device: deviceStr,
@@ -596,7 +603,7 @@ export const AuthProvider = ({ children }) => {
       phone: newUserData.phone ? String(newUserData.phone).trim() : '',
       email: generatedEmail,
       password: newUserData.password || String(newUserData.nim).trim(),
-      role: newUserData.role || 'Anggota Biasa',
+      role: (newUserData.role === 'Anggota Biasa' ? 'Anggota Hima' : newUserData.role) || 'Anggota Hima',
       status: newUserData.status || 'Active',
       createdAt: new Date().toISOString()
     };

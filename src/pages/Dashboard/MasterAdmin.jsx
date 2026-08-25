@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Shield, CheckCircle, XCircle, ArrowUpRight, RefreshCw, Users, ShieldCheck, 
@@ -20,7 +20,6 @@ export default function MasterAdmin({ showToast }) {
   } = useAuth();
 
   const [filterRole, setFilterRole] = useState('All');
-  const [fonnteToken, setFonnteToken] = useState(localStorage.getItem('fonnte_token') || '');
 
   // Add User Modal States
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -28,12 +27,8 @@ export default function MasterAdmin({ showToast }) {
   const [newUserNim, setNewUserNim] = useState('');
   const [newUserPhone, setNewUserPhone] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
-  const [newUserRole, setNewUserRole] = useState('Anggota Biasa');
+  const [newUserRole, setNewUserRole] = useState('Anggota Hima');
   const [isSubmittingUser, setIsSubmittingUser] = useState(false);
-
-  const [gatewayUrl, setGatewayUrl] = useState(localStorage.getItem('self_hosted_gateway_url') || 'http://localhost:5001');
-  const [gatewayStatus, setGatewayStatus] = useState(null);
-  const [checkingGateway, setCheckingGateway] = useState(false);
 
   const handleManualSync = async () => {
     try {
@@ -70,30 +65,13 @@ export default function MasterAdmin({ showToast }) {
       setNewUserNim('');
       setNewUserPhone('');
       setNewUserPassword('');
-      setNewUserRole('Anggota Biasa');
+      setNewUserRole('Anggota Hima');
     } catch (err) {
       showToast('Gagal menambahkan akun: ' + err.message, 'error');
     } finally {
       setIsSubmittingUser(false);
     }
   };
-
-  const checkGatewayStatus = async () => {
-    setCheckingGateway(true);
-    try {
-      const res = await fetch(`${gatewayUrl}/status`);
-      const data = await res.json();
-      setGatewayStatus(data);
-    } catch (err) {
-      setGatewayStatus({ status: 'offline', phone: null });
-    } finally {
-      setCheckingGateway(false);
-    }
-  };
-
-  useEffect(() => {
-    checkGatewayStatus();
-  }, [gatewayUrl]);
 
   const handleApprove = (email) => {
     updateUserStatus(email, 'Active');
@@ -111,12 +89,12 @@ export default function MasterAdmin({ showToast }) {
   };
 
   const handleDemote = (email) => {
-    updateUserRole(email, 'Anggota Biasa');
-    showToast(`Peran pengguna ${email} telah diturunkan menjadi Anggota Biasa.`, 'info');
+    updateUserRole(email, 'Anggota Hima');
+    showToast(`Peran pengguna ${email} telah diturunkan menjadi Anggota Hima.`, 'info');
   };
 
   const rolesList = [
-    { value: 'Anggota Biasa', label: 'Anggota Biasa (Portal Mahasiswa)', db: null },
+    { value: 'Anggota Hima', label: 'Anggota Hima (Portal Mahasiswa)', db: null },
     { value: 'Operator Logistik', label: '📦 Operator Logistik (Dashboard Aset & Logistik)', db: '/dashboard/logistik' },
     { value: 'Operator Danus', label: '🛍️ Operator Danus (Dashboard Dana Usaha & Market)', db: '/dashboard/danus' },
     { value: 'Operator Ristek', label: '🔬 Operator Ristek (Dashboard Riset & Teknologi)', db: '/dashboard/ristek' },
@@ -222,7 +200,7 @@ export default function MasterAdmin({ showToast }) {
           <div>
             <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Operator Divisi</span>
             <span className="text-xl font-extrabold text-slate-900 font-heading">
-              {users.filter(u => u.role !== 'Anggota Biasa' && u.role !== 'Master Admin').length} User
+              {users.filter(u => u.role !== 'Anggota Hima' && u.role !== 'Anggota Biasa' && u.role !== 'Master Admin').length} User
             </span>
           </div>
         </div>
@@ -437,8 +415,8 @@ export default function MasterAdmin({ showToast }) {
                           const roleObj = rolesList.find(r => r.value === user.role);
                           return (
                             <div className="flex flex-col gap-1">
-                              <span className={user.role === 'Master Admin' ? 'text-gold-dark font-extrabold' : user.role === 'Anggota Biasa' ? 'text-slate-500 font-normal' : 'text-gold font-bold'}>
-                                {user.role}
+                              <span className={user.role === 'Master Admin' ? 'text-gold-dark font-extrabold' : (user.role === 'Anggota Hima' || user.role === 'Anggota Biasa') ? 'text-slate-500 font-normal' : 'text-gold font-bold'}>
+                                {user.role === 'Anggota Biasa' ? 'Anggota Hima' : user.role}
                               </span>
                               {roleObj?.db && user.role !== 'Master Admin' && (
                                 <a
@@ -480,7 +458,7 @@ export default function MasterAdmin({ showToast }) {
                           {user.status === 'Active' && !isSelf && (
                             <div className="flex items-center gap-2">
                               <select
-                                value={user.role}
+                                value={user.role === 'Anggota Biasa' ? 'Anggota Hima' : user.role}
                                 onChange={(e) => handleRoleChange(user.email, e.target.value)}
                                 className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-[10px] font-bold text-slate-800 focus:outline-none focus:border-gold max-w-[200px]"
                               >
@@ -489,11 +467,11 @@ export default function MasterAdmin({ showToast }) {
                                 ))}
                               </select>
 
-                              {user.role !== 'Anggota Biasa' && (
+                              {user.role !== 'Anggota Hima' && user.role !== 'Anggota Biasa' && (
                                 <button
                                   onClick={() => handleDemote(user.email)}
                                   className="px-2.5 py-1 bg-slate-50 border border-slate-200 hover:border-rose-500/30 hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-[10px] font-bold rounded-lg transition-all active:scale-95"
-                                  title="Demote to Anggota Biasa"
+                                  title="Demote to Anggota Hima"
                                 >
                                   Demote
                                 </button>
@@ -513,101 +491,6 @@ export default function MasterAdmin({ showToast }) {
               )}
             </tbody>
           </table>
-        </div>
-      </div>
-
-      {/* WhatsApp OTP Gateway Settings */}
-      <div className="bg-white border border-gold-border rounded-2xl p-6 shadow-md text-left space-y-6">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-            <Shield className="w-5 h-5 text-gold" /> Pengaturan WhatsApp OTP Gateway (Self-Hosted Baileys)
-          </h2>
-          <p className="text-xs text-slate-500 font-light mt-1">
-            Gunakan <strong>Self-Hosted WA Gateway (Gratis 100%)</strong> berbasis Node.js & Baileys yang berjalan di server Anda, atau gunakan Fonnte API sebagai cadangan.
-          </p>
-        </div>
-
-        {/* Self-Hosted Gateway Status Card */}
-        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Status Self-Hosted Gateway</span>
-              <div className="flex items-center gap-2 mt-1">
-                {gatewayStatus?.status === 'connected' && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-extrabold rounded-full border border-emerald-300">
-                    <CheckCircle className="w-3.5 h-3.5" /> Terhubung ({gatewayStatus.phone})
-                  </span>
-                )}
-                {gatewayStatus?.status === 'connecting' && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-700 text-xs font-extrabold rounded-full border border-amber-300 animate-pulse">
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Perlu Scan QR Code
-                  </span>
-                )}
-                {(!gatewayStatus || gatewayStatus?.status === 'offline' || gatewayStatus?.status === 'disconnected') && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-200 text-slate-700 text-xs font-extrabold rounded-full border border-slate-300">
-                    <XCircle className="w-3.5 h-3.5 text-slate-500" /> Gateway Offline / Terputus
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={checkGatewayStatus}
-                disabled={checkingGateway}
-                className="px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${checkingGateway ? 'animate-spin' : ''}`} /> Cek Status
-              </button>
-              <a
-                href={`${gatewayUrl}/qr`}
-                target="_blank"
-                rel="noreferrer"
-                className="px-4 py-2 bg-gradient-to-r from-gold to-gold-light text-white font-bold rounded-xl text-xs flex items-center gap-1 shadow-sm hover:brightness-110 transition-all"
-              >
-                📱 Buka Halaman Scan QR Code <ArrowUpRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
-
-          <div className="pt-2 border-t border-slate-200/60 flex flex-col sm:flex-row items-center gap-2">
-            <span className="text-xs text-slate-600 font-semibold whitespace-nowrap">URL Server Gateway:</span>
-            <input
-              type="text"
-              value={gatewayUrl}
-              onChange={(e) => {
-                setGatewayUrl(e.target.value);
-                localStorage.setItem('self_hosted_gateway_url', e.target.value);
-              }}
-              placeholder="http://localhost:5001"
-              className="flex-grow w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 font-mono focus:outline-none focus:border-gold"
-            />
-          </div>
-        </div>
-
-        {/* Fonnte Token Fallback Card */}
-        <div className="space-y-2 pt-2 border-t border-slate-100">
-          <label className="text-xs font-semibold text-slate-700 block">Fonnte API Token (Cadangan / Secondary Gateway):</label>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="password"
-              placeholder="Masukkan Device Token Fonnte (Opsional)..."
-              value={fonnteToken}
-              onChange={(e) => {
-                setFonnteToken(e.target.value);
-                localStorage.setItem('fonnte_token', e.target.value);
-              }}
-              className="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-gold"
-            />
-            <button
-              onClick={() => {
-                showToast('Pengaturan Token Fonnte berhasil disimpan!', 'success');
-              }}
-              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider active:scale-[0.98] transition-all"
-            >
-              Simpan Token
-            </button>
-          </div>
         </div>
       </div>
 

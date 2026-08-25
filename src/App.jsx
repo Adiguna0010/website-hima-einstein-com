@@ -185,7 +185,7 @@ export default function App() {
                 <Route
                   path="/profile"
                   element={
-                    <ProtectedRoute allowedRoles={['Master Admin','Bendahara Umum','Operator Danus','Operator Logistik','Operator Ristek','Sekretaris Umum','Operator BPH','Operator Internal','Operator External','Operator Pengma','Operator Kominfo','Anggota Biasa']}>
+                    <ProtectedRoute allowedRoles={['Master Admin','Bendahara Umum','Operator Danus','Operator Logistik','Operator Ristek','Sekretaris Umum','Operator BPH','Operator Internal','Operator External','Operator Pengma','Operator Kominfo','Anggota Hima','Anggota Biasa']}>
                       <Profile showToast={showToast} />
                     </ProtectedRoute>
                   }

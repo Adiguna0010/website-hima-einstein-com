@@ -306,7 +306,7 @@ export default async function handler(req, res) {
           name: logItem.name || 'Anggota',
           nim: logItem.nim || '-',
           email: logItem.email || '-',
-          role: logItem.role || 'Anggota Biasa',
+          role: logItem.role || 'Anggota Hima',
           timestamp: logItem.timestamp || Date.now(),
           timeString: logItem.timeString || new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
           device: logItem.device || 'Web Browser',
@@ -387,7 +387,7 @@ export default async function handler(req, res) {
         phone: phone ? String(phone).trim() : '',
         email: generatedEmail,
         password: password || String(nim).trim(),
-        role: role || 'Anggota Biasa',
+        role: role || 'Anggota Hima',
         status: status || 'Active',
         createdAt: new Date().toISOString()
       };
