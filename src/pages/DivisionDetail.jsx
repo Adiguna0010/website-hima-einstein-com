@@ -116,7 +116,7 @@ export default function DivisionDetail({ showToast }) {
   const lastVaultRawRef = React.useRef('');
 
   const loadVaultItems = () => {
-    const VAULT_VERSION = 'v6_clean_titles_no_storage';
+    const VAULT_VERSION = 'v8_labview_2020';
     const savedVersion = localStorage.getItem('hima_vault_version');
     const savedVault = localStorage.getItem('hima_vault');
     

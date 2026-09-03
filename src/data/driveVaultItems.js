@@ -37,11 +37,11 @@ export const DEFAULT_DRIVE_VAULT = [
   },
   {
     "id": 105,
-    "title": "Labview",
+    "title": "Labview 2020",
     "size": "4.2 GB",
     "type": "Software",
     "category": "Software",
-    "desc": "National Instruments LabVIEW Community Edition untuk instrumentasi dan akuisisi data.",
+    "desc": "National Instruments LabVIEW 2020 untuk instrumentasi dan akuisisi data.",
     "url": "https://drive.google.com/drive/folders/1kBIWKQYOPj84seFoAoz3IXMhqbpJm5Ks"
   },
   {
